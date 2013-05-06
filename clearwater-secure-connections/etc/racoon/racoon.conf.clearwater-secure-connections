@@ -1,0 +1,32 @@
+log notify;
+path pre_shared_key "/etc/racoon/psk.txt";
+path certificate "/etc/apt/certs/";
+
+listen {
+        adminsock disabled;
+}
+
+remote anonymous {
+        exchange_mode aggressive;
+        certificate_type x509 "repository-client.crt" "repository-client.key";
+        my_identifier asn1dn;
+        proposal_check claim;
+        generate_policy on;             # automatically generate IPsec policies
+        dpd_delay 20;                   # DPD poll every 20 seconds
+        nat_traversal force;            # always use NAT-T
+        ike_frag on;                    # use IKE fragmentation
+        proposal {
+                encryption_algorithm aes;
+                hash_algorithm sha1;
+                authentication_method rsasig;
+                dh_group 2;
+        }
+}
+
+sainfo anonymous {
+        pfs_group 2;
+        lifetime time 1 hour;
+        encryption_algorithm aes;
+        authentication_algorithm hmac_sha1;
+        compression_algorithm deflate;
+}

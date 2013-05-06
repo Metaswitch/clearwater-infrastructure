@@ -1,0 +1,3 @@
+package=$(dpkg-query -W -f='${PackageSpec}\n' | egrep -m1 '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout)$' | sed -e 's/clearwater-sip-stress/sipp/g')
+node_idx=$(. /etc/clearwater/config ; if [ -n "$node_idx" ] ; then echo -$node_idx ; fi)
+export PS1='\[\e]0;['$package$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$package$node_idx']\u@\h:\w\$ '

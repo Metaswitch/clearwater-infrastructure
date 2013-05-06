@@ -1,0 +1,12 @@
+/changelog
+/*.log
+/*.debhelper
+/*.substvars
+/files
+/clearwater-infrastructure/
+/clearwater-memcached/
+/clearwater-memcached-extra/
+/clearwater-secure-connections/
+/clearwater-tcp-scalability/
+/clearwater-snmpd/
+/clearwater-crash-monitor/

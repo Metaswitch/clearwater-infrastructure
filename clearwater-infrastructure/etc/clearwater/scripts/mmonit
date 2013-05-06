@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# @file mmonit
+#
+# Copyright (C) 2013  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by post at
+# Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+
+
+# Read the config.
+. /etc/clearwater/config
+
+# Destination file location
+MMONIT_CONFIG_FILE="/etc/monit/conf.d/mmonit.monit"
+
+# User credentials for logging into local monit daemon
+MONIT_USER="admin"
+MONIT_PW="monit"
+
+# Write the file
+cat > $MMONIT_CONFIG_FILE << EOF
+set eventqueue basedir /var/monit/ slots 1000
+set mmonit http://$mmonit_username:$mmonit_password@$mmonit_hostname/collector
+set httpd port 2812 and use address $local_ip
+  allow 0.0.0.0/0
+  allow $MONIT_USER:$MONIT_PW
+EOF
