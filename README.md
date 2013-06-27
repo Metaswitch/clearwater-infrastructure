@@ -8,6 +8,8 @@ Clearwater Infrastructure is the infrastructure package for
 Clearwater. It manages automatic configuration and upgrade, and
 installs a number of dependencies.
 
+Project Clearwater is an open-source IMS core, developed by [Metaswitch Networks](http://www.metaswitch.com) and released under the [GNU GPLv3](http://www.projectclearwater.org/download/license/). You can find more information about it on [our website](http://www.projectclearwater.org/) or [our wiki](https://github.com/Metaswitch/clearwater-docs/wiki).
+
 Packages
 --------
 
