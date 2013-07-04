@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file mmonit
 #
@@ -45,11 +45,23 @@ MMONIT_CONFIG_FILE="/etc/monit/conf.d/mmonit.monit"
 MONIT_USER="admin"
 MONIT_PW="monit"
 
-# Write the file
-cat > $MMONIT_CONFIG_FILE << EOF
-set eventqueue basedir /var/monit/ slots 1000
-set mmonit http://$mmonit_username:$mmonit_password@$mmonit_hostname/collector
-set httpd port 2812 and use address $local_ip
-  allow 0.0.0.0/0
-  allow $MONIT_USER:$MONIT_PW
+# Check if we have configuration for M/Monit
+if [[ -z $mmonit_hostname || -z $mmonit_username || -z $mmonit_password ]]
+then
+  echo "Configuring monit for only localhost access"
+  cat > $MMONIT_CONFIG_FILE << EOF
+  set eventqueue basedir /var/monit/ slots 1000
+  set httpd port 2812 and use address $local_ip
+    allow 0.0.0.0/0
 EOF
+else
+  echo "Configuring monit for localhost and M/Monit access"
+  cat > $MMONIT_CONFIG_FILE << EOF
+  set eventqueue basedir /var/monit/ slots 1000
+  set mmonit http://$mmonit_username:$mmonit_password@$mmonit_hostname/collector
+  set httpd port 2812 and use address $local_ip
+    allow 0.0.0.0/0
+    allow $MONIT_USER:$MONIT_PW
+EOF
+fi
+
