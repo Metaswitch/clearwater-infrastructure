@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file mmonit
 #
@@ -44,6 +44,16 @@ MMONIT_CONFIG_FILE="/etc/monit/conf.d/mmonit.monit"
 # User credentials for logging into local monit daemon
 MONIT_USER="admin"
 MONIT_PW="monit"
+
+# First check if we have configuration for M/Monit, exiting if not
+if [[ -z $mmonit_hostname || -z $mmonit_username || -z $mmonit_password ]]
+then
+  echo "Not configuring M/Monit due to missing configuration"
+  # In case the configuration has changed, remove redundant 
+  # M/Monit config file
+  rm $MMONIT_CONFIG_FILE
+  exit
+fi
 
 # Write the file
 cat > $MMONIT_CONFIG_FILE << EOF
