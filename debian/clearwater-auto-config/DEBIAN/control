@@ -1,0 +1,10 @@
+Package: clearwater-auto-config
+Source: clearwater-infrastructure
+Version: 1.0-130709.140237
+Architecture: all
+Maintainer: Project Clearwater Maintainers <maintainers@projectclearwater.org>
+Installed-Size: 39
+Section: network
+Priority: optional
+Homepage: http://projectclearwater.org/
+Description: Package containing the Clearwater auto-configuration tool

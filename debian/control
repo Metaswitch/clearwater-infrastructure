@@ -44,3 +44,9 @@ Package: clearwater-crash-monitor
 Architecture: all
 Depends: clearwater-infrastructure
 Description: Crash dump uploader for all Clearwater servers
+
+# NB clearwater-auto-config does NOT depend on infrastructure, as it
+# needs to load before infrastructure
+Package: clearwater-auto-config
+Architecture: all
+Description: Package containing the Clearwater auto-configuration tool

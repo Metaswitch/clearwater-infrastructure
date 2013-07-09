@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-infrastructure.postinst
+# @file clearwater-single-node.postinst
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -51,22 +51,8 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-add_section() {
-  file=$1
-  tag=$2
-  delta=$3
-  { echo "#+$tag"
-    cat $delta
-    echo "#-$tag" ; } >> $file
-}
-
 case "$1" in
-    configure)
-        add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
-        add_section /home/ubuntu/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
-    ;;
-
-    abort-upgrade|abort-remove|abort-deconfigure)
+    configure|abort-upgrade|abort-remove|abort-deconfigure)
     ;;
 
     *)
@@ -75,11 +61,11 @@ case "$1" in
     ;;
 esac
 
-if [ -x "/etc/init.d/clearwater-infrastructure" ]; then
-        if [ ! -e "/etc/init/clearwater-infrastructure.conf" ]; then
-                update-rc.d clearwater-infrastructure defaults 25 75 >/dev/null
+if [ -x "/etc/init.d/clearwater-auto-config" ]; then
+        if [ ! -e "/etc/init/clearwater-auto-config.conf" ]; then
+                update-rc.d clearwater-auto-config defaults 20 80>/dev/null
         fi
-        invoke-rc.d clearwater-infrastructure start || exit $?
+        invoke-rc.d clearwater-auto-config start || exit $?
 fi
 
 exit 0

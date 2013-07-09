@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-infrastructure.postinst
+# @file clearwater-auto-config.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -34,52 +34,51 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-#
-# see: dh_installdeb(1)
+### BEGIN INIT INFO
+# Provides:          clearwater-auto-config
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: clearwater-auto-config
+# Description:       clearwater-auto-config
+# X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
+### END INIT INFO
 
-set -e
+do_auto_config()
+{
+  mkdir -p /etc/clearwater
+  config=/etc/clearwater/config
+  # wget -qO - http://169.254.169.254/latest/user-data | sed 's/'`echo "\015"`'//g' >>$config
+  local_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/local-ipv4)
+  public_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/public-ipv4)
+  public_hostname=$(wget -qO - http://169.254.169.254/latest/meta-data/public-hostname)
 
-# summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <postinst> `abort-remove'
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
-#          <conflicting-package> <version>
-# for details, see http://www.debian.org/doc/debian-policy/ or
-# the debian-policy package
+  sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
+          s/^public_ip=.*$/public_ip='$public_ip'/g
+          s/^public_hostname=.*$/public_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
 
-add_section() {
-  file=$1
-  tag=$2
-  delta=$3
-  { echo "#+$tag"
-    cat $delta
-    echo "#-$tag" ; } >> $file
+  rm /etc/clearwater/config
+  mv /etc/clearwater/config2 /etc/clearwater/config
+  # Sprout will replace the cluster-settings file with something appropriate when it starts
+  rm /etc/clearwater/cluster_settings
 }
 
 case "$1" in
-    configure)
-        add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
-        add_section /home/ubuntu/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
-    ;;
+  start|restart|reload|force-reload)
+    do_auto_config
+    exit 0
+  ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-    ;;
+  status|stop)
+    exit 0
+  ;;
 
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+    exit 3
+  ;;
 esac
 
-if [ -x "/etc/init.d/clearwater-infrastructure" ]; then
-        if [ ! -e "/etc/init/clearwater-infrastructure.conf" ]; then
-                update-rc.d clearwater-infrastructure defaults 25 75 >/dev/null
-        fi
-        invoke-rc.d clearwater-infrastructure start || exit $?
-fi
+:
 
-exit 0
