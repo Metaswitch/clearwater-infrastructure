@@ -63,6 +63,7 @@ case "$1" in
         for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
           remove_section $HOME_DIR/.bashrc clearwater-infrastructure
         done
+        [ ! -d /etc/skel ] || remove_section /etc/skel/.bashrc clearwater-infrastructure
     ;;
 
     failed-upgrade)
