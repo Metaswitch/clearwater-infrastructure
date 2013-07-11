@@ -63,7 +63,10 @@ add_section() {
 case "$1" in
     configure)
         add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
-        add_section /home/ubuntu/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+        for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
+          add_section $HOME_DIR/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+        done
+        [ ! -d /etc/skel ] || add_section /etc/skel/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
