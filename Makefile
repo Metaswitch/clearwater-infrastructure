@@ -5,7 +5,7 @@ all: deb
 
 DEB_COMPONENT := clearwater-infrastructure
 DEB_MAJOR_VERSION := 1.0
-DEB_NAMES := clearwater-infrastructure clearwater-memcached clearwater-memcached-extra clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-crash-monitor
+DEB_NAMES := clearwater-infrastructure clearwater-memcached clearwater-memcached-extra clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-crash-monitor clearwater-log-cleanup
 DEB_ARCH := all
 
 include build-infra/cw-deb.mk

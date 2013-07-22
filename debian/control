@@ -44,3 +44,8 @@ Package: clearwater-crash-monitor
 Architecture: all
 Depends: clearwater-infrastructure
 Description: Crash dump uploader for all Clearwater servers
+
+Package: clearwater-log-cleanup
+Architecture: all
+Depends: clearwater-infrastructure, python
+Description: Script to prevent sprout/bono log files from growing too large
