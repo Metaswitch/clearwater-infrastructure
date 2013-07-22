@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-auto-config.init.d
+# @file clearwater-memcached.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -35,50 +35,14 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 ### BEGIN INIT INFO
-# Provides:          clearwater-auto-config
+# Provides:          clearwater-memcached
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: clearwater-auto-config
-# Description:       clearwater-auto-config
+# Short-Description: clearwater-memcached
+# Description:       clearwater-memcached
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
-do_auto_config()
-{
-  mkdir -p /etc/clearwater
-  config=/etc/clearwater/config
-  # wget -qO - http://169.254.169.254/latest/user-data | sed 's/'`echo "\015"`'//g' >>$config
-  local_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/local-ipv4)
-  public_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/public-ipv4)
-  public_hostname=$(wget -qO - http://169.254.169.254/latest/meta-data/public-hostname)
-
-  sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
-          s/^public_ip=.*$/public_ip='$public_ip'/g
-          s/^public_hostname=.*$/public_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
-
-  rm /etc/clearwater/config
-  mv /etc/clearwater/config2 /etc/clearwater/config
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm /etc/clearwater/cluster_settings
-}
-
-case "$1" in
-  start|restart|reload|force-reload)
-    do_auto_config
-    exit 0
-  ;;
-
-  status|stop)
-    exit 0
-  ;;
-
-  *)
-    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-    exit 3
-  ;;
-esac
-
-:
-
+exit 0
