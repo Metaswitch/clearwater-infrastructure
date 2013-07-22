@@ -5,11 +5,8 @@ import argparse
 
 def get_logs(dir, prefix):
     """Return a list of all files in dir which start with prefix"""
-    if exists(dir):
-        return [dir+i for i in os.listdir(dir)
-                    if (isfile(dir+i) and i.startswith(prefix))]
-    else:
-        return []
+    return [dir+'/'+i for i in os.listdir(dir)
+                if (isfile(dir+'/'+i) and i.startswith(prefix))]
 
 def total(logfiles):
     """Return the total filesize, in bytes, of all files in logfiles"""
@@ -22,9 +19,9 @@ if __name__ == "__main__":
 	parser.add_argument('maxsize', type=int)
 	args = parser.parse_args()
 
-        # Define the log files to monitor
 	logs = get_logs(args.directory, args.prefix)
 	size_to_delete = total(logs) - args.maxsize
+
 	for logfile in sorted(logs):
 	    if (size_to_delete > 0):
 	        size_to_delete -= getsize(logfile)
