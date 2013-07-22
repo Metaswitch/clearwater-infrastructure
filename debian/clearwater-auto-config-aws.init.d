@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-auto-config.init.d
+# @file clearwater-auto-config-aws.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -35,13 +35,13 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 ### BEGIN INIT INFO
-# Provides:          clearwater-auto-config
+# Provides:          clearwater-auto-config-aws
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: clearwater-auto-config
-# Description:       clearwater-auto-config
+# Short-Description: clearwater-auto-config-aws
+# Description:       clearwater-auto-config-aws
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 

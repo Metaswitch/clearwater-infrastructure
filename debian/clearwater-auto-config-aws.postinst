@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-single-node.postinst
+# @file clearwater-auto-config-aws.postinst
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -61,11 +61,11 @@ case "$1" in
     ;;
 esac
 
-if [ -x "/etc/init.d/clearwater-auto-config" ]; then
-        if [ ! -e "/etc/init/clearwater-auto-config.conf" ]; then
-                update-rc.d clearwater-auto-config defaults 20 80>/dev/null
+if [ -x "/etc/init.d/clearwater-auto-config-aws" ]; then
+        if [ ! -e "/etc/init/clearwater-auto-config-aws.conf" ]; then
+                update-rc.d clearwater-auto-config-aws defaults 20 80>/dev/null
         fi
-        invoke-rc.d clearwater-auto-config start || exit $?
+        invoke-rc.d clearwater-auto-config-aws start || exit $?
 fi
 
 exit 0
