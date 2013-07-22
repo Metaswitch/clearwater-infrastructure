@@ -34,9 +34,16 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+# Read our config file.
 . /etc/clearwater/config
-echo $public_hostname | sed -e 's/\..*//g' >/etc/hostname
-hostname $(cat /etc/hostname)
-grep -v ' #+clearwater-infrastructure$' /etc/hosts >/tmp/hosts.$$
-mv /tmp/hosts.$$ /etc/hosts
-echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >>/etc/hosts
+
+# Check if the public hostname is actually an IP address.
+if echo $public_hostname | egrep -v -q '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+then
+  # If not, get the first (most-specific) part, and set that as the server's internal hostname.
+  echo $public_hostname | sed -e 's/\..*//g' >/etc/hostname
+  hostname $(cat /etc/hostname)
+  grep -v ' #+clearwater-infrastructure$' /etc/hosts >/tmp/hosts.$$
+  mv /tmp/hosts.$$ /etc/hosts
+  echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >>/etc/hosts
+fi
