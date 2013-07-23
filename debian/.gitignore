@@ -3,6 +3,7 @@
 /*.debhelper
 /*.substvars
 /files
+/clearwater-auto-config/
 /clearwater-infrastructure/
 /clearwater-memcached/
 /clearwater-memcached-extra/
