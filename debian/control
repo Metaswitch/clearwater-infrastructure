@@ -57,3 +57,8 @@ Package: clearwater-auto-config-generic
 Provides: clearwater-auto-config
 Architecture: all
 Description: Package containing the generic Clearwater auto-configuration tool
+
+Package: clearwater-log-cleanup
+Architecture: all
+Depends: clearwater-infrastructure, python
+Description: Script to prevent sprout/bono log files from growing too large

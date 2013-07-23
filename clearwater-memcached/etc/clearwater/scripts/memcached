@@ -35,5 +35,7 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 . /etc/clearwater/config
-sed -e 's/^-l .*$/-l '$local_ip'/g' </etc/memcached.conf >/etc/memcached_11211.conf
+sed -e 's/^-l .*$/-l '$local_ip'/g
+        s/^-m .*$/-m 512/g
+        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
 sed -i 's/if failed host .*$/if failed host '$local_ip' port 11211 then restart/' /etc/monit/conf.d/memcached_11211.monit
