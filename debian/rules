@@ -29,6 +29,7 @@ override_dh_auto_install:
 override_dh_installinit:
 	dh_installinit -pclearwater-infrastructure -u"defaults 25 75"
 	dh_installinit -pclearwater-memcached -u"defaults 50 50"
-	dh_installinit -pclearwater-auto-config -u"defaults 20 80"
+	dh_installinit -pclearwater-auto-config-aws -u"defaults 20 80"
+	dh_installinit -pclearwater-auto-config-generic -u"defaults 20 80"
 
 override_dh_shlibdeps:

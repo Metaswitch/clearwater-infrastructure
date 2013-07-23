@@ -1,0 +1,22 @@
+# Deployment definitions
+home_domain=example.com
+sprout_hostname=localhost
+hs_hostname=localhost:8888
+xdms_hostname=localhost:7888
+
+# Local IP configuration
+local_ip=
+public_ip=
+public_hostname=
+
+# Email server configuration
+smtp_smarthost=127.0.0.1
+smtp_username=username
+smtp_password=password
+email_recovery_sender=clearwater@example.com
+
+# Keys
+signup_key=secret
+turn_workaround=secret
+ellis_api_key=secret
+ellis_cookie_key=secret
