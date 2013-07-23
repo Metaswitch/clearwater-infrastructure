@@ -11,4 +11,9 @@ node_idx=$(. /etc/clearwater/config
            then
              echo -$node_idx
            fi)
-export PS1='\[\e]0;['$type$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
+if [ "$TERM" = xterm-color ]; then
+    PS1='\[\e]0;['$type$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
+fi
+unset type node_idx
