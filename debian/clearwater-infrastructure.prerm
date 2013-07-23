@@ -60,7 +60,10 @@ remove_section() {
 case "$1" in
     remove|upgrade|deconfigure)
         remove_section /etc/bash.bashrc clearwater-infrastructure
-        remove_section /home/ubuntu/.bashrc clearwater-infrastructure
+        for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
+          remove_section $HOME_DIR/.bashrc clearwater-infrastructure
+        done
+        [ ! -d /etc/skel ] || remove_section /etc/skel/.bashrc clearwater-infrastructure
     ;;
 
     failed-upgrade)
