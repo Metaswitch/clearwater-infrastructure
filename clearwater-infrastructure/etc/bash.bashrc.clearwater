@@ -1,3 +1,14 @@
-package=$(. /etc/clearwater/config ; if [ -n "$cw_aio" ] ; then echo cw_aio ; else dpkg-query -W -f='${PackageSpec}\n' | egrep -m1 '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout)$' | sed -e 's/clearwater-sip-stress/sipp/g'; fi)
-node_idx=$(. /etc/clearwater/config ; if [ -n "$node_idx" ] ; then echo -$node_idx ; fi)
-export PS1='\[\e]0;['$package$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$package$node_idx']\u@\h:\w\$ '
+type=$(. /etc/clearwater/config
+       dpkg-query -W -f='${PackageSpec}\n' |
+       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout)$' |
+       sed -e 's/clearwater-sip-stress/sipp/g' |
+       tr "\\n" "-" |
+       sort |
+       sed -e 's/bono-ellis-homer-homestead-sprout/cw-aio/g
+               s/-$//g')
+node_idx=$(. /etc/clearwater/config
+           if [ -n "$node_idx" ]
+           then
+             echo -$node_idx
+           fi)
+export PS1='\[\e]0;['$type$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
