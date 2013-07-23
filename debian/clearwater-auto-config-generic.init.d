@@ -49,16 +49,16 @@ do_auto_config()
 {
   mkdir -p /etc/clearwater
   config=/etc/clearwater/config
-  ip=$(ip -o -family inet addr show dev eth0 | cut -c17- | sed -e's/\/.*$//g')
+  # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
+  ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g')
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' < /etc/clearwater/config > /etc/clearwater/config2
+          s/^public_hostname=.*$/public_hostname='$ip'/g' < /etc/clearwater/config > /tmp/clearwater.config.$$
 
-  rm /etc/clearwater/config
-  mv /etc/clearwater/config2 /etc/clearwater/config
+  mv /tmp/clearwater.config.$$ /etc/clearwater/config
   # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm /etc/clearwater/cluster_settings
+  rm -f /etc/clearwater/cluster_settings
 }
 
 case "$1" in
