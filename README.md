@@ -22,7 +22,7 @@ It contains the following packages:
 
 * clearwater-memcached-extra: redundant memcached configuration.
 
-* clearwater-tcp-scalability: TCP scalability improviements.
+* clearwater-tcp-scalability: TCP scalability improvements.
 
 * clearwater-secure-connections: secure connections between regions.
 
@@ -30,6 +30,9 @@ It contains the following packages:
 
 * clearwater-crash-monitor: optional service to upload crash dumps to
   repo server for diagnosis.
+
+* clearwater-auto-config: optional service to create /etc/clearwater/config 
+  automatically.  Used on all-in-one (AIO) nodes.
 
 Further info
 ------------
