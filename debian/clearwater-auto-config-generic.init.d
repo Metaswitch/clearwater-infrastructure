@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file hostname
+# @file clearwater-auto-config-generic.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -34,16 +34,48 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Read our config file.
-. /etc/clearwater/config
+### BEGIN INIT INFO
+# Provides:          clearwater-auto-config-generic
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: clearwater-auto-config-generic
+# Description:       clearwater-auto-config-generic
+# X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
+### END INIT INFO
 
-# Check if the public hostname is actually an IP address.
-if echo $public_hostname | egrep -v -q '^[0-9.]+$'
-then
-  # If not, get the first (most-specific) part, and set that as the server's internal hostname.
-  echo $public_hostname | sed -e 's/\..*//g' >/etc/hostname
-  hostname $(cat /etc/hostname)
-  grep -v ' #+clearwater-infrastructure$' /etc/hosts >/tmp/hosts.$$
-  mv /tmp/hosts.$$ /etc/hosts
-  echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >>/etc/hosts
-fi
+do_auto_config()
+{
+  mkdir -p /etc/clearwater
+  config=/etc/clearwater/config
+  # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
+  ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g')
+
+  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
+          s/^public_ip=.*$/public_ip='$ip'/g
+          s/^public_hostname=.*$/public_hostname='$ip'/g' < /etc/clearwater/config > /tmp/clearwater.config.$$
+
+  mv /tmp/clearwater.config.$$ /etc/clearwater/config
+  # Sprout will replace the cluster-settings file with something appropriate when it starts
+  rm -f /etc/clearwater/cluster_settings
+}
+
+case "$1" in
+  start|restart|reload|force-reload)
+    do_auto_config
+    exit 0
+  ;;
+
+  status|stop)
+    exit 0
+  ;;
+
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+    exit 3
+  ;;
+esac
+
+:
+
