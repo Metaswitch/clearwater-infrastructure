@@ -82,8 +82,6 @@ do_start()
 
         # Reload monit to pick up any changes to its config files
         service monit reload
-        # ...or start it if's not already running (which sometimes happen after bugs in previous versions).
-        service monit status >/dev/null || service monit start
 
         return 0
 }
