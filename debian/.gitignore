@@ -11,3 +11,6 @@
 /clearwater-tcp-scalability/
 /clearwater-snmpd/
 /clearwater-crash-monitor/
+/clearwater-auto-config-aws/
+/clearwater-auto-config-generic/
+/clearwater-log-cleanup/
