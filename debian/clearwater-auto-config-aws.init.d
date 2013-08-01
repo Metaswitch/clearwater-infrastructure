@@ -70,7 +70,13 @@ case "$1" in
     exit 0
   ;;
 
-  status|stop)
+  status)
+    exit 0
+  ;;
+
+  stop)
+    echo "Remove any chef PEM files"
+    find /etc/chef/*.pem -exec rm -f {} \; || true
     exit 0
   ;;
 
