@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-infrastructure.init.d
+# @file clearwater-auto-upgrade.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -35,20 +35,20 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 ### BEGIN INIT INFO
-# Provides:          clearwater-infrastructure
+# Provides:          clearwater-auto-upgrade
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Clearwater infrastructure
-# Description:       Determines and applies local configuration
-# X-Start-Before:    memcached bono sprout restund
+# Short-Description: Clearwater auto upgrader
+# Description:       Enables automatic upgrade of Clearwater software
+# X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC=clearwater-infrastructure             # Introduce a short description here
-NAME=clearwater-infrastructure             # Introduce the short server's name here
+DESC=clearwater-auto-upgrade             # Introduce a short description here
+NAME=clearwater-auto-upgrade             # Introduce the short server's name here
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Read configuration variable file if it is present
@@ -66,14 +66,13 @@ SCRIPTNAME=/etc/init.d/$NAME
 #
 do_start()
 {
-        # Fill in any files that depend on it
-        for SCRIPT in $(ls -1 /etc/clearwater/scripts/ 2>/dev/null)
-        do
-          /etc/clearwater/scripts/$SCRIPT
-        done
-
-        # Reload monit to pick up any changes to its config files
-        service monit reload
+        # Upgrade any installed Metaswitch-maintained packages
+        if ! fuser -s /var/lib/dpkg/lock
+        then
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/clearwater.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+            sudo apt-get install -y --force-yes --only-upgrade $(dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1)
+        fi
 
         return 0
 }
