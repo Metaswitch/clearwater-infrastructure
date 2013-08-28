@@ -47,9 +47,7 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC=clearwater-auto-upgrade             # Introduce a short description here
 NAME=clearwater-auto-upgrade             # Introduce the short server's name here
-SCRIPTNAME=/etc/init.d/$NAME
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -57,14 +55,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
 
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
-. /lib/lsb/init-functions
-
-#
-# Function that starts the daemon/service
-#
-do_start()
+do_upgrade()
 {
         # Upgrade any installed Metaswitch-maintained packages
         if ! fuser -s /var/lib/dpkg/lock
@@ -77,65 +68,16 @@ do_start()
         return 0
 }
 
-#
-# Function that stops the daemon/service
-#
-do_stop()
-{
-    # Nothing to do, because no actual daemon.
-    return 0;
-}
-
-#
-# Function that sends a SIGHUP to the daemon/service
-#
-do_reload() {
-        # Nothing to do
-        return 0
-}
-
 case "$1" in
-  start)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC " "$NAME"
-    do_start
-    case "$?" in
-                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-        esac
-  ;;
+  start|restart|reload|force-reload)
+        do_upgrade
+        exit 0
+        ;;
   stop)
-        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-        do_stop
-        case "$?" in
-                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-        esac
+        exit 0
         ;;
   status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-       ;;
-  reload|force-reload)
-        log_daemon_msg "Reloading $DESC" "$NAME"
-        do_reload
-        log_end_msg $?
-        ;;
-  restart)
-        log_daemon_msg "Restarting $DESC" "$NAME"
-        do_stop
-        case "$?" in
-          0|1)
-                do_start
-                case "$?" in
-                        0) log_end_msg 0 ;;
-                        1) log_end_msg 1 ;; # Old process is still running
-                        *) log_end_msg 1 ;; # Failed to start
-                esac
-                ;;
-          *)
-                # Failed to stop
-                log_end_msg 1
-                ;;
-        esac
+        exit 0
         ;;
   *)
         #echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
