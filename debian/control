@@ -12,6 +12,7 @@ Homepage: http://projectclearwater.org/
 Package: clearwater-infrastructure
 Architecture: all
 Depends: dnsmasq, monit, ntp
+Suggests: clearwater-auto-config, clearwater-auto-upgrade
 Description: Common infrastructure for all Clearwater servers
 
 Package: clearwater-memcached
@@ -46,7 +47,7 @@ Depends: clearwater-infrastructure
 Description: Crash dump uploader for all Clearwater servers
 
 # NB clearwater-auto-config packages do NOT depend on infrastructure, as they
-# needs to load before infrastructure
+# need to load before infrastructure
 
 Package: clearwater-auto-config-aws
 Provides: clearwater-auto-config
@@ -62,3 +63,7 @@ Package: clearwater-log-cleanup
 Architecture: all
 Depends: clearwater-infrastructure, python
 Description: Script to prevent sprout/bono log files from growing too large
+
+Package: clearwater-auto-upgrade
+Architecture: all
+Description: Package enabling automatic upgrade of Clearwater software
