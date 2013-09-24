@@ -22,11 +22,13 @@ The basic process is as follows.
     -   `public_hostname` - external DNS name (not user-friendly)
     -   `home_domain` - home SIP domain name (configured from deployment
         descriptor)
-    -   `sprout_hostname` - external DNS name (matches the public_hostname)
-    -   `hs_hostname` - hostname of the homestead load-balancer, or single
+    -   `sprout_hostname` - hostname of the sprout cluster, or
+         single sprout node if applicable (configured from deployment
+         descriptor)
+    -   `hs_hostname` - hostname of the homestead cluster, or single
         homestead node if applicable (configured from deployment
         descriptor)
-    -   `xdms_hostname` - hostname of the homer load-balancer, or single
+    -   `xdms_hostname` - hostname of the homer cluster, or single
         homer node if applicable (configured from deployment descriptor)
     -   `splunk_hostname` - hostname of the splunk instance (configured
         from deployment descriptor)
