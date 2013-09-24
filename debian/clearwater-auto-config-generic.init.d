@@ -54,7 +54,8 @@ do_auto_config()
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $config
+          s/^public_hostname=.*$/public_hostname='$ip'/g
+          s/^sprout_hostname=.*$/sprout_hostname='$ip'/g' -i $config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
