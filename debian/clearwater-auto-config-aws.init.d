@@ -56,7 +56,8 @@ do_auto_config()
 
   sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
           s/^public_ip=.*$/public_ip='$public_ip'/g
-          s/^public_hostname=.*$/public_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
+          s/^public_hostname=.*$/public_hostname='$public_hostname'/g
+          s/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
 
   rm /etc/clearwater/config
   mv /etc/clearwater/config2 /etc/clearwater/config

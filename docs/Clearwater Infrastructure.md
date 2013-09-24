@@ -22,9 +22,7 @@ The basic process is as follows.
     -   `public_hostname` - external DNS name (not user-friendly)
     -   `home_domain` - home SIP domain name (configured from deployment
         descriptor)
-    -   `sprout_hostname` - hostname of the sprout load-balancer, or
-        single sprout node if applicable (configured from deployment
-        descriptor)
+    -   `sprout_hostname` - external DNS name (matches the public_hostname)
     -   `hs_hostname` - hostname of the homestead load-balancer, or single
         homestead node if applicable (configured from deployment
         descriptor)
