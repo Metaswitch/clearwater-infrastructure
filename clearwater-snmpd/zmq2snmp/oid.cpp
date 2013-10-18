@@ -37,13 +37,14 @@
 #include <cstdlib>
 #include "oid.hpp"
 
+// Constructors - can either create from an oid[] or a string
+
 OID::OID(oid* oids_ptr, int len) {
   int i;
   for (i = 0; i < len; i++) {
     oids_.push_back(*(oids_ptr+i));
   }
 }
-
 
 OID::OID(std::string oidstr)
 {
@@ -56,6 +57,8 @@ OID::OID(std::string oidstr)
   }
 }
 
+// Functions to expose the underlying oid* for compatability with the
+// C API
 
 const oid* OID::get_ptr() const {
   return &oids_[0];
@@ -75,15 +78,8 @@ bool OID::subtree_contains(OID other_oid) {
                              other_oid.get_ptr(), other_oid.get_len()) == 0);
 }
 
-void OID::print_state() const {
-  std::cout << "oids_ contains:";
-  for (std::vector<oid>::const_iterator it = oids_.begin() ; it != oids_.end(); ++it)
-  {
-    std::cout << ' ' << *it;
-  };
-  std::cout << '\n';
-}
-
+// Appends the given OID string to this OID
+// e.g. OID("1.2.3.4").append("5.6") is OID("1.2.3.4.5.6")
 void OID::append(std::string more)
 {
   std::vector<std::string> result;

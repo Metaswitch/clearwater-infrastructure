@@ -38,25 +38,22 @@
 #include <cstdlib>
 
 void ZMQMessageHandler::handle(std::vector<std::string> msgs) {
-  if (msgs.size() > 2 && (msgs[1].compare("OK") == 0)) {
+  if ((msgs.size() > 2) && (msgs[1].compare("OK") == 0)) {
     StatType type = node_data.stat_to_type[msgs[0]];
     OIDMap returnmap;
     switch (type) {
       case STAT_PER_IP_COUNT:
-        printf("This is a per-ip-count stat\n");
         returnmap = handle_ip_count_stats(msgs);
         break;
       case STAT_LATENCY:
-        printf("This is a latency stat\n");
         returnmap = handle_latency_stats(msgs);
         break;
       case STAT_SINGLE_NUMBER:
-        printf("This is a single-number stat\n");
         returnmap = handle_single_number_stat(msgs);
         break;
       case STAT_UNKNOWN:
       default:
-        printf("This is an unknown stat\n");
+        fprintf(stderr, "Statistic %s is unknown\n", msgs[0].c_str());
     }
     OID this_oid = node_data.stat_to_root_oid[msgs[0]];
     tree.replace_subtree(this_oid, returnmap);
@@ -64,13 +61,17 @@ void ZMQMessageHandler::handle(std::vector<std::string> msgs) {
 }
 
 OIDMap ZMQMessageHandler::handle_ip_count_stats(std::vector<std::string> msgs) {
+  // Messages are in [ip_address, count, ip_address, count] pairs
   OIDMap returnmap;
   for (std::vector<std::string>::iterator it = (msgs.begin() + 2);
        it != msgs.end();
        it++) {
     OID this_oid = node_data.stat_to_root_oid[msgs[0]];
-    this_oid.append(*it);
-    returnmap[this_oid] = atoi((++it)->c_str());
+    std::string ip_address = *it;
+    int connections_to_this_ip = atoi((++it)->c_str());
+    this_oid.append(ip_address);
+
+    returnmap[this_oid] = connections_to_this_ip;
   }
   return returnmap;
 }
@@ -78,7 +79,7 @@ OIDMap ZMQMessageHandler::handle_ip_count_stats(std::vector<std::string> msgs) {
 OIDMap ZMQMessageHandler::handle_single_number_stat(std::vector<std::string> msgs) {
   OIDMap returnmap;
   OID this_oid = node_data.stat_to_root_oid[msgs[0]];
-  this_oid.append("0");
+  this_oid.append("0"); // Indicates a scalar value in SNMP
   returnmap[this_oid] = atoi(msgs[2].c_str());
   return returnmap;
 }

@@ -69,7 +69,6 @@ initialize_handler(void)
                                                      node_data.root_oid.get_len(),
                                                      HANDLER_CAN_RONLY);
 
-    printf("Root OID: %lu %lu %lu %lu\n", root[0], root[1], root[2], root[3]);
 
     if (!my_handler) {
         snmp_log(LOG_ERR, "malloc failed in initialize_table_bonoLatencyTable");
@@ -113,7 +112,6 @@ clearwater_handler(
       case MODE_GET:
         if (tree.get(this_oid, outval))
         {
-          printf("%d\n", outval);
           retval = outval;
           snmp_set_var_typed_value(var, ASN_UNSIGNED,
                                    (u_char*)&retval,
@@ -124,7 +122,6 @@ clearwater_handler(
       case MODE_GETNEXT:
         if (tree.get_next(this_oid, outoid, outval))
         {
-          printf("%d\n", outval);
           retval = outval;
           snmp_set_var_objid(var,
                              outoid.get_ptr(),

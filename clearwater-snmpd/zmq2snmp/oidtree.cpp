@@ -95,7 +95,6 @@ void OIDTree::remove_subtree(OID root_oid)
 void OIDTree::replace_subtree(OID root_oid, OIDMap update)
 {
   _map_lock.lock();
-  printf("Updating OID subtree with a map of size %lu\n", update.size());
   remove_subtree(root_oid);
   oidmap_.insert(update.begin(), update.end());
   _map_lock.unlock();
