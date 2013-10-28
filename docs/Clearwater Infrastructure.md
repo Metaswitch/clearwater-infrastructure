@@ -42,9 +42,9 @@ The basic process is as follows.
         descriptor provided in the user data\>
 
 -   Finally, `/etc/init.d/clearwater-infrastructure` calls any scripts in
-    `/etc/clearwater/scripts`. These scripts read `/etc/clearwater/config`
+    `/usr/share/clearwater/infrastructure/scripts`. These scripts read `/etc/clearwater/config`
     and update config files around the system. For example,
-    `/etc/clearwater/scripts/hostname` determines a sensible hostname for
+    `/usr/share/clearwater/infrastructure/scripts/hostname` determines a sensible hostname for
     the node and updates `/etc/hostname` with it.
 
 Components should not query AWS's 169.254.169.254 IP address directly.
