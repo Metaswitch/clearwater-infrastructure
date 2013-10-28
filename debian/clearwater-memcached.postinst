@@ -53,7 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        /etc/clearwater/scripts/memcached
+        /usr/share/clearwater/infrastructure/scripts/memcached
         /etc/init.d/memcached restart 11211
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
     ;;
