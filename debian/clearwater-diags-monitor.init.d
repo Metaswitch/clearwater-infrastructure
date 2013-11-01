@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-crash-monitor.init.d
+# @file clearwater-diags-monitor.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -35,7 +35,7 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 ### BEGIN INIT INFO
-# Provides:          clearwater-crash-monitor
+# Provides:          clearwater-diags-monitor
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
@@ -47,11 +47,11 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC=clearwater-crash-monitor             # Introduce a short description here
-NAME=clearwater-crash-monitor             # Introduce the short server's name here
+DESC=clearwater-diags-monitor             # Introduce a short description here
+NAME=clearwater-diags-monitor             # Introduce the short server's name here
 SCRIPTNAME=/etc/init.d/$NAME
-PIDFILE=/var/run/clearwater_crash_monitor.pid
-DAEMON=/usr/share/clearwater/bin/clearwater_crash_monitor
+PIDFILE=/var/run/clearwater_diags_monitor.pid
+DAEMON=/usr/share/clearwater/bin/clearwater_diags_monitor
 
 # Exit if the package is not installed
 [ -x $DAEMON ] || exit 0
@@ -71,7 +71,7 @@ DAEMON=/usr/share/clearwater/bin/clearwater_crash_monitor
 #
 do_start()
 {
-        # Start running the crash monitor.
+        # Start running the diags monitor.
         # Return
         #   0 if daemon has been started
         #   1 if daemon was already running
@@ -89,7 +89,7 @@ do_start()
 #
 do_stop()
 {
-        # Stop running the crash monitor.
+        # Stop running the diags monitor.
         # Return
         #   0 if daemon has been stopped
         #   1 if daemon was already stopped

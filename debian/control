@@ -42,10 +42,10 @@ Architecture: all
 Depends: snmpd
 Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
-Package: clearwater-crash-monitor
+Package: clearwater-diags-monitor
 Architecture: all
-Depends: clearwater-infrastructure
-Description: Crash dump uploader for all Clearwater servers
+Depends: clearwater-infrastructure inotify-tools
+Description: Diagnostics monitor and bundler for all Clearwater servers
 
 # NB clearwater-auto-config packages do NOT depend on infrastructure, as they
 # need to load before infrastructure
