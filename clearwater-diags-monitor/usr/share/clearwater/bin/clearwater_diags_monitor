@@ -45,6 +45,19 @@ log()
   printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
 }
 
+# Wait until a specified file is closed.
+# Params:
+#  $1 - The file to wait for.
+wait_until_closed()
+{
+  file=$1
+
+  while lsof $file >/dev/null 2>&1
+  do
+    sleep 1
+  done
+}
+
 
 cd $CRASH_DIR
 
@@ -58,9 +71,36 @@ do
   fi
 
   triggers=$(ls)
-  log "Processing trigger files:\n$triggers"
+  log "Processing trigger files: $(echo $triggers)"
+
+  # Create a new dump directory.
+  CURRENT_DUMP=dump.$(date "+%Y%m%d-%H%M%S")
+  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
+  CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
+
+  mkdir $CURRENT_DUMP_DIR
+  log "Gathering dump $CURRENT_DUMP"
+
+
+  # Copy all the trigger files to the dump (once they have finished being
+  # written to).
+  for file in $triggers
+  do
+    wait_until_closed $file
+    log "$file is closed"
+    mv $file $CURRENT_DUMP_DIR
+  done
+
+  # Finally we can compress the dump directory and delete it.
+  #
+  # We change to the dumps directory to do the tar as this removes the
+  # directories above the current dump from the tar file.  Do all this in a
+  # subshell so we can change directory freely.
+  (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
+  log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
+  rm -rf $CURRENT_DUMP_DIR
 
   # We should have dealt with all the trigger files by now. Delete any that are
   # left over (to avoid tight looping).
-  rm $triggers
+  rm -f $triggers
 done
