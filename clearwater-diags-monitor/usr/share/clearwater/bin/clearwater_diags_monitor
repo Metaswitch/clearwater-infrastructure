@@ -200,6 +200,13 @@ get_os_info()
 }
 
 
+# Get information about running processes.
+get_process_info()
+{
+  ps -eaf > $CURRENT_DUMP_DIR/ps-eaf.txt
+}
+
+
 # Get information about the virtual hardware the system is running on.
 get_hardware_info()
 {
@@ -292,6 +299,10 @@ do
   # Hardware information and historical resource usage.
   get_hardware_info
   get_usage_stats
+
+  # OS and process info.
+  get_os_info
+  get_process_info
 
   # Move all the trigger files to the dump (once they have finished being
   # written to).
