@@ -40,6 +40,8 @@ DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
 
+COMPONENTS="bono sprout homestead homer ellis"
+
 log()
 {
   printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
@@ -58,6 +60,34 @@ wait_until_closed()
   done
 }
 
+# Copy an entire directory to the dump preserving the full path (so for example
+# the directory /var/log/sprout is copied to <dumpdir>/var/log/sprout).
+#
+# Params:
+#   $1 - The directory to copy.
+copy_dir_to_dump()
+{
+  src=$(realpath $1)
+  cp -rp --parents $src $CURRENT_DUMP_DIR
+}
+
+# Copy the logs for all clearwater components to the dump file.
+copy_component_logs_to_dump()
+{
+  for comp in $COMPONENTS
+  do
+    log_dir=/var/log/$comp
+    if [ -d "$log_dir" ]
+    then
+      log "Copying logs for $comp"
+      copy_dir_to_dump $log_dir
+    fi
+  done
+}
+
+#
+# Script starts here.
+#
 
 cd $CRASH_DIR
 
@@ -70,7 +100,7 @@ do
     inotifywait -e create -qq .
   fi
 
-  triggers=$(ls)
+  triggers=$(ls -A)
   log "Processing trigger files: $(echo $triggers)"
 
   # Create a new dump directory.
@@ -81,6 +111,7 @@ do
   mkdir $CURRENT_DUMP_DIR
   log "Gathering dump $CURRENT_DUMP"
 
+  copy_component_logs_to_dump
 
   # Copy all the trigger files to the dump (once they have finished being
   # written to).
