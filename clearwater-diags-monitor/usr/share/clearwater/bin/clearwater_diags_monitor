@@ -42,10 +42,12 @@ DUMPS_DIR=$DIAGS_DIR/dumps
 
 COMPONENTS="bono sprout homestead homer ellis"
 
+
 log()
 {
   printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
 }
+
 
 # Wait until a specified file is closed.
 # Params:
@@ -54,22 +56,28 @@ wait_until_closed()
 {
   file=$1
 
+  # Don't use inotifywait to wait for the file to close.  If it is already
+  # closed we'll wait forever waiting for it to be closed /again/.
   while lsof $file >/dev/null 2>&1
   do
     sleep 1
   done
 }
 
-# Copy an entire directory to the dump preserving the full path (so for example
-# the directory /var/log/sprout is copied to <dumpdir>/var/log/sprout).
+
+# Copy files and directories to the dump preserving the full path.
+#
+# For example the directory /var/log/sprout would be copied to
+# <dumpdir>/var/log/sprout
 #
 # Params:
-#   $1 - The directory to copy.
-copy_dir_to_dump()
+#   $1 - The objects to copy.
+copy_to_dump()
 {
   src=$(realpath $1)
   cp -rp --parents $src $CURRENT_DUMP_DIR
 }
+
 
 # Copy the logs for all clearwater components to the dump file.
 copy_component_logs_to_dump()
@@ -80,10 +88,147 @@ copy_component_logs_to_dump()
     if [ -d "$log_dir" ]
     then
       log "Copying logs for $comp"
-      copy_dir_to_dump $log_dir
+      copy_to_dump $log_dir
     fi
   done
 }
+
+
+# List all the clearwater packages installed.
+clearwater_packages()
+{
+  dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+}
+
+
+# Get information about all the packages installed.
+get_package_info()
+{
+  dpkg -s $(dpkg --get-selections | cut -f 1) > $CURRENT_DUMP_DIR/package_info.txt
+}
+
+
+# Get information about all the clearwater packages installed.
+get_cw_package_info()
+{
+  info_file=$CURRENT_DUMP_DIR/cw_package_info.txt
+
+  cw_packages=$(clearwater_packages)
+  if [ "$cw_packages" ]
+  then
+    dpkg -s $cw_packages > $info_file
+  else
+    echo "No clearwater packages installed" > $info_file
+  fi
+}
+
+
+# Check that the server(s) specified by a domain name are contactable over the
+# specified port.
+#
+# Params:
+#   $1 - The domain.
+#   $2 - The port.
+check_connectivity_to_domain()
+{
+  domain=$1
+  port=$2
+
+  file=$CURRENT_DUMP_DIR/connectivity_to_$domain.txt
+
+  # First check we can resolve the domain name.
+  dig $domain >> $file
+
+  # Now check that we can contact every server in the domain.
+  echo "Check connectivity:" >> $file
+
+  # List the servers by using dig again requesting just the answer section (the
+  # addresses are in column 5).
+  for ip in $(dig +noall +answer $domain | awk '{print $5}' )
+  do
+    if netcat -w1 $ip $port
+    then
+      echo "$ip:$port OK" >> $file
+    else
+      echo "$ip:$port FAILED" >> $file
+    fi
+  done
+}
+
+
+# Get the networking information for the system.
+get_network_info()
+{
+  ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
+  netstat -rn > $CURRENT_DUMP_DIR/routes.txt
+  netstat -anp > $CURRENT_DUMP_DIR/sockets.txt
+}
+
+
+# Get the NTP setup for the system.
+get_ntp_status()
+{
+  ntpq --numeric --peers > $CURRENT_DUMP_DIR/ntpq.txt
+}
+
+
+# Get the shell history for the specified user.
+get_user_history()
+{
+  user=$1
+  cp -p /home/$user/.bash_history $CURRENT_DUMP_DIR/${user}_history.txt
+}
+
+
+# Get the checksum files for all the clearwater packages installed on the
+# system.
+get_cw_package_checksums()
+{
+  for pkg in $(clearwater_packages)
+  do
+    cp -p /var/lib/dpkg/info/$pkg.md5sums $CURRENT_DUMP_DIR
+  done
+}
+
+
+# Get informtion about the OS the system is running.
+get_os_info()
+{
+  file=$CURRENT_DUMP_DIR/os.txt
+  uname -a >> $file
+  lsb_release
+}
+
+
+# Get information about the virtual hardware the system is running on.
+get_hardware_info()
+{
+  lshw              > $CURRENT_DUMP_DIR/lshw.txt
+  cat /proc/cpuinfo > $CURRENT_DUMP_DIR/cpuinfo.txt
+  cat /proc/meminfo > $CURRENT_DUMP_DIR/meminfo.txt
+  df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
+}
+
+
+# Get historical resource usage stats. This includes things like network usage,
+# CPU usage, memory usge, etc.
+get_usage_stats()
+{
+  # Use the sar tool to gather historical kernel statistics.  This arranges the
+  # stats by day, so get yesterday's stats as well as today's (to get at least
+  # a day's worth of stats even when collecting diags just after midnight).
+  for day in today yesterday
+  do
+    # Use sar to record stats to a datestamped file. Options are:
+    # -A : Get all stats
+    # -f : Read stats from the specified file (where there is a file for each
+    #      day of the month).
+    sar -A -f /var/log/sysstat/sa$(date +"%d" -d $day) > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+  done
+
+  #TODO In the init.d script configure sysstat and start it on boot.
+}
+
 
 #
 # Script starts here.
@@ -111,7 +256,39 @@ do
   mkdir $CURRENT_DUMP_DIR
   log "Gathering dump $CURRENT_DUMP"
 
+  #
+  # Now collect some diags
+  #
+
+  # Log files.
   copy_component_logs_to_dump
+  copy_to_dump '/var/log/monit.log*'
+  copy_to_dump '/var/log/syslog*'
+
+  # Installed packages.
+  get_cw_package_info
+  get_cw_package_checksums
+  get_package_info
+
+  # Networking information.
+  #
+  # Connectivity between nodes is handled in per-node hooks as security groups
+  # mean that not all nodes can contact all other nodes.
+  get_network_info
+
+  # NTP settings.
+  get_ntp_status
+
+  # Command histories.
+  #
+  #There is no history for sudo, so but commands run as
+  # sudo are logged in the auth logs.
+  get_user_history ubuntu
+  copy_to_dump '/var/log/auth.log*'
+
+  # Hardware information and historical resource usage.
+  get_hardware_info
+  get_usage_stats
 
   # Copy all the trigger files to the dump (once they have finished being
   # written to).
