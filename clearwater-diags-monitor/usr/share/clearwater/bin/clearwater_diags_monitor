@@ -265,6 +265,9 @@ do
   copy_to_dump '/var/log/monit.log*'
   copy_to_dump '/var/log/syslog*'
 
+  # Config files
+  copy_to_dump '/etc/clearwater'
+
   # Installed packages.
   get_cw_package_info
   get_cw_package_checksums
@@ -281,8 +284,8 @@ do
 
   # Command histories.
   #
-  #There is no history for sudo, so but commands run as
-  # sudo are logged in the auth logs.
+  # There is no history for sudo but commands run as sudo are logged in the auth
+  # logs.
   get_user_history ubuntu
   copy_to_dump '/var/log/auth.log*'
 
@@ -290,7 +293,7 @@ do
   get_hardware_info
   get_usage_stats
 
-  # Copy all the trigger files to the dump (once they have finished being
+  # Move all the trigger files to the dump (once they have finished being
   # written to).
   for file in $triggers
   do
@@ -298,6 +301,10 @@ do
     log "$file is closed"
     mv $file $CURRENT_DUMP_DIR
   done
+
+  #
+  # Diags have been collected.  Time to zip up the diags bundle.
+  #
 
   # Finally we can compress the dump directory and delete it.
   #
