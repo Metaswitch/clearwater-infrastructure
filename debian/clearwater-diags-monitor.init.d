@@ -71,6 +71,9 @@ DAEMON=/usr/share/clearwater/bin/clearwater_diags_monitor
 #
 do_start()
 {
+        # Fix up the core pattern before starting.
+        cat /etc/clearwater/diags-monitor/core_pattern > /proc/sys/kernel/core_pattern
+
         # Start running the diags monitor.
         # Return
         #   0 if daemon has been started
