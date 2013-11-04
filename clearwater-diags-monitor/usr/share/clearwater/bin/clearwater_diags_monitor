@@ -45,7 +45,7 @@ COMPONENTS="bono sprout homestead homer ellis"
 
 log()
 {
-  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
+  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n" >> $LOG_FILE
 }
 
 
