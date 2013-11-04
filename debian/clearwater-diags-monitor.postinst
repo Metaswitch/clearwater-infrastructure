@@ -58,7 +58,7 @@ case "$1" in
 
         # Also save off systat config and turn sysstat on.
         cp -p /etc/default/sysstat /etc/clearwater/diags-monitor/sysstat.old
-        sed -i 's/ENABLED=.*/ENABLED="true"/g' sysstat
+        sed -i 's/ENABLED=.*/ENABLED="true"/g' /etc/default/sysstat
 
         # Create the temporary diagnostics directory and give it appropriate permissions.
         mkdir -p /var/clearwater-diags-monitor/tmp
