@@ -60,9 +60,9 @@ case "$1" in
         [ ! -f /etc/clearwater/diags-monitor/sysstat.old ] || cp -p /etc/clearwater/diags-monitor/sysstat.old /etc/default/sysstat
         rm -f /etc/clearwater/diags-monitor/sysstat.old
 
-        # Remove the temporary diagnostics directory and dump directory.
+        # Remove the temporary diagnostics directory.  Do not remove the dumps
+        # directory, we don't want to delete diags when we upgrade this package.
         rm -rf /var/clearwater-diags-monitor/tmp
-        rm -rf /var/clearwater-diags-monitor/dumps
     ;;
 
     failed-upgrade)
