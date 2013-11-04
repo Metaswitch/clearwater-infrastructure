@@ -196,7 +196,10 @@ get_os_info()
 {
   file=$CURRENT_DUMP_DIR/os.txt
   uname -a >> $file
-  lsb_release -a >> $file
+
+  # For some reason lsb_release outputs "No LSB modules are available" to
+  # stderr. Ignore this.
+  lsb_release -a >> $file 2>/dev/null
 }
 
 
@@ -230,13 +233,42 @@ get_usage_stats()
     # -A : Get all stats
     # -f : Read stats from the specified file (where there is a file for each
     #      day of the month).
-    sar -A -f /var/log/sysstat/sa$(date +"%d" -d $day) > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+    sa_file=/var/log/sysstat/sa$(date +"%d" -d $day)
+    if [ -e $sa_file ]
+    then
+      sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+    fi
   done
 }
 
+# Return whether any of the specified clerwater components are installed.
+#
+# For example `cw_component_installed bono sprout` will return 0 (true) if bono
+# OR sprout are installed.
+#
+# Params:
+#   $1 - The list of components to check.
+cw_component_installed()
+{
+  for comp in "$@"
+  do
+    if echo $CURRENT_CW_COMPONENTS | grep -q $comp
+    then
+      return 0
+    fi
+  done
 
+  return 1
+}
+
+
+# Get information about the cassandra cluster.
 get_cassandra_info()
 {
+  # Cassandra config and log files.
+  copy_to_dump "/etc/cassandra"
+  copy_to_dump "/var/log/cassandra"
+
   # Get information about the Cassandra ring.
   nodetool ring > $CURRENT_DUMP_DIR/nodetool_ring.txt
   nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
@@ -247,9 +279,32 @@ get_cassandra_info()
   # Cassandra data format.
   echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
   echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+}
 
-  # Cassandra config files.
-  copy_to_dump "/etc/cassandra"
+
+# Get information about the mysql database.
+get_mysql_info()
+{
+  # Mysql config and log files.
+  copy_to_dump "/etc/mysql"
+  copy_to_dump "/var/log/mysql*"
+
+  # Server status and available databases.
+  echo "show status" | mysql > $CURRENT_DUMP_DIR/mysql_show_status.txt
+  echo "show databases" | mysql > $CURRENT_DUMP_DIR/mysql_show_databases.txt
+}
+
+
+# Get information about the memcached database.
+get_memcached_info()
+{
+  # Memcached config and log files.
+  copy_to_dump "/etc/memcached*"
+  copy_to_dump "/var/log/memcached*"
+
+  # Also get internal memcached stats (by sending the server a message saying
+  # "stats").
+  echo "stats" | netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
 }
 
 
@@ -296,11 +351,14 @@ do
     log "Dump has multiple causes"
   fi
 
-  # Create a new dump directory.
+  # Set up some variables that relate to the current dump.  These remain valid
+  # for the duration of the dump collection process.
   CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$cause
   CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
   CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
+  CURRENT_CW_COMPONENTS=$(clearwater_packages)
 
+  # Create a new dump directory.
   mkdir $CURRENT_DUMP_DIR
   log "Gathering dump $CURRENT_DUMP"
 
@@ -344,6 +402,48 @@ do
   # OS and process info.
   get_os_info
   get_process_info
+
+  # Database statuses.
+  if cw_component_installed homer homestead
+  then
+    get_cassandra_info
+  fi
+
+  if cw_component_installed ellis
+  then
+    get_mysql_info
+  fi
+
+  if cw_component_installed sprout
+  then
+    get_memcached_info
+  fi
+
+  # Gather component specific diags for all installed components.
+  #
+  # Spin through the list of each diags script and execute it. Do this by
+  # sourcing the script in (so it has access to all functions defined in this
+  # file) but also do it in a subshell (to prevent the script from polluting our
+  # environment).
+
+  # Do not expand unmatched globs (copes with the case where there are no
+  # scripts to execute).
+  old_shopt=$(shopt -p nullglob)
+  shopt -s nullglob
+
+  for diags_script in  /usr/share/clearwater/clearwater-diags-monitor/scripts/*
+  do
+    (
+      # Give all the scripts their own subdirectory to write diags to (to stop
+      # them from overwriting each other's diags).
+      CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
+      mkdir $CURRENT_DUMP_DIR;
+
+      source $diags_script
+    )
+  done
+
+  eval "$old_shopt" # Restore the nullglob setting.
 
   # Move all the trigger files to the dump (once they have finished being
   # written to).
