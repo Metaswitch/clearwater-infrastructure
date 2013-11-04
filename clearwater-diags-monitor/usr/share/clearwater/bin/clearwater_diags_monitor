@@ -426,7 +426,7 @@ do
   # file) but also do it in a subshell (to prevent the script from polluting our
   # environment).
   scripts=$(find /usr/share/clearwater/clearwater-diags-monitor/scripts/ -maxdepth 1 -type f 2>/dev/null)
-  log "Running diags scripts: $(echo $scripts)"
+  log "Running extra diags scripts: $(echo $scripts)"
 
   for diags_script in $scripts
   do
@@ -445,7 +445,7 @@ do
   for file in $trigger_files
   do
     wait_until_closed $file
-    log "$file is closed"
+    log "Moving $file"
     mv $file $CURRENT_DUMP_DIR
   done
 
@@ -465,4 +465,13 @@ do
   # We should have dealt with all the trigger files by now. Delete any that are
   # left over (to avoid tight looping).
   rm -f $trigger_files
+
+  # Delete old dumps until we're using less than 1GB of disk space.  du reports
+  # in units of block size (kB).
+  while [ $(du -s $DUMPS_DIR | cut -f 1) -gt 1000000 ]
+  do
+    dump_to_delete=$(ls -t | tail -n 1)
+    log "Deleting dump $dump_to_delete"
+    rm -rf "$DUMPS_DIR/$dump_to_delete"
+  done
 done
