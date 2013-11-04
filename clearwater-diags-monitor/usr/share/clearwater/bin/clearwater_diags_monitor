@@ -196,7 +196,7 @@ get_os_info()
 {
   file=$CURRENT_DUMP_DIR/os.txt
   uname -a >> $file
-  lsb_release
+  lsb_release -a >> $file
 }
 
 
@@ -232,8 +232,24 @@ get_usage_stats()
     #      day of the month).
     sar -A -f /var/log/sysstat/sa$(date +"%d" -d $day) > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
   done
+}
 
-  #TODO In the init.d script configure sysstat and start it on boot.
+
+get_cassandra_info()
+{
+  # Get information about the Cassandra ring.
+  nodetool ring > $CURRENT_DUMP_DIR/nodetool_ring.txt
+  nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
+  nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
+  nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
+  nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
+
+  # Cassandra data format.
+  echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
+  echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+
+  # Cassandra config files.
+  copy_to_dump "/etc/cassandra"
 }
 
 
@@ -252,11 +268,36 @@ do
     inotifywait -e create -qq .
   fi
 
-  triggers=$(ls -A)
-  log "Processing trigger files: $(echo $triggers)"
+  trigger_files=$(ls -A)
+  log "Processing trigger files: $(echo $trigger_files)"
+
+  # Work out what component caused the dump.
+  #
+  # Triggers are of the form core.<cause>.<timestamp>.  For each trigger
+  # extract the 2nd part of the filename and work out the distinct values.  Use
+  # awk to do the field splitting as cut behaves oddly if the filename does not
+  # match the expected pattern.
+  #
+  # Note the filenames are currently space separated, so use tr to put them each
+  # on one line.
+  triggers=$(echo $trigger_files | tr ' ' '\n' | awk 'BEGIN{FS="."} {print $2}' | sort | uniq)
+
+  if [ -z "$triggers" ]
+  then
+    # No cause could be determined.  Maybe the file name is wrong?
+    cause="unknown"
+    log "Unknown trigger file(s): $(echo trigger_files)"
+  elif [ $(echo $triggers | wc -w) -eq 1 ]
+  then
+    cause=$triggers
+    log "Dump triggered by $cause"
+  else
+    cause="multiple"
+    log "Dump has multiple causes"
+  fi
 
   # Create a new dump directory.
-  CURRENT_DUMP=dump.$(date "+%Y%m%d-%H%M%S")
+  CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$cause
   CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
   CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
 
@@ -306,7 +347,7 @@ do
 
   # Move all the trigger files to the dump (once they have finished being
   # written to).
-  for file in $triggers
+  for file in $trigger_files
   do
     wait_until_closed $file
     log "$file is closed"
@@ -328,5 +369,5 @@ do
 
   # We should have dealt with all the trigger files by now. Delete any that are
   # left over (to avoid tight looping).
-  rm -f $triggers
+  rm -f $trigger_files
 done

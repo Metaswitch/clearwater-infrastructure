@@ -74,6 +74,9 @@ do_start()
         # Fix up the core pattern before starting.
         cat /etc/clearwater/diags-monitor/core_pattern > /proc/sys/kernel/core_pattern
 
+        # Ensure sysstat is running (so SAR can be used to gather usgae stats).
+        service sysstat start
+
         # Start running the diags monitor.
         # Return
         #   0 if daemon has been started
