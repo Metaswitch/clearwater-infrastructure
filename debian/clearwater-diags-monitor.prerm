@@ -55,8 +55,9 @@ case "$1" in
         # Reinstate the original core file pattern.
         [ ! -f /etc/clearwater/diags-monitor/core_pattern.old ] || cat /etc/clearwater/diags-monitor/core_pattern.old > /proc/sys/kernel/core_pattern
         rm -f /etc/clearwater/diags-monitor/core_pattern.old
-        # Remove the temporary diagnostics directory.
+        # Remove the temporary diagnostics directory and dump directory.
         rm -rf /var/clearwater-diags-monitor/tmp
+        rm -rf /var/clearwater-diags-monitor/dumps
     ;;
 
     failed-upgrade)
