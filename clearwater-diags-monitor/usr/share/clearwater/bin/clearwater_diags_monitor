@@ -425,13 +425,10 @@ do
   # sourcing the script in (so it has access to all functions defined in this
   # file) but also do it in a subshell (to prevent the script from polluting our
   # environment).
+  scripts=$(find /usr/share/clearwater/clearwater-diags-monitor/scripts/ -maxdepth 1 -type f 2>/dev/null)
+  log "Running diags scripts: $(echo $scripts)"
 
-  # Do not expand unmatched globs (copes with the case where there are no
-  # scripts to execute).
-  old_shopt=$(shopt -p nullglob)
-  shopt -s nullglob
-
-  for diags_script in  /usr/share/clearwater/clearwater-diags-monitor/scripts/*
+  for diags_script in $scripts
   do
     (
       # Give all the scripts their own subdirectory to write diags to (to stop
@@ -439,11 +436,9 @@ do
       CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
       mkdir $CURRENT_DUMP_DIR;
 
-      source $diags_script
+      . $diags_script
     )
   done
-
-  eval "$old_shopt" # Restore the nullglob setting.
 
   # Move all the trigger files to the dump (once they have finished being
   # written to).
