@@ -412,6 +412,16 @@ do
 
   # Config files
   copy_to_dump '/etc/clearwater'
+  copy_to_dump '/etc/snmp'
+  copy_to_dump '/etc/monit'
+
+  # Get the config files for installed clearwater packages.  The dpkg etc lines
+  # are of the form below, so we need the 2nd field from cut.
+  #   <space><path-to-config-file><space><checksum>
+  for conffile in $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -f 2)
+  do
+    copy_to_dump $conffile
+  done
 
   # Installed packages.
   get_cw_package_info
