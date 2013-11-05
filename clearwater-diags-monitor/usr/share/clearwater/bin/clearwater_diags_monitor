@@ -158,7 +158,7 @@ add_default_port()
 #  - $1 The domain/port combo to split.
 split_domain_and_port()
 {
-  echo $1 | gawk 'match($0, /(.+):([0-9]+)$/, arr) { print arr[1] " " arr[2] }'
+  echo $1 | perl -ne '$_ =~ /(.+):([0-9]+)$/ && print "$1 $2\n"'
 }
 
 
