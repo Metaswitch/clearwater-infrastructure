@@ -124,6 +124,33 @@ get_cw_package_info()
 }
 
 
+# Add a port to a domain string (if it doesn't already have one).
+#
+# For example:
+#   add_default_port example.com 80       =>  example.com:80
+#   add_default_port example.com:8888 80  =>  example.com:8888
+#
+# Params:
+#   - $1 The domain string, which may include a port.
+#   - $2 The default port.
+add_default_port()
+{
+  domain=$1
+  default_port=$2
+
+  # The grep checks for:
+  # -  Something that does not contain any colons followed by :<port> (which
+  #    catches domains and IPv4 addresses with a port).
+  # -  ']' followed by :<port> (which catches IPv6 addresses with a port).
+  if ! echo $domain | grep -E '([^:]+|]):[0-9]+$'
+  then
+    domain="$domain:$default_port"
+  fi
+
+  echo $domain
+}
+
+
 # Check that the server(s) specified by a domain name are contactable over the
 # specified port.
 #
