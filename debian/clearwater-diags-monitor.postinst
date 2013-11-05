@@ -67,6 +67,8 @@ case "$1" in
         # Do the same for the dumps directory.
         mkdir -p /var/clearwater-diags-monitor/dumps
         chmod a+rwx /var/clearwater-diags-monitor/dumps
+
+        chmod a+x /usr/share/clearwater/bin/gather_diags
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
