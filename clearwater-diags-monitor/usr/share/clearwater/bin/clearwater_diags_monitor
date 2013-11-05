@@ -75,7 +75,7 @@ wait_until_closed()
 copy_to_dump()
 {
   src=$(realpath $1)
-  mkdir $CURRENT_DUMP_DIR/root
+  mkdir -p $CURRENT_DUMP_DIR/root
   cp -rp --parents $src $CURRENT_DUMP_DIR/root
 }
 
