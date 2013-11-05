@@ -13,6 +13,7 @@ Package: clearwater-infrastructure
 Architecture: all
 Depends: dnsmasq, monit, ntp
 Suggests: clearwater-auto-config, clearwater-auto-upgrade
+Recommends: clearwater-diags-monitor
 Description: Common infrastructure for all Clearwater servers
 
 Package: clearwater-memcached
@@ -44,7 +45,7 @@ Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
 Package: clearwater-diags-monitor
 Architecture: all
-Depends: clearwater-infrastructure, inotify-tools, realpath, sysstat
+Depends: inotify-tools, realpath, sysstat
 Description: Diagnostics monitor and bundler for all Clearwater servers
 
 # NB clearwater-auto-config packages do NOT depend on infrastructure, as they
