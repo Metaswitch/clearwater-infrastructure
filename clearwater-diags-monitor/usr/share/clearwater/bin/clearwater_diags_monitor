@@ -151,6 +151,17 @@ add_default_port()
 }
 
 
+# Split the domain and port in a domain-port combo.
+# e.g. example.com:80 => example.com 80
+#
+# Params:
+#  - $1 The domain/port combo to split.
+split_domain_and_port()
+{
+  echo $1 | gawk 'match($0, /(.+):([0-9]+)$/, arr) { print arr[1] " " arr[2] }'
+}
+
+
 # Check that the server(s) specified by a domain name are contactable over the
 # specified port.
 #
