@@ -164,12 +164,30 @@ split_domain_and_port()
 # specified port.
 #
 # Params:
-#   $1 - The domain.
-#   $2 - The port.
+#   $1 - The domain.  May include a port.
+#   $2 - Default port to use of the port is not specified as part of the domain.
 check_connectivity_to_domain()
 {
-  domain=$1
-  port=$2
+  raw_domain=$1
+  default_port=$2
+
+  if [ -z "$raw_domain" ]
+  then
+    log "No domain supplied"
+    return 1
+  fi
+
+  # Puts the domain and port in the form <domain>:<port>
+  domain_and_port=$(add_default_port $raw_domain $default_port)
+
+  # Split the domain and port into separate variables.
+  read -r domain port <<< $(split_domain_and_port $domain_and_port)
+
+  if [ "$domain" = "0.0.0.0" ]
+  then
+    log "Not checking connectivity to 0.0.0.0"
+    return 2
+  fi
 
   file=$CURRENT_DUMP_DIR/connectivity_to_$domain.txt
 
