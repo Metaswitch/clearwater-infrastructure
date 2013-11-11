@@ -370,7 +370,7 @@ do
     inotifywait -e create -qq .
   fi
 
-  trigger_files=$(ls -A)
+  trigger_files=$(ls -At)
   log "Processing trigger files: $(echo $trigger_files)"
 
   # Work out what component caused the dump.
@@ -500,12 +500,18 @@ do
   # been collected.
   copy_to_dump $0
 
-  # Move all the trigger files to the dump (once they have finished being
-  # written to).
+  # Wait for all the trigger files to have been written, then move the three
+  # oldest to the dump.  We do this so that if core files are being frequently
+  # written (e.g. because a process is repeatedly crashing) the diags monitor
+  # doesn't get bogged down dealing with lots of identical cores.
   for file in $trigger_files
   do
     wait_until_closed $file
-    log "Moving $file"
+    log "$file has been closed"
+  done
+
+  for file in $(echo $trigger_files | tail -n 3)
+    log "Moving $file to dump"
     mv $file $CURRENT_DUMP_DIR
   done
 
@@ -522,8 +528,9 @@ do
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
   rm -rf $CURRENT_DUMP_DIR
 
-  # We should have dealt with all the trigger files by now. Delete any that are
-  # left over (to avoid tight looping).
+  # We should have dealt with all the trigger files by now, unless there are
+  # more that we can deal with in a single schedule.  Delete any that are left
+  # over (to avoid tight looping).
   rm -f $trigger_files
 
   # Delete old dumps until we're using less than 1GB of disk space.  du reports
