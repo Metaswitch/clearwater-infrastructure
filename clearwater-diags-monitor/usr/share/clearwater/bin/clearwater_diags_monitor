@@ -370,7 +370,7 @@ do
     inotifywait -e create -qq .
   fi
 
-  trigger_files=$(ls -At)
+  trigger_files=$(ls -Atr)
   log "Processing trigger files: $(echo $trigger_files)"
 
   # Work out what component caused the dump.
@@ -500,19 +500,44 @@ do
   # been collected.
   copy_to_dump $0
 
-  # Wait for all the trigger files to have been written, then move the three
-  # oldest to the dump.  We do this so that if core files are being frequently
-  # written (e.g. because a process is repeatedly crashing) the diags monitor
-  # doesn't get bogged down dealing with lots of identical cores.
+  # Wait for all the trigger files to have been written.
   for file in $trigger_files
   do
     wait_until_closed $file
     log "$file has been closed"
   done
 
-  for file in $(echo $trigger_files | tail -n 3)
-    log "Moving $file to dump"
-    mv $file $CURRENT_DUMP_DIR
+  # Right, now we want to copy core files to the dump.  The algorithm is:
+  # -  Always copy the oldest core.
+  # -  Copy additional cores in decreasing age order, until the dump directory
+  #    reaches 1GB in size.
+  # -  Do not copy remaining dumps.
+  #
+  # This means that if there are multiple core files (e.g. if a process starts
+  # cyclically crashing) we get the early cores from when the problem first
+  # occured, but we don't waste disk space with lots of duplicate ones.
+  read -ar trigger_files_arr <<< "$trigger_files"
+
+  mv ${trigger_files_arr[0]} $CURRENT_DUMP_DIR
+
+  ii=1
+  while [ $ii -lt ${#trigger_files_arr[@]} ]
+  do
+    core_file=${trigger_files_arr[$ii]}
+    ii=$(( $ii + 1 ))
+
+    # Get the size of the core file and dump directory in kB.
+    core_file_size=$(du -k $core_file | cut -f 1)
+    curr_dump_size=$(du -ks $CURRENT_DUMP_DIR | cut -f 1)
+
+    # If we have room, copy in the core file. Otherwise don't copy this file or
+    # any more.
+    if [ $(($core_file_size + $curr_dump_size)) -lt 1000000 ]
+    then
+      mv $core_file $CURRENT_DUMP_DIR
+    else
+      break
+    fi
   done
 
   #
@@ -529,13 +554,12 @@ do
   rm -rf $CURRENT_DUMP_DIR
 
   # We should have dealt with all the trigger files by now, unless there are
-  # more that we can deal with in a single schedule.  Delete any that are left
-  # over (to avoid tight looping).
+  # more that we can deal with.  Delete any that are left over.
   rm -f $trigger_files
 
   # Delete old dumps until we're using less than 1GB of disk space.  du reports
   # in units of block size (kB).
-  while [ $(du -s $DUMPS_DIR | cut -f 1) -gt 1000000 ]
+  while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
   do
     dump_to_delete=$(ls -t | tail -n 1)
     log "Deleting dump $dump_to_delete"
