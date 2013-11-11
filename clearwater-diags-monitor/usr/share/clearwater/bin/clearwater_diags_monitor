@@ -34,8 +34,6 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-LOG_FILE=/var/log/clearwater-diags-monitor.log
-
 DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
@@ -45,7 +43,7 @@ COMPONENTS="bono sprout homestead homer ellis"
 
 log()
 {
-  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n" >> $LOG_FILE
+  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
 }
 
 
@@ -211,14 +209,6 @@ get_ntp_status()
 }
 
 
-# Get the shell history for the specified user.
-get_user_history()
-{
-  user=$1
-  cp -p /home/$user/.bash_history $CURRENT_DUMP_DIR/${user}_history.txt
-}
-
-
 # Get the checksum files for all the clearwater packages installed on the
 # system.
 get_cw_package_checksums()
@@ -280,7 +270,7 @@ get_usage_stats()
   done
 }
 
-# Return whether any of the specified clerwater components are installed.
+# Return whether any of the specified clearwater components are installed.
 #
 # For example `cw_component_installed bono sprout` will return 0 (true) if bono
 # OR sprout are installed.
@@ -439,9 +429,8 @@ do
 
   # Command histories.
   #
-  # There is no history for sudo but commands run as sudo are logged in the auth
+  # There is no history for root but commands run as sudo are logged in the auth
   # logs.
-  get_user_history ubuntu
   copy_to_dump '/var/log/auth.log*'
 
   # Hardware information and historical resource usage.
@@ -488,6 +477,10 @@ do
       . $diags_script
     )
   done
+
+  # Copy this script to the dump file so we can tell what diags /should/ have
+  # been collected.
+  copy_to_dump $0
 
   # Move all the trigger files to the dump (once they have finished being
   # written to).

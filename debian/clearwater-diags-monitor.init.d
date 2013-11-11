@@ -84,7 +84,7 @@ do_start()
         #   2 if daemon could not be started
         start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
                 || return 1
-        start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --nicelevel 19 --exec $DAEMON \
+        start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --nicelevel 19 --exec /bin/bash -- -c "$DAEMON >/var/log/clearwater-diags-monitor.log 2>&1" \
                 || return 2
 
         return 0
