@@ -573,7 +573,7 @@ do
   # in units of block size (kB).
   while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
   do
-    dump_to_delete=$(ls -t | tail -n 1)
+    dump_to_delete=$(ls -t $DUMPS_DIR | tail -n 1)
     log "Deleting dump $dump_to_delete"
     rm -rf "$DUMPS_DIR/$dump_to_delete"
   done
