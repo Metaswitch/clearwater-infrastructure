@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file clearwater_diags_monitor
 #
@@ -181,7 +181,7 @@ check_connectivity_to_domain()
   domain_and_port=$(add_default_port $raw_domain $default_port)
 
   # Split the domain and port into separate variables.
-  read -r domain port <<< $(split_domain_and_port $domain_and_port)
+  read -r domain port <<< "$(split_domain_and_port $domain_and_port)"
 
   if [ "$domain" = "0.0.0.0" ]
   then
@@ -534,8 +534,10 @@ do
     # any more.
     if [ $(($core_file_size + $curr_dump_size)) -lt 1000000 ]
     then
+      log "Moving $core_file to dump"
       mv $core_file $CURRENT_DUMP_DIR
     else
+      log "No more space in dump"
       break
     fi
   done
