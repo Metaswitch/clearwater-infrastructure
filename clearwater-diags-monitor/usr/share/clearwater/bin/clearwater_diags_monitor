@@ -524,7 +524,7 @@ do
   # This means that if there are multiple core files (e.g. if a process starts
   # cyclically crashing) we get the early cores from when the problem first
   # occured, but we don't waste disk space with lots of duplicate ones.
-  read -r -a trigger_files_arr <<< "$trigger_files"
+  trigger_files_arr=($trigger_files)
 
   core_file=${trigger_files_arr[0]}
   log "Moving $core_file to dump"
