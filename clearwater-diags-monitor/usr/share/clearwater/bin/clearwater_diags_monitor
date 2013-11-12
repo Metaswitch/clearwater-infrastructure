@@ -304,7 +304,7 @@ cw_component_installed()
 {
   for comp in "$@"
   do
-    if echo $CURRENT_CW_COMPONENTS | grep -q $comp
+    if echo $CURRENT_CW_COMPONENTS | tr ' ' '\n' | grep -q "^$comp$"
     then
       return 0
     fi
@@ -424,6 +424,7 @@ do
   copy_component_logs_to_dump
   copy_to_dump '/var/log/monit.log*'
   copy_to_dump '/var/log/syslog*'
+  copy_to_dump '/var/log/clearwater*'
 
   # Config files
   copy_to_dump '/etc/clearwater'
@@ -433,7 +434,7 @@ do
   # Get the config files for installed clearwater packages.  The dpkg etc lines
   # are of the form below, so we need the 2nd field from cut.
   #   <space><path-to-config-file><space><checksum>
-  for conffile in $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -f 2)
+  for conffile in $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2)
   do
     copy_to_dump $conffile
   done
