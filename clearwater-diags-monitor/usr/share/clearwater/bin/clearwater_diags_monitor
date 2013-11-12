@@ -34,6 +34,11 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+# Redirect stdout and stderr to the logfile.
+LOG_FILE=/var/log/clearwater-diags-monitor.log
+exec 1>>$LOG_FILE
+exec 2>>$LOG_FILE
+
 DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
@@ -358,6 +363,7 @@ get_memcached_info()
 #
 # Script starts here.
 #
+log "clearwater-diags-monitor starting"
 
 cd $CRASH_DIR
 
@@ -367,6 +373,7 @@ do
   # If the crash directory is empty wait for a new file to be created.
   if [ ! "$(ls -A)" ]
   then
+    log "Waiting for trigger files"
     inotifywait -e create -qq .
   fi
 
