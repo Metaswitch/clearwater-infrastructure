@@ -524,9 +524,11 @@ do
   # This means that if there are multiple core files (e.g. if a process starts
   # cyclically crashing) we get the early cores from when the problem first
   # occured, but we don't waste disk space with lots of duplicate ones.
-  read -ar trigger_files_arr <<< "$trigger_files"
+  read -r -a trigger_files_arr <<< "$trigger_files"
 
-  mv ${trigger_files_arr[0]} $CURRENT_DUMP_DIR
+  core_file=${trigger_files_arr[0]}
+  log "Moving $core_file to dump"
+  mv $core_file $CURRENT_DUMP_DIR
 
   ii=1
   while [ $ii -lt ${#trigger_files_arr[@]} ]
