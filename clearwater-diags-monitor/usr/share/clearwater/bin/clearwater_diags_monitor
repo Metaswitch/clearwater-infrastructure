@@ -560,10 +560,14 @@ do
   #
   # We change to the dumps directory to do the tar as this removes the
   # directories above the current dump from the tar file.  Do all this in a
-  # subshell so we can change directory freely.
+  # subshell so we can change directory freely.  The options to tar are:
+  # -p  Preserve file permissions.
+  # -c  Create an archive.
+  # -z  Zip the archive.
+  # -f  Name of the archive.
   (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
-  rm -rf $CURRENT_DUMP_DIR
+  rm -rf "$CURRENT_DUMP_DIR"
 
   # We should have dealt with all the trigger files by now, unless there are
   # more that we can deal with.  Delete any that are left over.
