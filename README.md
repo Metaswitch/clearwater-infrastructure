@@ -28,10 +28,9 @@ It contains the following packages:
 
 * clearwater-snmpd: SNMP service for CPU, RAM, and I/O statistics.
 
-* clearwater-crash-monitor: optional service to upload crash dumps to
-  repo server for diagnosis.
+* clearwater-diags-monitor: service that monitors for crashes / exceptions / hangs and collects relevant diags.
 
-* clearwater-auto-config: optional service to create /etc/clearwater/config 
+* clearwater-auto-config: optional service to create /etc/clearwater/config
   automatically.  Used on all-in-one (AIO) nodes.
 
 Further info

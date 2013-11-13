@@ -1,0 +1,584 @@
+#!/bin/bash
+
+# @file clearwater_diags_monitor
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2013  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+# Redirect stdout and stderr to the logfile.
+LOG_FILE=/var/log/clearwater-diags-monitor.log
+exec 1>>$LOG_FILE
+exec 2>>$LOG_FILE
+
+DIAGS_DIR=/var/clearwater-diags-monitor
+CRASH_DIR=$DIAGS_DIR/tmp
+DUMPS_DIR=$DIAGS_DIR/dumps
+
+COMPONENTS="bono sprout homestead homer ellis"
+
+
+log()
+{
+  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
+}
+
+
+# Wait until a specified file is closed.
+# Params:
+#  $1 - The file to wait for.
+wait_until_closed()
+{
+  file=$1
+
+  # Don't use inotifywait to wait for the file to close.  If it is already
+  # closed we'll wait forever waiting for it to be closed /again/.
+  while lsof $file >/dev/null 2>&1
+  do
+    sleep 1
+  done
+}
+
+
+# Copy files and directories to the dump preserving the full path.
+#
+# For example the directory /var/log/sprout would be copied to
+# <dumpdir>/var/log/sprout
+#
+# Params:
+#   $1 - The objects to copy.
+copy_to_dump()
+{
+  src=$(realpath $1)
+  mkdir -p $CURRENT_DUMP_DIR/root
+  cp -rp --parents $src $CURRENT_DUMP_DIR/root
+}
+
+
+# Copy the logs for all clearwater components to the dump file.
+copy_component_logs_to_dump()
+{
+  for comp in $COMPONENTS
+  do
+    log_dir=/var/log/$comp
+    if [ -d "$log_dir" ]
+    then
+      log "Copying logs for $comp"
+      copy_to_dump $log_dir
+    fi
+  done
+}
+
+
+# List all the clearwater packages installed.
+clearwater_packages()
+{
+  dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+}
+
+
+# Get information about all the packages installed.
+get_package_info()
+{
+  dpkg -s $(dpkg --get-selections | cut -f 1) > $CURRENT_DUMP_DIR/package_info.txt
+}
+
+
+# Get information about all the clearwater packages installed.
+get_cw_package_info()
+{
+  info_file=$CURRENT_DUMP_DIR/cw_package_info.txt
+
+  cw_packages=$(clearwater_packages)
+  if [ "$cw_packages" ]
+  then
+    dpkg -s $cw_packages > $info_file
+  else
+    echo "No clearwater packages installed" > $info_file
+  fi
+}
+
+
+# Add a port to a domain string (if it doesn't already have one).
+#
+# For example:
+#   add_default_port example.com 80       =>  example.com:80
+#   add_default_port example.com:8888 80  =>  example.com:8888
+#
+# Params:
+#   - $1 The domain string, which may include a port.
+#   - $2 The default port.
+add_default_port()
+{
+  domain=$1
+  default_port=$2
+
+  # The grep checks for:
+  # -  Something that does not contain any colons followed by :<port> (which
+  #    catches domains and IPv4 addresses with a port).
+  # -  ']' followed by :<port> (which catches IPv6 addresses with a port).
+  if ! echo $domain | grep -E '([^:]+|]):[0-9]+$'
+  then
+    domain="$domain:$default_port"
+  fi
+
+  echo $domain
+}
+
+
+# Split the domain and port in a domain-port combo.
+# e.g. example.com:80 => example.com 80
+#
+# Params:
+#  - $1 The domain/port combo to split.
+split_domain_and_port()
+{
+  echo $1 | perl -ne '$_ =~ /(.+):([0-9]+)$/ && print "$1 $2\n"'
+}
+
+
+# Check that the server(s) specified by a domain name are contactable over the
+# specified port.
+#
+# Params:
+#   $1 - The domain.  May include a port.
+#   $2 - Default port to use of the port is not specified as part of the domain.
+check_connectivity_to_domain()
+{
+  raw_domain=$1
+  default_port=$2
+
+  if [ -z "$raw_domain" ]
+  then
+    log "No domain supplied"
+    return 1
+  fi
+
+  # Puts the domain and port in the form <domain>:<port>
+  domain_and_port=$(add_default_port $raw_domain $default_port)
+
+  # Split the domain and port into separate variables.
+  read -r domain port <<< "$(split_domain_and_port $domain_and_port)"
+
+  if [ "$domain" = "0.0.0.0" ]
+  then
+    log "Not checking connectivity to 0.0.0.0"
+    return 2
+  fi
+
+  file=$CURRENT_DUMP_DIR/connectivity_to_$domain.txt
+
+  # First check we can resolve the domain name.
+  dig $domain >> $file
+
+  # Now check that we can contact every server in the domain.
+  echo "Check connectivity:" >> $file
+
+  # List the servers by using dig again requesting just the answer section (the
+  # addresses are in column 5).
+  for ip in $(dig +noall +answer $domain | awk '{print $5}' )
+  do
+    if netcat -w1 $ip $port
+    then
+      echo "$ip:$port OK" >> $file
+    else
+      echo "$ip:$port FAILED" >> $file
+    fi
+  done
+}
+
+
+# Get the networking information for the system.
+get_network_info()
+{
+  ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
+  netstat -rn > $CURRENT_DUMP_DIR/routes.txt
+  netstat -anp > $CURRENT_DUMP_DIR/sockets.txt
+}
+
+
+# Get the NTP setup for the system.
+get_ntp_status()
+{
+  ntpq --numeric --peers > $CURRENT_DUMP_DIR/ntpq.txt
+}
+
+
+# Get the checksum files for all the clearwater packages installed on the
+# system.
+get_cw_package_checksums()
+{
+  for pkg in $(clearwater_packages)
+  do
+    cp -p /var/lib/dpkg/info/$pkg.md5sums $CURRENT_DUMP_DIR
+  done
+}
+
+
+# Get informtion about the OS the system is running.
+get_os_info()
+{
+  file=$CURRENT_DUMP_DIR/os.txt
+  uname -a >> $file
+
+  # For some reason lsb_release outputs "No LSB modules are available" to
+  # stderr. Ignore this.
+  lsb_release -a >> $file 2>/dev/null
+}
+
+
+# Get information about running processes.
+get_process_info()
+{
+  ps -eaf > $CURRENT_DUMP_DIR/ps-eaf.txt
+}
+
+
+# Get information about the virtual hardware the system is running on.
+get_hardware_info()
+{
+  lshw              > $CURRENT_DUMP_DIR/lshw.txt
+  cat /proc/cpuinfo > $CURRENT_DUMP_DIR/cpuinfo.txt
+  cat /proc/meminfo > $CURRENT_DUMP_DIR/meminfo.txt
+  df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
+}
+
+
+# Get historical resource usage stats. This includes things like network usage,
+# CPU usage, memory usge, etc.
+get_usage_stats()
+{
+  # Use the sar tool to gather historical kernel statistics.  This arranges the
+  # stats by day, so get yesterday's stats as well as today's (to get at least
+  # a day's worth of stats even when collecting diags just after midnight).
+  for day in today yesterday
+  do
+    # Use sar to record stats to a datestamped file. Options are:
+    # -A : Get all stats
+    # -f : Read stats from the specified file (where there is a file for each
+    #      day of the month).
+    sa_file=/var/log/sysstat/sa$(date +"%d" -d $day)
+    if [ -e $sa_file ]
+    then
+      sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+    fi
+  done
+}
+
+# Return whether any of the specified clearwater components are installed.
+#
+# For example `cw_component_installed bono sprout` will return 0 (true) if bono
+# OR sprout are installed.
+#
+# Params:
+#   $1 - The list of components to check.
+cw_component_installed()
+{
+  for comp in "$@"
+  do
+    if echo $CURRENT_CW_COMPONENTS | tr ' ' '\n' | grep -q "^$comp$"
+    then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+
+# Get information about the cassandra cluster.
+get_cassandra_info()
+{
+  # Cassandra config and log files.
+  copy_to_dump "/etc/cassandra"
+  copy_to_dump "/var/log/cassandra"
+
+  # Get information about the Cassandra ring.
+  nodetool ring > $CURRENT_DUMP_DIR/nodetool_ring.txt
+  nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
+  nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
+  nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
+  nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
+
+  # Cassandra data format.
+  echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
+  echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+}
+
+
+# Get information about the mysql database.
+get_mysql_info()
+{
+  # Mysql config and log files.
+  copy_to_dump "/etc/mysql"
+  copy_to_dump "/var/log/mysql*"
+
+  # Server status and available databases.
+  echo "show status" | mysql > $CURRENT_DUMP_DIR/mysql_show_status.txt
+  echo "show databases" | mysql > $CURRENT_DUMP_DIR/mysql_show_databases.txt
+}
+
+
+# Get information about the memcached database.
+get_memcached_info()
+{
+  # Memcached config and log files.
+  copy_to_dump "/etc/memcached*"
+  copy_to_dump "/var/log/memcached*"
+
+  # Also get internal memcached stats (by sending the server a message saying
+  # "stats").
+  echo "stats" | netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
+}
+
+
+#
+# Script starts here.
+#
+log "clearwater-diags-monitor starting"
+
+cd $CRASH_DIR
+
+while true
+do
+
+  # If the crash directory is empty wait for a new file to be created.
+  if [ ! "$(ls -A)" ]
+  then
+    log "Waiting for trigger files"
+    inotifywait -e create -qq .
+  fi
+
+  trigger_files=$(ls -Atr)
+  log "Processing trigger files: $(echo $trigger_files)"
+
+  # Work out what component caused the dump.
+  #
+  # Triggers are of the form core.<cause>.<timestamp>.  For each trigger
+  # extract the 2nd part of the filename and work out the distinct values.  Use
+  # awk to do the field splitting as cut behaves oddly if the filename does not
+  # match the expected pattern.
+  #
+  # Note the filenames are currently space separated, so use tr to put them each
+  # on one line.
+  triggers=$(echo $trigger_files | tr ' ' '\n' | awk 'BEGIN{FS="."} {print $2}' | sort | uniq)
+
+  if [ -z "$triggers" ]
+  then
+    # No cause could be determined.  Maybe the file name is wrong?
+    cause="unknown"
+    log "Unknown trigger file(s): $(echo trigger_files)"
+  elif [ $(echo $triggers | wc -w) -eq 1 ]
+  then
+    cause=$triggers
+    log "Dump triggered by $cause"
+  else
+    cause="multiple"
+    log "Dump has multiple causes"
+  fi
+
+  # Set up some variables that relate to the current dump.  These remain valid
+  # for the duration of the dump collection process.
+  CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$cause
+  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
+  CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
+  CURRENT_CW_COMPONENTS=$(clearwater_packages)
+
+  # Create a new dump directory.
+  mkdir $CURRENT_DUMP_DIR
+  log "Gathering dump $CURRENT_DUMP"
+
+  #
+  # Now collect some diags
+  #
+
+  # Log files.
+  copy_component_logs_to_dump
+  copy_to_dump '/var/log/monit.log*'
+  copy_to_dump '/var/log/syslog*'
+  copy_to_dump '/var/log/clearwater*'
+
+  # Config files
+  copy_to_dump '/etc/clearwater'
+  copy_to_dump '/etc/snmp'
+  copy_to_dump '/etc/monit'
+
+  # Get the config files for installed clearwater packages.  The dpkg etc lines
+  # are of the form below, so we need the 2nd field from cut.
+  #   <space><path-to-config-file><space><checksum>
+  for conffile in $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2)
+  do
+    copy_to_dump $conffile
+  done
+
+  # Installed packages.
+  get_cw_package_info
+  get_cw_package_checksums
+  get_package_info
+
+  # Networking information.
+  #
+  # Connectivity between nodes is handled in per-node hooks as security groups
+  # mean that not all nodes can contact all other nodes.
+  get_network_info
+
+  # NTP settings.
+  get_ntp_status
+
+  # Command histories.
+  #
+  # There is no history for root but commands run as sudo are logged in the auth
+  # logs.
+  copy_to_dump '/var/log/auth.log*'
+
+  # Hardware information and historical resource usage.
+  get_hardware_info
+  get_usage_stats
+
+  # OS and process info.
+  get_os_info
+  get_process_info
+
+  # Database statuses.
+  if cw_component_installed homer homestead
+  then
+    get_cassandra_info
+  fi
+
+  if cw_component_installed ellis
+  then
+    get_mysql_info
+  fi
+
+  if cw_component_installed sprout
+  then
+    get_memcached_info
+  fi
+
+  # Gather component specific diags for all installed components.
+  #
+  # Spin through the list of each diags script and execute it. Do this by
+  # sourcing the script in (so it has access to all functions defined in this
+  # file) but also do it in a subshell (to prevent the script from polluting our
+  # environment).
+  scripts=$(find /usr/share/clearwater/clearwater-diags-monitor/scripts/ -maxdepth 1 -type f 2>/dev/null)
+  log "Running extra diags scripts: $(echo $scripts)"
+
+  for diags_script in $scripts
+  do
+    (
+      # Give all the scripts their own subdirectory to write diags to (to stop
+      # them from overwriting each other's diags).
+      CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
+      mkdir $CURRENT_DUMP_DIR;
+
+      . $diags_script
+    )
+  done
+
+  # Copy this script to the dump file so we can tell what diags /should/ have
+  # been collected.
+  copy_to_dump $0
+
+  # Wait for all the trigger files to have been written.
+  for file in $trigger_files
+  do
+    wait_until_closed $file
+    log "$file has been closed"
+  done
+
+  # Right, now we want to copy core files to the dump.  The algorithm is:
+  # -  Always copy the oldest core.
+  # -  Copy additional cores in decreasing age order, until the dump directory
+  #    reaches 1GB in size.
+  # -  Do not copy remaining dumps.
+  #
+  # This means that if there are multiple core files (e.g. if a process starts
+  # cyclically crashing) we get the early cores from when the problem first
+  # occured, but we don't waste disk space with lots of duplicate ones.
+  trigger_files_arr=($trigger_files)
+
+  core_file=${trigger_files_arr[0]}
+  log "Moving $core_file to dump"
+  mv $core_file $CURRENT_DUMP_DIR
+
+  ii=1
+  while [ $ii -lt ${#trigger_files_arr[@]} ]
+  do
+    core_file=${trigger_files_arr[$ii]}
+    ii=$(( $ii + 1 ))
+
+    # Get the size of the core file and dump directory in kB.
+    core_file_size=$(du -k $core_file | cut -f 1)
+    curr_dump_size=$(du -ks $CURRENT_DUMP_DIR | cut -f 1)
+
+    # If we have room, copy in the core file. Otherwise don't copy this file or
+    # any more.
+    if [ $(($core_file_size + $curr_dump_size)) -lt 1000000 ]
+    then
+      log "Moving $core_file to dump"
+      mv $core_file $CURRENT_DUMP_DIR
+    else
+      log "No more space in dump"
+      break
+    fi
+  done
+
+  #
+  # Diags have been collected.  Time to zip up the diags bundle.
+  #
+
+  # Finally we can compress the dump directory and delete it.
+  #
+  # We change to the dumps directory to do the tar as this removes the
+  # directories above the current dump from the tar file.  Do all this in a
+  # subshell so we can change directory freely.  The options to tar are:
+  # -p  Preserve file permissions.
+  # -c  Create an archive.
+  # -z  Zip the archive.
+  # -f  Name of the archive.
+  (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
+  log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
+  rm -rf "$CURRENT_DUMP_DIR"
+
+  # We should have dealt with all the trigger files by now, unless there are
+  # more that we can deal with.  Delete any that are left over.
+  rm -f $trigger_files
+
+  # Delete old dumps until we're using less than 1GB of disk space.  du reports
+  # in units of block size (kB).
+  while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
+  do
+    dump_to_delete=$(ls -t $DUMPS_DIR | tail -n 1)
+    log "Deleting dump $dump_to_delete"
+    rm -rf "$DUMPS_DIR/$dump_to_delete"
+  done
+done

@@ -32,7 +32,7 @@ override_dh_installinit:
 	dh_installinit -pclearwater-auto-config-aws -u"defaults 20 80"
 	dh_installinit -pclearwater-auto-config-generic -u"defaults 20 80"
 	dh_installinit -pclearwater-auto-upgrade -u"defaults 20 80"
-	dh_installinit -pclearwater-crash-monitor
+	dh_installinit -pclearwater-diags-monitor
 	dh_installinit -pclearwater-secure-connections
 
 override_dh_shlibdeps:
