@@ -4,7 +4,7 @@ Clearwater Diagnostics Monitor
 The `clearwater-diags-monitor` monitors the system for errors and collects diagnostic information.  Diags are collected when:
 
 * A native clearwater process crashes (bono, sprout, restund)
-* An unhanlded python exception occurs (homer, homestead, ellis)
+* An unhandled python exception occurs (homer, homestead, ellis)
 * Monit spots that a process has become unresponsive.
 * Manually triggered by running `/usr/share/clearwater/bin/gather_diags`
 
@@ -52,7 +52,7 @@ A diagnostic dump contains the following information:
 
 * If memcached is installed:
 
-  * `memcached_stats.txt` - stats reported by the memcahced server.
+  * `memcached_stats.txt` - stats reported by the memcached server.
 
 * If cassandra is installed:
 
