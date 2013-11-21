@@ -1,8 +1,8 @@
 # Deployment definitions
 home_domain=example.com
 sprout_hostname=
-hs_hostname=localhost:8888
-xdms_hostname=localhost:7888
+hs_hostname=127.0.0.1:8888
+xdms_hostname=127.0.0.1:7888
 
 # Local IP configuration
 local_ip=
