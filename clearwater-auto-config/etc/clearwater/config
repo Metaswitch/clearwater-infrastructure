@@ -2,6 +2,7 @@
 home_domain=example.com
 sprout_hostname=
 hs_hostname=127.0.0.1:8888
+hs_provisioning_hostname=127.0.0.1:8889
 xdms_hostname=127.0.0.1:7888
 
 # Local IP configuration
