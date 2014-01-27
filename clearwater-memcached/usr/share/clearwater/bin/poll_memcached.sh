@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
-# @file memcached
+# @file poll_memcached.sh
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,20 +34,12 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+# This script uses HTTP to poll a memcached process and check whether it is healthy.
+
 . /etc/clearwater/config
 
-# On an IPv6 system memcached need to be configured to listen on the hostname
-# that maps to the local IP address.
-listen_address=$local_ip
+PORT=11211
 
-python /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
+# Not currently implemented, just return success.
 
-if [ $is_ipv6_address = 1 ] ;
-then
-  listen_address=$(python /usr/share/clearwater/bin/generate_ipv6_hostname.py $local_ip)
-fi
-
-sed -e 's/^-l .*$/-l '$listen_address'/g
-        s/^-m .*$/-m 512/g
-        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
+exit 0

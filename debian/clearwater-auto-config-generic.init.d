@@ -48,9 +48,15 @@
 do_auto_config()
 {
   config=/etc/clearwater/config
-  # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
-  # If there are no IPv4 addresses it finds the first IPv6 address.
-  ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  if [ -f /etc/clearwater/force_ipv6 ]
+  then
+    # The sed expression finds the first IPv6
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9. ]* \)\([0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  else
+    # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
+    # If there are no IPv4 addresses it finds the first IPv6 address.
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  fi
 
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
