@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-auto-config-generic.init.d
+# @file cassandra
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -34,54 +34,30 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-### BEGIN INIT INFO
-# Provides:          clearwater-auto-config-generic
-# Required-Start:    $network $local_fs
-# Required-Stop:
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: clearwater-auto-config-generic
-# Description:       clearwater-auto-config-generic
-# X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
-### END INIT INFO
+. /etc/clearwater/config
 
-do_auto_config()
-{
-  config=/etc/clearwater/config
-  # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
-  # If there are no IPv4 addresses it finds the first IPv6 address.
-  ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+# Determine whether the local IP address is an IPv6 address.
+python /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
+is_ipv6_address=$?
 
-  # Add square brackets around the address iff it is an IPv6 address
-  bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
+if [ $is_ipv6_address = 1 ] ;
+then
+  # Setup the variables to be used in the cassandra configuration files.
+  seeds="$local_ip"
 
-  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$ip'/g
-          s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
-          s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g' -i $config
+  # Enable IPv6 by not preferring IPv4.
+  prefer_ipv4="# JVM_OPTS=\"$JVM_OPTS-Djava.net.preferIPv4Stack=true\""
+else
+  seeds="127.0.0.1"
 
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm -f /etc/clearwater/cluster_settings
-}
+  # Disable IPv6 by preferring IPv4.
+  prefer_ipv4="JVM_OPTS=\"$JVM_OPTS-Djava.net.preferIPv4Stack=true\""
+fi
 
-case "$1" in
-  start|restart|reload|force-reload)
-    do_auto_config
-    exit 0
-  ;;
+# Update the configuration in cassandra.yaml and cassangra-env.sh
+sed -e "s/^listen_address: .*$/listen_address: $local_ip/g
+        s/^.*seeds:.*$/          - seeds: \"$seeds\"/g" </etc/cassandra/cassandra.yaml > /tmp/cassandra.yaml
+mv /tmp/cassandra.yaml /etc/cassandra/cassandra.yaml
 
-  status|stop)
-    exit 0
-  ;;
-
-  *)
-    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
-    exit 3
-  ;;
-esac
-
-:
-
+sed -e "s/^.*preferIPv4Stack.*$/$prefer_ipv4/g" </etc/cassandra/cassandra-env.sh > /tmp/cassandra-env.sh
+mv /tmp/cassandra-env.sh /etc/cassandra/cassandra-env.sh

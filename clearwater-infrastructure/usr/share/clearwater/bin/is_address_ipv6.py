@@ -1,9 +1,7 @@
-#!/bin/sh
-
-# @file memcached
+# @file is_address_ipv6.py
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,22 +31,30 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
+#
 
-. /etc/clearwater/config
+import sys
+import socket
 
-# On an IPv6 system memcached need to be configured to listen on the hostname
-# that maps to the local IP address.
-listen_address=$local_ip
+# This script takes an input string and attempts to parse it as an IPv6 address.
+# Return 1 if the string is a valid IPv6 address and 0 otherwise.
 
-python /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
+def main (ip_address):
 
-if [ $is_ipv6_address = 1 ] ;
-then
-  listen_address=$(python /usr/share/clearwater/bin/generate_ipv6_hostname.py $local_ip)
-fi
+    # Attempt to convert the IP address into a 128 bit binary representation.
+    # If the string parses successfully return '1'.  If the string passed in
+    # is not a valid IPv6 address inet_pton will throw an exception.  Handle
+    # the exception and return 0.
+    try:
+        binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
+        return(1)
+    except socket.error:
+        return(0)
 
-sed -e 's/^-l .*$/-l '$listen_address'/g
-        s/^-m .*$/-m 512/g
-        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
-sed -i 's/if failed host .*$/if failed host '$local_ip' port 11211 then restart/' /etc/monit/conf.d/memcached_11211.monit
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        rc = main(sys.argv[1])
+        sys.exit(rc)
+    else:
+        sys.exit(0)
+

@@ -1,9 +1,7 @@
-#!/bin/sh
-
-# @file memcached
+# @file ipv6_to_hostname.py
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,21 +32,39 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /etc/clearwater/config
+import socket
+import binascii
+import sys
+import os
 
-# On an IPv6 system memcached need to be configured to listen on the hostname
-# that maps to the local IP address.
-listen_address=$local_ip
+# The scripts takes an IPv6 address as string and converts it to an ip6.arpa
+# hostname.  This is done
+if len(sys.argv) == 2:
+    ip_address = sys.argv[1]
+else:
+    # Don't print out a usage string as the calling script may try to use this
+    # as a hostname.
+    sys.exit(0)
 
-python /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
+# Convert the IP address into a 128 bit binary representation.  This does not
+# include the colons, but does include all of the zero padding.  If the string
+# passed in is not a valid IPv6 address inet_pton will throw an exception.
+try:
+    binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
+except socket.error:
+    sys.exit(0)
 
-if [ $is_ipv6_address = 1 ] ;
-then
-  listen_address=$(python /usr/share/clearwater/bin/generate_ipv6_hostname.py $local_ip)
-fi
+# Generate an ASCII representation of the binary IP address.
+ascii_address = binascii.b2a_hex(binary_address)
 
-sed -e 's/^-l .*$/-l '$listen_address'/g
-        s/^-m .*$/-m 512/g
-        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
-sed -i 's/if failed host .*$/if failed host '$local_ip' port 11211 then restart/' /etc/monit/conf.d/memcached_11211.monit
+# Step backwards through the ASCII representation, building up a hostname made
+# up of the individual nibbles separated by dots.
+hostname_string = ""
+for nibble in reversed(ascii_address):
+    hostname_string += nibble + "."
+
+# Append the standard  reversed IPv6 address domain name.
+hostname_string += "ip6.arpa"
+
+# Print out the hostname for use by the calling script.
+print (hostname_string)
