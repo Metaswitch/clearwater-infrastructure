@@ -34,7 +34,8 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# This script uses HTTP to poll a memcached process and check whether it is healthy.
+# This script polls a memcached process and check whether it is healthy by checking
+# that the port is open.
 
 . /etc/clearwater/config
 

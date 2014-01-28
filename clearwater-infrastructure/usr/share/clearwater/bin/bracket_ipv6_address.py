@@ -1,3 +1,5 @@
+#! /usr/share/python
+
 # @file bracket_ipv6_address.py
 #
 # Project Clearwater - IMS in the Cloud
@@ -43,9 +45,10 @@ import is_address_ipv6
 if len(sys.argv) == 2:
     ip_address = sys.argv[1]
 else:
-    # Don't print out a usage string as the calling script may try to use this
-    # as a IP address parameter.
-    sys.exit(0)
+    # Print out a usage string to stderr as otherwise the calling script may
+    # try to use this as an IP address parameter.
+    print >> sys.stderr, "Usage : bracket_ipv6_address.py <IP address>"
+    sys.exit(1)
 
 ipv6 = is_address_ipv6.main(ip_address)
 

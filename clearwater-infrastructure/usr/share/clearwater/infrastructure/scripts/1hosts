@@ -1,6 +1,4 @@
-#! /usr/bin/python
-
-# @file ipv6_to_hostname.py
+#!/bin/sh
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2014  Metaswitch Networks Ltd
@@ -33,42 +31,38 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
+#
 
-import socket
-import binascii
-import sys
-import os
+# This script fixes up the /etc/hosts file to have an entry that maps to the
+# local address if it is IPv6.
 
-# The scripts takes an IPv6 address as string and converts it to an ip6.arpa
-# hostname.
-if len(sys.argv) == 2:
-    ip_address = sys.argv[1]
-else:
-    # Print out a usage string to stderr as otherwise the calling script may
-    # try to use this as a hostname.
-    print >> sys.stderr, "Usage : ipv6_to_homstname.py <IP address>"
-    sys.exit(1)
+. /etc/clearwater/config
 
-# Convert the IP address into a 128 bit binary representation.  This does not
-# include the colons, but does include all of the zero padding.  If the string
-# passed in is not a valid IPv6 address inet_pton will throw an exception.
-try:
-    binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
-except socket.error:
-    print >> sys.stderr, "Invalid IP address %s" % ip_address
-    sys.exit(1)
+# If the local IP address is an IPv6 address then the system needs a dummy
+# hostname that maps to the address.
 
-# Generate an ASCII representation of the binary IP address.
-ascii_address = binascii.b2a_hex(binary_address)
+# Remove any previous dummy hostname from the hosts file.
+grep -v ' # maps to local IPv6 address' /etc/hosts > /tmp/hosts.$$
 
-# Step backwards through the ASCII representation, building up a hostname made
-# up of the individual nibbles separated by dots.
-hostname_string = ".".join(reversed(ascii_address))
-#for nibble in reversed(ascii_address):
- #   hostname_string += nibble + "."
+# Determine whether the local IP address is an IPv6 address.
+/usr/share/clearwater/bin/is_address_ipv6.py $local_ip
+is_ipv6_address=$?
 
-# Append the standard  reversed IPv6 address domain name.
-hostname_string += ".ip6.arpa"
+if [ $is_ipv6_address = 1 ]
+then
+  # Generate the ip6.arpa hostname from the IP address.  Add it to the hosts file.
+  hostname=$(/usr/share/clearwater/bin/generate_ipv6_hostname.py $local_ip)
+  echo $local_ip $hostname '# maps to local IPv6 address' >> /tmp/hosts.$$
+fi
 
-# Print out the hostname for use by the calling script.
-print (hostname_string)
+# Compare the new hosts file with the existing one.  If it has changed overwrite
+# the existing file and restart dnsmasq to pick up the changes, otherwise just
+# remove the new file.
+
+if diff /etc/hosts /tmp/hosts.$$ > /dev/null ;
+then
+  rm /tmp/hosts.$$
+else
+  mv /tmp/hosts.$$ /etc/hosts
+  service dnsmasq restart
+fi

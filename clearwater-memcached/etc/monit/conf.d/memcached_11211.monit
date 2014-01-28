@@ -5,5 +5,5 @@ check process memcached with pidfile "/var/run/memcached_11211.pid"
         if cpu usage > 98% for 5 cycles then restart
         if 2 restarts within 3 cycles then timeout
 check program poll_memcached with path "/usr/share/clearwater/bin/poll_memcached.sh"
-  if status != 0 for 2 cycles then restart
+        if status != 0 for 2 cycles then restart
 
