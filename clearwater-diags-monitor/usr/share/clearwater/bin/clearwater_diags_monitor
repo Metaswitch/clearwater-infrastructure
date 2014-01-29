@@ -43,7 +43,7 @@ DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
 
-COMPONENTS="bono sprout homestead homer ellis"
+COMPONENTS="bono sprout homestead homer ellis ralf"
 
 
 log()
@@ -478,7 +478,7 @@ do
     get_mysql_info
   fi
 
-  if cw_component_installed sprout
+  if cw_component_installed sprout ralf
   then
     get_memcached_info
   fi

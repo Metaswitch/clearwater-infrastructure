@@ -1,6 +1,6 @@
 type=$(. /etc/clearwater/config
        dpkg-query -W -f='${PackageSpec}\n' |
-       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout)$' |
+       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|ralf)$' |
        sed -e 's/clearwater-sip-stress/sipp/g' |
        tr "\\n" "-" |
        sort |
