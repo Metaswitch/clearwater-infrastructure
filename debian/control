@@ -11,7 +11,7 @@ Homepage: http://projectclearwater.org/
 
 Package: clearwater-infrastructure
 Architecture: all
-Depends: dnsmasq, monit, ntp
+Depends: dnsmasq, monit, ntp, python2.7
 Suggests: clearwater-auto-config, clearwater-auto-upgrade
 Recommends: clearwater-diags-monitor
 Description: Common infrastructure for all Clearwater servers
