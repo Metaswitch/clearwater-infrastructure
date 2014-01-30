@@ -45,7 +45,7 @@ is_ipv6_address=$?
 
 if [ $is_ipv6_address = 1 ]
 then
-  listen_address=$(python /usr/share/clearwater/bin/generate_ipv6_hostname.py $local_ip)
+  listen_address=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
 fi
 
 sed -e 's/^-l .*$/-l '$listen_address'/g
