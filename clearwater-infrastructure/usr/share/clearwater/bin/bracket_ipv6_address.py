@@ -1,9 +1,9 @@
-#!/bin/sh
+#! /usr/share/python
 
-# @file memcached
+# @file bracket_ipv6_address.py
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,21 +33,30 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
+#
 
-. /etc/clearwater/config
+# This script takes an IP address as a string.  If the IP address is IPv4 it
+# returns it unchanged.  If it is IPv6 it returns it with square brackets
 
-# On an IPv6 system memcached need to be configured to listen on the hostname
-# that maps to the local IP address.
-listen_address=$local_ip
+import os
+import sys
+import is_address_ipv6
 
-/usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
+if len(sys.argv) == 2:
+    ip_address = sys.argv[1]
+else:
+    # Print out a usage string to stderr as otherwise the calling script may
+    # try to use this as an IP address parameter.
+    print >> sys.stderr, "Usage : bracket_ipv6_address.py <IP address>"
+    sys.exit(1)
 
-if [ $is_ipv6_address = 1 ]
-then
-  listen_address=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
-fi
+ipv6 = is_address_ipv6.main(ip_address)
 
-sed -e 's/^-l .*$/-l '$listen_address'/g
-        s/^-m .*$/-m 512/g
-        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
+if ipv6:
+    bracketed_address = '[' + ip_address + ']'
+else:
+    bracketed_address = ip_address
+
+# Print out the hostnamebracketed address for use by the calling script.
+print (bracketed_address)
+

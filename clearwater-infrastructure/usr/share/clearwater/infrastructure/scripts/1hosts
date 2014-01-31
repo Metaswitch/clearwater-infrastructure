@@ -1,9 +1,7 @@
 #!/bin/sh
-
-# @file memcached
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,21 +31,38 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
+#
+
+# This script fixes up the /etc/hosts file to have an entry that maps to the
+# local address if it is IPv6.
 
 . /etc/clearwater/config
 
-# On an IPv6 system memcached need to be configured to listen on the hostname
-# that maps to the local IP address.
-listen_address=$local_ip
+# If the local IP address is an IPv6 address then the system needs a dummy
+# hostname that maps to the address.
 
+# Remove any previous dummy hostname from the hosts file.
+grep -v ' # maps to local IPv6 address' /etc/hosts > /tmp/hosts.$$
+
+# Determine whether the local IP address is an IPv6 address.
 /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
 is_ipv6_address=$?
 
 if [ $is_ipv6_address = 1 ]
 then
-  listen_address=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
+  # Generate the ip6.arpa hostname from the IP address.  Add it to the hosts file.
+  hostname=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
+  echo $local_ip $hostname '# maps to local IPv6 address' >> /tmp/hosts.$$
 fi
 
-sed -e 's/^-l .*$/-l '$listen_address'/g
-        s/^-m .*$/-m 512/g
-        s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
+# Compare the new hosts file with the existing one.  If it has changed overwrite
+# the existing file and restart dnsmasq to pick up the changes, otherwise just
+# remove the new file.
+
+if diff /etc/hosts /tmp/hosts.$$ > /dev/null ;
+then
+  rm /tmp/hosts.$$
+else
+  mv /tmp/hosts.$$ /etc/hosts
+  service dnsmasq restart
+fi

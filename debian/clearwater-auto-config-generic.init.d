@@ -47,15 +47,27 @@
 
 do_auto_config()
 {
-  mkdir -p /etc/clearwater
   config=/etc/clearwater/config
-  # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
-  ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g')
+  if [ -f /etc/clearwater/force_ipv6 ]
+  then
+    # The sed expression finds the first IPv6
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9. ]* \)\([0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  else
+    # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
+    # If there are no IPv4 addresses it finds the first IPv6 address.
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  fi
+
+  # Add square brackets around the address iff it is an IPv6 address
+  bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$ip'/g' -i $config
+          s/^sprout_hostname=.*$/sprout_hostname='$ip'/g
+          s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
+          s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
+          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g' -i $config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
