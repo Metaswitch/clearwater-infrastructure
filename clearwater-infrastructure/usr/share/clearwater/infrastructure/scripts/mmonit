@@ -51,7 +51,7 @@ then
   echo "Configuring monit for only localhost access"
   cat > $MMONIT_CONFIG_FILE << EOF
   set eventqueue basedir /var/monit/ slots 1000
-  set httpd port 2812 and use address $local_ip
+  set httpd port 2812 and use address localhost
     allow 0.0.0.0/0
 EOF
 else
