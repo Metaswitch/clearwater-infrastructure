@@ -1,4 +1,4 @@
-#! /usr/share/python
+#! /usr/bin/python
 
 # @file bracket_ipv6_address.py
 #
