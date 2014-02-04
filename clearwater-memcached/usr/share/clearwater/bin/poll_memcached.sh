@@ -37,10 +37,24 @@
 # This script polls a memcached process and check whether it is healthy by checking
 # that the port is open.
 
-. /etc/clearwater/config
+# In case memcached has only just restarted, give it a few seconds to come up.
+sleep 5
 
+# Grab our configuration - we just use the local IP address.
+. /etc/clearwater/config
 PORT=11211
 
-# Not currently implemented, just return success.
+# Do the poll - connect, issue a version command and check that it looks correct.
+nc -v -w 2 $local_ip $PORT <<< "version" 2> /tmp/poll_memcached.sh.nc.stderr.$$ | tee /tmp/poll_memcached.sh.nc.stdout.$$ | head -1 | egrep -q "^VERSION "
+rc=$?
 
-exit 0
+# Check the return code and log if appropriate
+if [ $rc != 0 ] ; then
+  echo memcached poll failed to $local_ip $PORT >&2
+  cat /tmp/poll_memcached.sh.nc.stderr.$$       >&2
+  cat /tmp/poll_memcached.sh.nc.stdout.$$       >&2
+fi
+rm -f /tmp/poll_memcached.sh.nc.stderr.$$ /tmp/poll_memcached.sh.nc.stdout.$$
+
+# Return the return code from the nc command (0 if connected, 1 if not).
+exit $rc
