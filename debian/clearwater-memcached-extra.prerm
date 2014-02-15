@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-memcached.postinst
+# @file clearwater-memcached-extra.prerm
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -40,31 +40,27 @@
 set -e
 
 # summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <postinst> `abort-remove'
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
+#        * <prerm> `remove'
+#        * <old-prerm> `upgrade' <new-version>
+#        * <new-prerm> `failed-upgrade' <old-version>
+#        * <conflictor's-prerm> `remove' `in-favour' <package> <new-version>
+#        * <deconfigured's-prerm> `deconfigure' `in-favour'
+#          <package-being-installed> <version> `removing'
 #          <conflicting-package> <version>
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
 case "$1" in
-    configure)
-        mv /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
-        /usr/share/clearwater/infrastructure/scripts/memcached
-        /etc/init.d/memcached restart 11211
-        [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
+    remove|upgrade|deconfigure)
+        rm /etc/monit/conf.d/memcached_11212.monit
         service monit reload
     ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
+    failed-upgrade)
     ;;
 
     *)
-        echo "postinst called with unknown argument \`$1'" >&2
+        echo "prerm called with unknown argument \`$1'" >&2
         exit 1
     ;;
 esac
