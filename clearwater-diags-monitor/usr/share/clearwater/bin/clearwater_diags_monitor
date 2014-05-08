@@ -322,7 +322,7 @@ get_cassandra_info()
   copy_to_dump "/var/log/cassandra"
 
   # Get information about the Cassandra ring.
-  nodetool ring > $CURRENT_DUMP_DIR/nodetool_ring.txt
+  nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
   nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
   nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
   nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
