@@ -43,9 +43,6 @@ DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
 
-COMPONENTS="bono sprout homestead homer ellis ralf"
-
-
 log()
 {
   printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
@@ -80,21 +77,6 @@ copy_to_dump()
   src=$(realpath $1)
   mkdir -p $CURRENT_DUMP_DIR/root
   cp -rp --parents $src $CURRENT_DUMP_DIR/root
-}
-
-
-# Copy the logs for all clearwater components to the dump file.
-copy_component_logs_to_dump()
-{
-  for comp in $COMPONENTS
-  do
-    log_dir=/var/log/$comp
-    if [ -d "$log_dir" ]
-    then
-      log "Copying logs for $comp"
-      copy_to_dump $log_dir
-    fi
-  done
 }
 
 
@@ -271,7 +253,6 @@ get_hardware_info()
   df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
 }
 
-
 # Get historical resource usage stats. This includes things like network usage,
 # CPU usage, memory usge, etc.
 get_usage_stats()
@@ -317,9 +298,8 @@ cw_component_installed()
 # Get information about the cassandra cluster.
 get_cassandra_info()
 {
-  # Cassandra config and log files.
+  # Cassandra config.
   copy_to_dump "/etc/cassandra"
-  copy_to_dump "/var/log/cassandra"
 
   # Get information about the Cassandra ring.
   nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
@@ -337,9 +317,8 @@ get_cassandra_info()
 # Get information about the mysql database.
 get_mysql_info()
 {
-  # Mysql config and log files.
+  # Mysql config.
   copy_to_dump "/etc/mysql"
-  copy_to_dump "/var/log/mysql*"
 
   # Server status and available databases.
   echo "show status" | mysql > $CURRENT_DUMP_DIR/mysql_show_status.txt
@@ -350,9 +329,8 @@ get_mysql_info()
 # Get information about the memcached database.
 get_memcached_info()
 {
-  # Memcached config and log files.
+  # Memcached config.
   copy_to_dump "/etc/memcached*"
-  copy_to_dump "/var/log/memcached*"
 
   # Also get internal memcached stats (by sending the server a message saying
   # "stats").
@@ -421,10 +399,7 @@ do
   #
 
   # Log files.
-  copy_component_logs_to_dump
-  copy_to_dump '/var/log/monit.log*'
-  copy_to_dump '/var/log/syslog*'
-  copy_to_dump '/var/log/clearwater*'
+  copy_to_dump '/var/log'
 
   # Config files
   copy_to_dump '/etc/clearwater'
@@ -456,8 +431,7 @@ do
   # Command histories.
   #
   # There is no history for root but commands run as sudo are logged in the auth
-  # logs.
-  copy_to_dump '/var/log/auth.log*'
+  # logs (/var/log/auth.log). We copy all of /var/log/ anyway.
 
   # Hardware information and historical resource usage.
   get_hardware_info
