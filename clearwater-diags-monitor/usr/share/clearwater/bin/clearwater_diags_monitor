@@ -253,6 +253,26 @@ get_hardware_info()
   df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
 }
 
+# Get historical resource usage stats. This includes things like network usage,
+# CPU usage, memory usge, etc.
+get_usage_stats()
+{
+  # Use the sar tool to gather historical kernel statistics.  This arranges the
+  # stats by day, so get yesterday's stats as well as today's (to get at least
+  # a day's worth of stats even when collecting diags just after midnight).
+  for day in today yesterday
+  do
+    # Use sar to record stats to a datestamped file. Options are:
+    # -A : Get all stats
+    # -f : Read stats from the specified file (where there is a file for each
+    #      day of the month).
+    sa_file=/var/log/sysstat/sa$(date +"%d" -d $day)
+    if [ -e $sa_file ]
+    then
+      sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+    fi
+  done
+}
 
 # Return whether any of the specified clearwater components are installed.
 #
@@ -278,7 +298,7 @@ cw_component_installed()
 # Get information about the cassandra cluster.
 get_cassandra_info()
 {
-  # Cassandra config and log files.
+  # Cassandra config.
   copy_to_dump "/etc/cassandra"
 
   # Get information about the Cassandra ring.
@@ -297,7 +317,7 @@ get_cassandra_info()
 # Get information about the mysql database.
 get_mysql_info()
 {
-  # Mysql config and log files.
+  # Mysql config.
   copy_to_dump "/etc/mysql"
 
   # Server status and available databases.
@@ -309,7 +329,7 @@ get_mysql_info()
 # Get information about the memcached database.
 get_memcached_info()
 {
-  # Memcached config and log files.
+  # Memcached config.
   copy_to_dump "/etc/memcached*"
 
   # Also get internal memcached stats (by sending the server a message saying
