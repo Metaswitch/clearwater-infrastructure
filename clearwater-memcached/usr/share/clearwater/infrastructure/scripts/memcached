@@ -50,4 +50,5 @@ fi
 
 sed -e 's/^-l .*$/-l '$listen_address'/g
         s/^-m .*$/-m 512/g
+        s/^# *-v *$/-v/g
         s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
