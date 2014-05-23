@@ -201,6 +201,7 @@ check_connectivity_to_domain()
 # Get the networking information for the system.
 get_network_info()
 {
+  copy_to_dump "/etc/hosts"
   ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
   netstat -rn > $CURRENT_DUMP_DIR/routes.txt
   netstat -anp > $CURRENT_DUMP_DIR/sockets.txt
@@ -266,7 +267,7 @@ get_usage_stats()
     # -A : Get all stats
     # -f : Read stats from the specified file (where there is a file for each
     #      day of the month).
-    sa_file=/var/log/sysstat/sa$(date +"%d" -d $day)
+    sa_file=/var/log/sysstat/clearwater-sa$(date +"%d" -d $day)
     if [ -e $sa_file ]
     then
       sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
@@ -526,6 +527,13 @@ do
     fi
   done
 
+  jj=0
+  while [ $jj -lt $ii ]
+  do
+    core_file=${trigger_files_arr[$jj]}
+    jj=$(( $jj + 1 ))
+    gzip $CURRENT_DUMP_DIR/$core_file
+  done
   #
   # Diags have been collected.  Time to zip up the diags bundle.
   #

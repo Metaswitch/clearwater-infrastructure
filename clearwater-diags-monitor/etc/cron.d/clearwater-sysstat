@@ -1,0 +1,2 @@
+# Get activity reports every minute - this is a finer granularity than the default /etc/cron.d/sysstat
+* * * * * root /usr/lib/sysstat/sadc 1 1 /var/log/sysstat/clearwater-sa`date +\%d`
