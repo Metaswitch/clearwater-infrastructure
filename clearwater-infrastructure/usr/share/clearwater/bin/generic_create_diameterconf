@@ -1,0 +1,141 @@
+#!/bin/bash
+
+# @file generic_create_diameterconf
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2014 Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+# This file creates a freeDiameter config file, and appropriate
+# TLS keys, for either Ralf or Homestead.
+
+name=$1
+identity=$2
+realm=$3
+port=$4
+
+# Note that is_address_ipv6.py is backwards in that it returns 0 for false - hence the '!'.
+if ! /usr/share/clearwater/bin/is_address_ipv6.py $identity
+then
+  identity=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $identity)
+fi
+
+if ! /usr/share/clearwater/bin/is_address_ipv6.py $realm
+then
+  realm=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $realm)
+fi
+
+if [ -f /var/lib/$name/privkey.pem ]
+then
+    priv_modulus=$(openssl rsa -in /var/lib/$name/privkey.pem -modulus -noout)
+fi
+
+if [ -f /var/lib/$name/cert.pem ]
+then
+    pub_modulus=$(openssl x509 -in /var/lib/$name/cert.pem -modulus -noout)
+    cert_current_name=$(certtool --certificate-info --infile /var/lib/$name/cert.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
+    cert_issuer=$(certtool --certificate-info --infile /var/lib/$name/cert.pem | egrep -e 'Issuer: CN=' | sed 's/.*Issuer: CN=//g')
+
+fi
+
+if [ -f /var/lib/$name/ca.pem ]
+then
+    ca_name=$(certtool --certificate-info --infile /var/lib/$name/ca.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
+fi
+
+if [ "$cert_current_name" != "$identity" ] ||
+   [ "$priv_modulus" != "$pub_modulus" ] ||
+   [ "$cert_issuer" != "$ca_name" ]
+then
+    # The current certificate does not have the required common name,
+    # or does not match the private key, or does not match the CA.  Remove them so that they are regenerated below.
+    rm -f /var/lib/$name/cert.pem /var/lib/$name/privkey.pem /var/lib/$name/ca.pem
+fi
+
+# If any of the certificate files are missing, create new self-signed ones.
+if [ ! -f /var/lib/$name/cert.pem ] ||
+   [ ! -f /var/lib/$name/privkey.pem ] ||
+   [ ! -f /var/lib/$name/ca.pem ]
+then
+  rm -f /var/lib/$name/cert.pem /var/lib/$name/privkey.pem /var/lib/$name/ca.pem
+
+  # Build up the configuration file for GnuTLS
+  cat > /tmp/cert.cfg.$$ <<EOF
+cn = "$identity"
+expiration_days = 3650
+EOF
+
+  # Create the certificates.
+  sudo certtool --generate-privkey --bits 1024 --template /tmp/cert.cfg.$$ --outfile /var/lib/$name/privkey.pem
+  sudo certtool --generate-self-signed --bits 1024 --template /tmp/cert.cfg.$$ --load-privkey /var/lib/$name/privkey.pem --outfile /var/lib/$name/cert.pem
+
+  # Fix up the certificates in the directory.  The private key is created as readable
+  # by root only.  Fix it so that the $name user can read it as well.
+  chmod 644 /var/lib/$name/privkey.pem
+  cp /var/lib/$name/cert.pem /var/lib/$name/ca.pem
+  rm /tmp/cert.cfg.$$
+fi
+
+# Set up the configuration for $name with the right IP addresses and ports
+cat > /var/lib/$name/$name.conf <<EOF
+# -------- Local ---------
+
+Identity = "$identity";
+Realm = "$realm";
+
+Port = $port;
+
+# TLS configuration
+TLS_Cred = "/var/lib/$name/cert.pem", "/var/lib/$name/privkey.pem";
+TLS_CA = "/var/lib/$name/ca.pem";
+
+# Limit the number of SCTP streams
+SCTP_streams = 3;
+
+
+# -------- Extensions ---------
+
+# Uncomment (and create rtd.conf) to specify routing table for this peer.
+#LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/rt_default.fdx" : "/var/lib/$name/rtd.conf";
+
+# Uncomment (and create acl.conf) to allow incoming connections from other peers.
+#LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/acl_wl.fdx" : "/var/lib/$name/acl.conf";
+
+# Uncomment to display periodic state information
+LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dbg_monitor.fdx";
+
+# Load the SIP and 3GPP dictionary objects
+LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_nasreq.fdx";
+LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_sip.fdx";
+LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_dcca.fdx";
+LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_dcca_3gpp.fdx";
+
+EOF
