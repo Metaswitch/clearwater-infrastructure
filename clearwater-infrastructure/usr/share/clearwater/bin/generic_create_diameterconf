@@ -37,38 +37,51 @@
 # This file creates a freeDiameter config file, and appropriate
 # TLS keys, for either Ralf or Homestead.
 
+usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT"
+
 name=$1
 identity=$2
 realm=$3
 port=$4
 
-# Note that is_address_ipv6.py is backwards in that it returns 0 for false - hence the '!'.
-if ! /usr/share/clearwater/bin/is_address_ipv6.py $identity
+if [[ $port = "" || $5 != "" ]]
+then
+    # Usage message to stderr
+    echo $usage >&2
+    return 1
+fi
+
+$key_dir=/var/lib/$name
+$cfg_dir=/var/lib/$name
+$fd_dir=/usr/share/clearwater/$name/lib/freeDiameter/
+
+
+
+if /usr/share/clearwater/bin/is_address_ipv6.py $identity
 then
   identity=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $identity)
 fi
 
-if ! /usr/share/clearwater/bin/is_address_ipv6.py $realm
+if /usr/share/clearwater/bin/is_address_ipv6.py $realm
 then
   realm=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $realm)
 fi
 
-if [ -f /var/lib/$name/privkey.pem ]
+if [ -f $key_dir/privkey.pem ]
 then
-    priv_modulus=$(openssl rsa -in /var/lib/$name/privkey.pem -modulus -noout)
+    priv_modulus=$(openssl rsa -in $key_dir/privkey.pem -modulus -noout)
 fi
 
-if [ -f /var/lib/$name/cert.pem ]
+if [ -f $key_dir/cert.pem ]
 then
-    pub_modulus=$(openssl x509 -in /var/lib/$name/cert.pem -modulus -noout)
-    cert_current_name=$(certtool --certificate-info --infile /var/lib/$name/cert.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
-    cert_issuer=$(certtool --certificate-info --infile /var/lib/$name/cert.pem | egrep -e 'Issuer: CN=' | sed 's/.*Issuer: CN=//g')
-
+    pub_modulus=$(openssl x509 -in $key_dir/cert.pem -modulus -noout)
+    cert_current_name=$(certtool --certificate-info --infile $key_dir/cert.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
+    cert_issuer=$(certtool --certificate-info --infile $key_dir/cert.pem | egrep -e 'Issuer: CN=' | sed 's/.*Issuer: CN=//g')
 fi
 
-if [ -f /var/lib/$name/ca.pem ]
+if [ -f $key_dir/ca.pem ]
 then
-    ca_name=$(certtool --certificate-info --infile /var/lib/$name/ca.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
+    ca_name=$(certtool --certificate-info --infile $key_dir/ca.pem | egrep -e 'Subject: CN=' | sed 's/.*Subject: CN=//g')
 fi
 
 if [ "$cert_current_name" != "$identity" ] ||
@@ -77,15 +90,15 @@ if [ "$cert_current_name" != "$identity" ] ||
 then
     # The current certificate does not have the required common name,
     # or does not match the private key, or does not match the CA.  Remove them so that they are regenerated below.
-    rm -f /var/lib/$name/cert.pem /var/lib/$name/privkey.pem /var/lib/$name/ca.pem
+    rm -f $key_dir/cert.pem $key_dir/privkey.pem $key_dir/ca.pem
 fi
 
 # If any of the certificate files are missing, create new self-signed ones.
-if [ ! -f /var/lib/$name/cert.pem ] ||
-   [ ! -f /var/lib/$name/privkey.pem ] ||
-   [ ! -f /var/lib/$name/ca.pem ]
+if [ ! -f $key_dir/cert.pem ] ||
+   [ ! -f $key_dir/privkey.pem ] ||
+   [ ! -f $key_dir/ca.pem ]
 then
-  rm -f /var/lib/$name/cert.pem /var/lib/$name/privkey.pem /var/lib/$name/ca.pem
+  rm -f $key_dir/cert.pem $key_dir/privkey.pem $key_dir/ca.pem
 
   # Build up the configuration file for GnuTLS
   cat > /tmp/cert.cfg.$$ <<EOF
@@ -94,18 +107,18 @@ expiration_days = 3650
 EOF
 
   # Create the certificates.
-  sudo certtool --generate-privkey --bits 1024 --template /tmp/cert.cfg.$$ --outfile /var/lib/$name/privkey.pem
-  sudo certtool --generate-self-signed --bits 1024 --template /tmp/cert.cfg.$$ --load-privkey /var/lib/$name/privkey.pem --outfile /var/lib/$name/cert.pem
+  sudo certtool --generate-privkey --bits 1024 --template /tmp/cert.cfg.$$ --outfile $key_dir/privkey.pem
+  sudo certtool --generate-self-signed --bits 1024 --template /tmp/cert.cfg.$$ --load-privkey $key_dir/privkey.pem --outfile $key_dir/cert.pem
 
   # Fix up the certificates in the directory.  The private key is created as readable
   # by root only.  Fix it so that the $name user can read it as well.
-  chmod 644 /var/lib/$name/privkey.pem
-  cp /var/lib/$name/cert.pem /var/lib/$name/ca.pem
+  chmod 644 $key_dir/privkey.pem
+  cp $key_dir/cert.pem $key_dir/ca.pem
   rm /tmp/cert.cfg.$$
 fi
 
 # Set up the configuration for $name with the right IP addresses and ports
-cat > /var/lib/$name/$name.conf <<EOF
+cat > $cfg_dir/$name.conf <<EOF
 # -------- Local ---------
 
 Identity = "$identity";
@@ -114,8 +127,8 @@ Realm = "$realm";
 Port = $port;
 
 # TLS configuration
-TLS_Cred = "/var/lib/$name/cert.pem", "/var/lib/$name/privkey.pem";
-TLS_CA = "/var/lib/$name/ca.pem";
+TLS_Cred = "$key_dir/cert.pem", "$key_dir/privkey.pem";
+TLS_CA = "$key_dir/ca.pem";
 
 # Limit the number of SCTP streams
 SCTP_streams = 3;
@@ -124,18 +137,18 @@ SCTP_streams = 3;
 # -------- Extensions ---------
 
 # Uncomment (and create rtd.conf) to specify routing table for this peer.
-#LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/rt_default.fdx" : "/var/lib/$name/rtd.conf";
+#LoadExtension = "$fd_dir/rt_default.fdx" : "$cfg_dir/rtd.conf";
 
 # Uncomment (and create acl.conf) to allow incoming connections from other peers.
-#LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/acl_wl.fdx" : "/var/lib/$name/acl.conf";
+#LoadExtension = "$fd_dir/acl_wl.fdx" : "$cfg_dir/acl.conf";
 
 # Uncomment to display periodic state information
-LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dbg_monitor.fdx";
+LoadExtension = "$fd_dir/dbg_monitor.fdx";
 
 # Load the SIP and 3GPP dictionary objects
-LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_nasreq.fdx";
-LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_sip.fdx";
-LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_dcca.fdx";
-LoadExtension = "/usr/share/clearwater/$name/lib/freeDiameter/dict_dcca_3gpp.fdx";
+LoadExtension = "$fd_dir/dict_nasreq.fdx";
+LoadExtension = "$fd_dir/dict_sip.fdx";
+LoadExtension = "$fd_dir/dict_dcca.fdx";
+LoadExtension = "$fd_dir/dict_dcca_3gpp.fdx";
 
 EOF
