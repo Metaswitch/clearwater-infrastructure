@@ -45,6 +45,7 @@
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
+# Changes in this command should be replicated in clearwater-auto-config-aws.init.d
 do_auto_config()
 {
   config=/etc/clearwater/config
@@ -67,7 +68,8 @@ do_auto_config()
           s/^sprout_hostname=.*$/sprout_hostname='$ip'/g
           s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
           s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g' -i $config
+          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g
+          s/^upstream_hostname=.*$/upstream_hostname='$ip'/g' -i $config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
