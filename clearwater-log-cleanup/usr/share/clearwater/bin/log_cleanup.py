@@ -6,7 +6,7 @@ import argparse
 def get_logs(dir, prefix, suffix):
     """Return a list of all files in dir which start with prefix or end with suffix"""
     return [dir+'/'+i for i in os.listdir(dir)
-                if ((isfile(dir+'/'+i)) and ((i.startswith(prefix)) or ((suffix != "") and (i.endswith(suffix)))))]
+                if ((isfile(dir+'/'+i)) and (((prefix != "") and (i.startswith(prefix))) or ((suffix != "") and (i.endswith(suffix)))))]
 
 def total(logfiles):
     """Return the total filesize, in bytes, of all files in logfiles"""
