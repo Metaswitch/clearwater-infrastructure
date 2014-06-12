@@ -37,25 +37,24 @@
 # This file creates a freeDiameter config file, and appropriate
 # TLS keys, for either Ralf or Homestead.
 
-usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT"
+usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT"
 
 name=$1
 identity=$2
 realm=$3
 port=$4
+sec_port=$5
 
-if [[ $port = "" || $5 != "" ]]
+if [[ $# != 5 ]]
 then
     # Usage message to stderr
     echo $usage >&2
-    return 1
+    exit 1
 fi
 
-$key_dir=/var/lib/$name
-$cfg_dir=/var/lib/$name
-$fd_dir=/usr/share/clearwater/$name/lib/freeDiameter/
-
-
+key_dir=/var/lib/$name
+cfg_dir=/var/lib/$name
+fd_dir=/usr/share/clearwater/$name/lib/freeDiameter/
 
 if /usr/share/clearwater/bin/is_address_ipv6.py $identity
 then
@@ -125,6 +124,7 @@ Identity = "$identity";
 Realm = "$realm";
 
 Port = $port;
+SecPort = $sec_port;
 
 # TLS configuration
 TLS_Cred = "$key_dir/cert.pem", "$key_dir/privkey.pem";
