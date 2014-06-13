@@ -39,24 +39,29 @@ import sys
 import socket
 
 # This script takes an input string and attempts to parse it as an IPv6 address.
-# Return 1 if the string is a valid IPv6 address and 0 otherwise.
+# Return 0 if the string is a valid IPv6 address, 2 if it has the
+# wrong number of arguments, and 1 otherwise.
+
+# Note that per RFC 2373, an IPv6 address does not contain square
+# brackets, and this script will return 1 if such an IPv6 address is given.
 
 def main (ip_address):
 
     # Attempt to convert the IP address into a 128 bit binary representation.
-    # If the string parses successfully return '1'.  If the string passed in
+    # If the string parses successfully return True.  If the string passed in
     # is not a valid IPv6 address inet_pton will throw an exception.  Handle
-    # the exception and return 0.
+    # the exception and return False.
     try:
         binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
-        return(1)
+        return True
     except socket.error:
-        return(0)
+        return False
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         rc = main(sys.argv[1])
-        sys.exit(rc)
+        # Convert the True or False into the appropriate shell return code
+        sys.exit(0 if rc else 1)
     else:
-        sys.exit(0)
+        sys.exit(2)
 

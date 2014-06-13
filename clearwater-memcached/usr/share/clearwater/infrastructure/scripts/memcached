@@ -40,10 +40,7 @@
 # that maps to the local IP address.
 listen_address=$local_ip
 
-/usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
-
-if [ $is_ipv6_address = 1 ]
+if /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
 then
   listen_address=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
 fi

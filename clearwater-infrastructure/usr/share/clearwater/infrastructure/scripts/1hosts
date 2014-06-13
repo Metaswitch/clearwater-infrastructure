@@ -45,10 +45,7 @@
 grep -v ' # maps to local IPv6 address' /etc/hosts > /tmp/hosts.$$
 
 # Determine whether the local IP address is an IPv6 address.
-/usr/share/clearwater/bin/is_address_ipv6.py $local_ip
-is_ipv6_address=$?
-
-if [ $is_ipv6_address = 1 ]
+if /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
 then
   # Generate the ip6.arpa hostname from the IP address.  Add it to the hosts file.
   hostname=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
