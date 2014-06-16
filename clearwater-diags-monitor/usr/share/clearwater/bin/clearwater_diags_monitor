@@ -204,7 +204,7 @@ get_network_info()
   copy_to_dump "/etc/hosts"
   ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
   netstat -rn > $CURRENT_DUMP_DIR/routes.txt
-  netstat -anp > $CURRENT_DUMP_DIR/sockets.txt
+  netstat -anp > $CURRENT_DUMP_DIR/netstat.txt
 }
 
 
@@ -312,6 +312,14 @@ get_cassandra_info()
   # Cassandra data format.
   echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
   echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+
+  # Get the newest hprof file
+  hprof_files=$(ls -t /var/lib/cassandra/*hprof | head -1)
+  for hprof_file in $hprof_files
+  do
+    wait_until_closed "$hprof_file"
+    copy_to_dump "$hprof_file"
+  done
 }
 
 
@@ -406,6 +414,7 @@ do
   copy_to_dump '/etc/clearwater'
   copy_to_dump '/etc/snmp'
   copy_to_dump '/etc/monit'
+  copy_to_dump '/etc/hosts'
 
   # Get the config files for installed clearwater packages.  The dpkg etc lines
   # are of the form below, so we need the 2nd field from cut.
