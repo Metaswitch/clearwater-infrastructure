@@ -314,9 +314,12 @@ get_cassandra_info()
   echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
 
   # Get the newest hprof file
-  hprof_file=$(ls -t /var/lib/cassandra/*hprof | head -1)
-  wait_until_closed "$hprof_file"
-  copy_to_dump "$hprof_file"
+  hprof_files=$(ls -t /var/lib/cassandra/*hprof | head -1)
+  for hprof_file in $hprof_files
+  do
+    wait_until_closed "$hprof_file"
+    copy_to_dump "$hprof_file"
+  done
 }
 
 
