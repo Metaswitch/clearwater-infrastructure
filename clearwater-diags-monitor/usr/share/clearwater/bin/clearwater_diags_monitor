@@ -394,9 +394,10 @@ do
 
   # Set up some variables that relate to the current dump.  These remain valid
   # for the duration of the dump collection process.
-  CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$cause
-  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
+  CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$(hostname).$cause
+  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP.temp
   CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
+  FINAL_DUMP_ARCHIVE=$DUMPS_DIR/$CURRENT_DUMP.tar.gz
   CURRENT_CW_COMPONENTS=$(clearwater_packages)
 
   # Create a new dump directory.
@@ -559,6 +560,8 @@ do
   (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
   rm -rf "$CURRENT_DUMP_DIR"
+  
+  mv $CURRENT_DUMP_ARCHIVE $FINAL_DUMP_ARCHIVE
 
   # We should have dealt with all the trigger files by now, unless there are
   # more that we can deal with.  Delete any that are left over.

@@ -34,5 +34,10 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+echo 'gather_diags:
+This script triggers diagnostics collection. 
+
+The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
+
 # Write a file to trigger a diagnostic dump.
 echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
