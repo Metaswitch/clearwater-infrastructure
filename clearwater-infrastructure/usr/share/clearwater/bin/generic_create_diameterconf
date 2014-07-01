@@ -37,15 +37,16 @@
 # This file creates a freeDiameter config file, and appropriate
 # TLS keys, for either Ralf or Homestead.
 
-usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT"
+usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS"
 
 name=$1
 identity=$2
 realm=$3
 port=$4
 sec_port=$5
+acl_required=$6
 
-if [[ $# != 5 ]]
+if [[ $# != 6 ]]
 then
     # Usage message to stderr
     echo $usage >&2
@@ -116,6 +117,14 @@ EOF
   rm /tmp/cert.cfg.$$
 fi
 
+# By default assume incoming connections from peers are not allowed, so comment out the
+# acl.conf Load Extension line. If incoming connections are allowed, uncomment it.
+acl_commenter="#";
+if [[  $acl_required == "true" ]]
+then
+  acl_commenter=""
+fi
+
 # Set up the configuration for $name with the right IP addresses and ports
 cat > $cfg_dir/$name.conf <<EOF
 # -------- Local ---------
@@ -140,7 +149,7 @@ SCTP_streams = 3;
 #LoadExtension = "$fd_dir/rt_default.fdx" : "$cfg_dir/rtd.conf";
 
 # Uncomment (and create acl.conf) to allow incoming connections from other peers.
-#LoadExtension = "$fd_dir/acl_wl.fdx" : "$cfg_dir/acl.conf";
+$acl_commenter LoadExtension = "$fd_dir/acl_wl.fdx" : "$cfg_dir/acl.conf";
 
 # Uncomment to display periodic state information
 LoadExtension = "$fd_dir/dbg_monitor.fdx";
