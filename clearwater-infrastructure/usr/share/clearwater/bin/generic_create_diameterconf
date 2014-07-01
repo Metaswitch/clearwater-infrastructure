@@ -35,9 +35,9 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 # This file creates a freeDiameter config file, and appropriate
-# TLS keys, for either Ralf or Homestead.
+# TLS keys, for either Ralf, Homestead or Cedar.
 
-usage="Usage: generic_create_diameterconf [homestead|ralf] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS"
+usage="Usage: generic_create_diameterconf [homestead|ralf|cedar] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS"
 
 name=$1
 identity=$2
@@ -118,7 +118,7 @@ EOF
 fi
 
 # By default assume incoming connections from peers are not allowed, so comment out the
-# acl.conf Load Extension line. If incoming connections are allowed, uncomment it.
+# acl_wl.fdx Load Extension line. If incoming connections are allowed, uncomment it.
 acl_commenter="#";
 if [[  $acl_required == "true" ]]
 then
