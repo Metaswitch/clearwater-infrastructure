@@ -394,10 +394,11 @@ do
 
   # Set up some variables that relate to the current dump.  These remain valid
   # for the duration of the dump collection process.
-  CURRENT_DUMP=$(date "+%Y%m%d%H%M%S").$(hostname).$cause
-  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP.temp
+  BASE_DUMP=$(date "+%Y%m%d%H%M%S").$(hostname).$cause
+  CURRENT_DUMP=$BASE_DUMP.temp
+  CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
   CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
-  FINAL_DUMP_ARCHIVE=$DUMPS_DIR/$CURRENT_DUMP.tar.gz
+  FINAL_DUMP_ARCHIVE=$DUMPS_DIR/$BASE_DUMP.tar.gz
   CURRENT_CW_COMPONENTS=$(clearwater_packages)
 
   # Create a new dump directory.
