@@ -1,0 +1,63 @@
+#!/bin/bash
+
+to_seconds() {
+  echo $1 | /usr/share/clearwater/icinga/etime_to_seconds
+}
+
+cw_abort() {
+  pidfile=$1
+  pid=`sudo cat $1`
+  grace_period=$2
+
+  etime=`ps h -o etime $pid`
+  etime_s=`to_seconds $etime`
+  if [[ "$etime_s" -eq "" ]]; then
+    echo "Asked to restart $pidfile ($pid) but it is not running" >> /var/log/icinga/clearwater.log
+    return
+  fi
+
+  if [[ $etime_s -gt $grace_period ]]; then
+    echo "Restarting $pidfile ($pid)" >> /var/log/icinga/clearwater.log
+    sudo start-stop-daemon --stop --quiet --retry=ABRT/60/KILL/5 --pid $pidfile &>> /var/log/icinga/clearwater.log
+  else
+    echo "Asked to restart $pidfile ($pid), but it has only been running for $etime_s seconds (grace period is $grace_period seconds)" >> /var/log/icinga/clearwater.log
+  fi
+}
+
+generic_event_handler() {
+  state=$1
+  state_type=$2
+  retries=$3
+  pidfile=$4
+  grace_period=$5
+  echo $* >> /var/log/icinga/clearwater.log
+  # What state is the service in?
+  case "$state" in
+  OK)
+        # The service just came back up, so don't do anything...
+        ;;
+  WARNING)
+        # We never set WARNING or UNKNOWN state
+        ;;
+  UNKNOWN)
+        ;;
+  CRITICAL)
+        # Is this a "soft" or a "hard" state?
+        case "$state_type" in
+        SOFT)
+                # On initial failure, Icinga will mark this as "soft critical" and rapidly retry. By the third failure, we're confident enough to take corrective action.
+                if [[ $retries -gt 2 ]]; then
+                  cw_abort $pidfile $grace_period
+                fi
+                ;;
+        # If our corrective action fails, we become HARD CRITICAL (but the event handler keeps getting called because we're a volatile service). Keep trying the corrective action.
+        HARD)
+                cw_abort $pidfile $grace_period
+                ;;
+        esac
+        ;;
+  esac
+}
+
+generic_event_handler $*
+
