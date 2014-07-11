@@ -1,0 +1,11 @@
+description "Memcache daemon"
+
+start on started network-services
+
+script
+  . /etc/clearwater/config
+  exec /usr/bin/memcached -v -m 512 -p 11211 -u memcache -l $local_ip -c 4096
+end script
+
+respawn
+

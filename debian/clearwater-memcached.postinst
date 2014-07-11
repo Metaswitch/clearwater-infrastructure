@@ -53,11 +53,19 @@ set -e
 
 case "$1" in
     configure)
-        mv /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
         /usr/share/clearwater/infrastructure/scripts/memcached
-        /etc/init.d/memcached restart 11211
+
+        if [ -e "/etc/init.d/memcached" ]; then
+            service memcached stop
+            mv /etc/init.d/memcached /usr/share/clearwater/conf/memcached.sysv.old
+            cp /usr/share/clearwater/conf/memcached.upstart /etc/init/memcached.conf
+        fi
+
+        restart memcached
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-        service monit reload
+
+        /usr/share/clearwater/icinga/make_cw_memcached_icinga.cfg.sh > /etc/icinga/objects/cw_memcached_icinga.cfg
+        service icinga reload
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
