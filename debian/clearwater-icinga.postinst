@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# @file clearwater-snmpd.postinst
+# @file clearwater-icinga.postinst
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014 Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -57,11 +57,11 @@ case "$1" in
         cp /etc/icinga/icinga.cfg /etc/icinga/icinga.cfg.pre-clearwater
         cp /usr/share/clearwater/icinga/icinga.cfg /etc/icinga/icinga.cfg
 
-	# We don't have a HTTP server running, so disable the check for that service
-	cp /etc/icinga/objects/services_icinga.cfg /etc/icinga/objects/services_icinga.cfg.pre-clearwater
+        # We don't have a HTTP server running, so disable the check for that service
+        cp /etc/icinga/objects/services_icinga.cfg /etc/icinga/objects/services_icinga.cfg.pre-clearwater
         cp /usr/share/clearwater/icinga/services_icinga.cfg /etc/icinga/objects/services_icinga.cfg
 
-	sed "s/REPLACE_WITH_IP/$local_ip/" /usr/share/clearwater/icinga/clearwater_overall.cfg > /etc/icinga/objects/clearwater_overall.cfg
+        sed "s/REPLACE_WITH_IP/$local_ip/" /usr/share/clearwater/icinga/clearwater_overall.cfg > /etc/icinga/objects/clearwater_overall.cfg
 
         install -D -m 0440 /usr/share/clearwater/icinga/icinga.sudoers /etc/sudoers.d/100-icinga
         service icinga restart || true
