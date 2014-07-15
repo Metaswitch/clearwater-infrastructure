@@ -75,8 +75,13 @@ wait_until_closed()
 copy_to_dump()
 {
   src=$(realpath $1)
-  mkdir -p $CURRENT_DUMP_DIR/root
-  cp -rp --parents $src $CURRENT_DUMP_DIR/root
+  if [[ $src ]]
+  then
+    mkdir -p $CURRENT_DUMP_DIR/root
+    cp -rp --parents $src $CURRENT_DUMP_DIR/root
+  else
+    log "$1 not present in deployment"
+  fi
 }
 
 
