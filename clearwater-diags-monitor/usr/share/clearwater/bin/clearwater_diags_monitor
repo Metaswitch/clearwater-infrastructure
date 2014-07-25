@@ -45,7 +45,7 @@ DUMPS_DIR=$DIAGS_DIR/dumps
 
 log()
 {
-  printf "[$(date +"%d-%h-%Y %H:%M:%S")] $@\n"
+  printf "[$(date --utc +"%d-%h-%Y %H:%M:%S %Z")] $@\n"
 }
 
 
@@ -272,10 +272,10 @@ get_usage_stats()
     # -A : Get all stats
     # -f : Read stats from the specified file (where there is a file for each
     #      day of the month).
-    sa_file=/var/log/sysstat/clearwater-sa$(date +"%d" -d $day)
+    sa_file=/var/log/sysstat/clearwater-sa$(date --utc +"%d" -d $day)
     if [ -e $sa_file ]
     then
-      sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date "+%Y%m%d" -d $day).txt
+      sar -A -f $sa_file > $CURRENT_DUMP_DIR/sar.$(date --utc "+%Y%m%d" -d $day).txt
     fi
   done
 }
@@ -399,7 +399,7 @@ do
 
   # Set up some variables that relate to the current dump.  These remain valid
   # for the duration of the dump collection process.
-  BASE_DUMP=$(date "+%Y%m%d%H%M%S").$(hostname).$cause
+  BASE_DUMP=$(date --utc "+%Y%m%d%H%M%S").$(hostname).$cause
   CURRENT_DUMP=$BASE_DUMP.temp
   CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
   CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
