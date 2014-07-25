@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+
+# Parses input of the format returned by ps -o etime, i.e.
+# [dd-][hh:]mm:ss, to seconds. For any other input, doesn't print anything.
+
+while (<STDIN>) {
+    if (/((\d+)-)?((\d+):)?(\d+):(\d+)/) {
+        $days = $2;
+        $hours = $4 + (24 * $days);
+        $minutes = $5 + (60 * $hours);
+        $seconds = $6 + (60 * $minutes);
+        print $seconds, "\n";
+    }
+}

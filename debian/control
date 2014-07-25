@@ -43,6 +43,11 @@ Architecture: all
 Depends: snmpd
 Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
+Package: clearwater-icinga
+Architecture: all
+Depends: icinga-core, icli
+Description: Monitoring service configuration for Clearwater
+
 Package: clearwater-diags-monitor
 Architecture: all
 Depends: inotify-tools, realpath, sysstat

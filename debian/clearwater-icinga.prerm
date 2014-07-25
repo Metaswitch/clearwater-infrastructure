@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# @file clearwater-memcached.postinst
+# @file clearwater-icinga.prerm
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014 Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -40,39 +40,30 @@
 set -e
 
 # summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <postinst> `abort-remove'
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
+#        * <prerm> `remove'
+#        * <old-prerm> `upgrade' <new-version>
+#        * <new-prerm> `failed-upgrade' <old-version>
+#        * <conflictor's-prerm> `remove' `in-favour' <package> <new-version>
+#        * <deconfigured's-prerm> `deconfigure' `in-favour'
+#          <package-being-installed> <version> `removing'
 #          <conflicting-package> <version>
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
 case "$1" in
-    configure)
-        /usr/share/clearwater/infrastructure/scripts/memcached
-
-        if [ -e "/etc/init.d/memcached" ]; then
-            service memcached stop
-            mv /etc/init.d/memcached /usr/share/clearwater/conf/memcached.sysv.old
-            cp /usr/share/clearwater/conf/memcached.upstart /etc/init/memcached.conf
-        fi
-
-        restart memcached
-        [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-
-        /usr/share/clearwater/icinga/make_cw_memcached_icinga.cfg.sh > /etc/icinga/objects/cw_memcached_icinga.cfg
-        service icinga reload
+    remove|upgrade|deconfigure)
+        [ ! -f /etc/icinga/icinga.cfg.pre-clearwater ] || mv /etc/icinga/icinga.cfg.pre-clearwater /etc/icinga/icinga.cfg
+        [ ! -f /etc/icinga/objects/services_icinga.cfg.pre-clearwater ] || mv /etc/icinga/objects/services_icinga.cfg.pre-clearwater /etc/icinga/objects/services_icinga.cfg
+        rm -f /etc/sudoers.d/100-icinga
+        rm -f /etc/icinga/objects/clearwater_overall.cfg
+        service icinga restart || true
     ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
+    failed-upgrade)
     ;;
 
     *)
-        echo "postinst called with unknown argument \`$1'" >&2
+        echo "prerm called with unknown argument \`$1'" >&2
         exit 1
     ;;
 esac

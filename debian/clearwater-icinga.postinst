@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# @file clearwater-memcached.postinst
+# @file clearwater-icinga.postinst
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2014 Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -53,19 +53,18 @@ set -e
 
 case "$1" in
     configure)
-        /usr/share/clearwater/infrastructure/scripts/memcached
+        . /etc/clearwater/config
+        cp /etc/icinga/icinga.cfg /etc/icinga/icinga.cfg.pre-clearwater
+        cp /usr/share/clearwater/icinga/icinga.cfg /etc/icinga/icinga.cfg
 
-        if [ -e "/etc/init.d/memcached" ]; then
-            service memcached stop
-            mv /etc/init.d/memcached /usr/share/clearwater/conf/memcached.sysv.old
-            cp /usr/share/clearwater/conf/memcached.upstart /etc/init/memcached.conf
-        fi
+        # We don't have a HTTP server running, so disable the check for that service
+        cp /etc/icinga/objects/services_icinga.cfg /etc/icinga/objects/services_icinga.cfg.pre-clearwater
+        cp /usr/share/clearwater/icinga/services_icinga.cfg /etc/icinga/objects/services_icinga.cfg
 
-        restart memcached
-        [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
+        sed "s/REPLACE_WITH_IP/$local_ip/" /usr/share/clearwater/icinga/clearwater_overall.cfg > /etc/icinga/objects/clearwater_overall.cfg
 
-        /usr/share/clearwater/icinga/make_cw_memcached_icinga.cfg.sh > /etc/icinga/objects/cw_memcached_icinga.cfg
-        service icinga reload
+        install -D -m 0440 /usr/share/clearwater/icinga/icinga.sudoers /etc/sudoers.d/100-icinga
+        service icinga restart || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
