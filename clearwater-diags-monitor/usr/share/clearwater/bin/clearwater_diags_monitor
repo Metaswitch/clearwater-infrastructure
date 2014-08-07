@@ -84,6 +84,39 @@ copy_to_dump()
   fi
 }
 
+# Move files and directories to the dump preserving the full path.
+# Use this when the file is very large or is used to trigger a diags
+# collection (so we don't repeatedly trigger on the same file).
+#
+# For example the directory /var/log/sprout would be moved to
+# <dumpdir>/var/log/sprout
+#
+# Params:
+#   $1 - The objects to move.
+move_to_dump()
+{
+  src=$(realpath $1)
+  if [[ $src ]]
+  then
+    dst=$CURRENT_DUMP_DIR/root
+    mkdir -p $dst
+
+    # First ensure the directory strucutre is set up correctly
+    for f in `find $src -type d`
+    do
+      mkdir -p $dst${f#$src}
+    done
+
+    # Now move the files
+    for f in `find $src -type f`
+    do
+      mv $f $dst${f#$src}
+    done
+  else
+    log "$1 not present in deployment"
+  fi
+}
+
 
 # List all the clearwater packages installed.
 clearwater_packages()
@@ -318,12 +351,13 @@ get_cassandra_info()
   echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
   echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
 
-  # Get the newest hprof file
+  # Get the newest hprof file (make sure we move this file as it's likely big
+  # and since it is used to trigger diags collections).
   hprof_files=$(ls -t /var/lib/cassandra/*hprof | head -1)
   for hprof_file in $hprof_files
   do
     wait_until_closed "$hprof_file"
-    copy_to_dump "$hprof_file"
+    move_to_dump "$hprof_file" 
   done
 }
 
@@ -485,14 +519,12 @@ do
 
   for diags_script in $scripts
   do
-    (
-      # Give all the scripts their own subdirectory to write diags to (to stop
-      # them from overwriting each other's diags).
-      CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
-      mkdir $CURRENT_DUMP_DIR;
+    # Give all the scripts their own subdirectory to write diags to (to stop
+    # them from overwriting each other's diags).
+    CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
+    mkdir $CURRENT_DUMP_DIR;
 
-      . $diags_script
-    )
+    . $diags_script
   done
 
   # Copy this script to the dump file so we can tell what diags /should/ have
