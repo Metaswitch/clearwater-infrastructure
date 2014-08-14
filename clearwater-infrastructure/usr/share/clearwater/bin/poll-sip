@@ -54,7 +54,9 @@ sip_ip=$(/usr/share/clearwater/bin/bracket_ipv6_address.py $local_ip)
 # "SIP/2.0 200 OK".
 #
 # The -q option keeps netcat around for 1 second after sending the OPTIONS to
-# allow the pollee time to send a response before the connection is closed.
+# allow the pollee time to send a response before the connection is
+# closed.
+when_nc_started=$(date --utc  --rfc-3339=ns)
 nc -v -C -w 2 -q 1 $local_ip $port <<EOF 2> /tmp/poll-sip.nc.stderr.$$ | tee /tmp/poll-sip.nc.stdout.$$ | head -1 | egrep -q "^SIP/2.0 (200|503)"
 OPTIONS sip:poll-sip@$sip_ip:$port SIP/2.0
 Via: SIP/2.0/TCP $sip_ip;rport;branch=z9hG4bK-$id
@@ -73,7 +75,7 @@ rc=$?
 
 # Check the return code and log if appropriate
 if [ $rc != 0 ] ; then
-  echo SIP poll failed to $sip_ip:$port >&2
+  echo SIP poll failed to $sip_ip:$port with Call-ID poll-sip-$id at $when_nc_started >&2
   cat /tmp/poll-sip.nc.stderr.$$        >&2
   cat /tmp/poll-sip.nc.stdout.$$        >&2
 fi
