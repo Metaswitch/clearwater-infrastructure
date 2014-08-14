@@ -76,7 +76,9 @@ rc=$?
 # Check the return code and log if appropriate
 if [ $rc != 0 ] ; then
   echo SIP poll failed to $sip_ip:$port with Call-ID poll-sip-$id at $when_nc_started >&2
+  echo "stderr was:"                    >&2
   cat /tmp/poll-sip.nc.stderr.$$        >&2
+  echo "stdout was:"                    >&2
   cat /tmp/poll-sip.nc.stdout.$$        >&2
 fi
 rm -f /tmp/poll-sip.nc.stderr.$$ /tmp/poll-sip.nc.stdout.$$
