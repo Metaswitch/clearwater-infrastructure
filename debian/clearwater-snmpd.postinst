@@ -53,9 +53,17 @@ set -e
 
 case "$1" in
     configure)
+        # Save off original snmpd.conf and replace with Clearwater version
         cp /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.pre-clearwater-snmpd
         cp /etc/snmp/snmpd.conf.clearwater-snmpd /etc/snmp/snmpd.conf
-        service snmpd restart || true
+
+        # Update snmpd.conf based upon the content of Clearwater config
+        /usr/share/clearwater/infrastructure/scripts/snmpd 
+        initctl emit --no-wait snmpd-config-change 
+
+        # Set up Monit configuration for snmpd
+        install -D --mode=0644 /usr/share/clearwater/conf/snmpd.monit /etc/monit/conf.d/
+        service monit reload || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

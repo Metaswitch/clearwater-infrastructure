@@ -1,0 +1,25 @@
+{
+  "alarms" : [
+
+    {
+      "identifier" : "MEMCACHED_PROC_FAIL_CLEAR",
+      "index" : 3500,
+      "severity" : "CLEARED",
+      "cause" : "SOFTWARE_ERROR",
+      "description" : "memcached: Process failure cleared",
+      "details" : "The Memcached process has been restored to normal operation."
+    },
+
+    {
+      "identifier" : "MEMCACHED_PROC_FAIL_CRITICAL",
+      "index" : 3500,
+      "severity" : "CRITICAL",
+      "cause" : "SOFTWARE_ERROR",
+      "description" : "memcached: Process failure",
+      "details" : "Monit has detected that the Memcached process has failed. A restart will automatically be attempted. If this alarm does not clear, the Memcached process may have been stopped or an unrecoverable failure may have occurred."
+    }
+
+  ]
+}
+
+
