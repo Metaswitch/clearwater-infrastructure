@@ -38,33 +38,46 @@
 # the request will timeout after 2 seconds and be dropped.
 
 
+import re
 import zmq
 import syslog
+import os.path
+
+
+def alarms_enabled():
+  config = "/etc/clearwater/config"
+  if os.path.isfile(config):
+    reg = re.compile('^snmp_ip\s*=\s*[^\s]+\s*$')
+    for line in open(config):
+        if reg.match(line):
+            return True
+  return False
 
 
 def sendrequest(request):
   try:
-    context = zmq.Context.instance()
+    if alarms_enabled():
+      context = zmq.Context.instance()
 
-    client = context.socket(zmq.REQ)
-    client.connect("tcp://127.0.0.1:6665")
+      client = context.socket(zmq.REQ)
+      client.connect("tcp://127.0.0.1:6664")
 
-    poller = zmq.Poller()
-    poller.register(client, zmq.POLLIN)
+      poller = zmq.Poller()
+      poller.register(client, zmq.POLLIN)
 
-    for reqelem in request[0:-1]:
-      client.send(reqelem, zmq.SNDMORE)
+      for reqelem in request[0:-1]:
+        client.send(reqelem, zmq.SNDMORE)
 
-    client.send(request[-1])
+      client.send(request[-1])
 
-    socks = dict(poller.poll(2000))
+      socks = dict(poller.poll(2000))
 
-    if client in socks:
-      message = client.recv()
-    else:
-      syslog.syslog(syslog.LOG_ERR, "dropped request: '%s'" % " ".join(request))
+      if client in socks:
+        message = client.recv()
+      else:
+        syslog.syslog(syslog.LOG_ERR, "dropped request: '%s'" % " ".join(request))
 
-    context.destroy(100)
+      context.destroy(100)
 
   except:
     e = sys.exc_info()[0]
