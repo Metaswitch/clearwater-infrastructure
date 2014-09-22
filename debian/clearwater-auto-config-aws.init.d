@@ -59,11 +59,11 @@ do_auto_config()
           s/^public_ip=.*$/public_ip='$public_ip'/g
           s/^public_hostname=.*$/public_hostname='$public_hostname'/g
           s/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g
-          s/^xdms_hostname=.*$/xdms_hostname='$local_ip':7888/g
-          s/^hs_hostname=.*$/hs_hostname='$local_ip':8888/g
+          s/^xdms_hostname=.*$/xdms_hostname='$public_hostname':7888/g
+          s/^hs_hostname=.*$/hs_hostname='$public_hostname':8888/g
           s/^chronos_hostname=.*$/chronos_hostname='$local_ip':7253/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$local_ip':8889/g
-          s/^upstream_hostname=.*$/upstream_hostname='$local_ip'/g' < /etc/clearwater/config > /etc/clearwater/config2
+          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$public_hostname':8889/g
+          s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
 
   rm /etc/clearwater/config
   mv /etc/clearwater/config2 /etc/clearwater/config

@@ -17,6 +17,9 @@ smtp_username=username
 smtp_password=password
 email_recovery_sender=clearwater@example.com
 
+# I-CSCF/S-CSCF configuration
+upstream_hostname=
+
 # Keys
 signup_key=secret
 turn_workaround=secret
