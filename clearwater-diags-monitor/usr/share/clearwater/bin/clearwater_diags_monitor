@@ -101,7 +101,7 @@ move_to_dump()
     dst=$CURRENT_DUMP_DIR/root
     mkdir -p $dst
 
-    # First ensure the directory strucutre is set up correctly
+    # First ensure the directory structure is set up correctly
     for f in `find $src -type d`
     do
       mkdir -p $dst${f#$src}
@@ -357,7 +357,7 @@ get_cassandra_info()
   for hprof_file in $hprof_files
   do
     wait_until_closed "$hprof_file"
-    move_to_dump "$hprof_file" 
+    move_to_dump "$hprof_file"
   done
 }
 
@@ -598,7 +598,7 @@ do
   (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
   rm -rf "$CURRENT_DUMP_DIR"
-  
+
   mv $CURRENT_DUMP_ARCHIVE $FINAL_DUMP_ARCHIVE
 
   # We should have dealt with all the trigger files by now, unless there are
