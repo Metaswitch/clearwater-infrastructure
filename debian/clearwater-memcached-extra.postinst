@@ -57,7 +57,7 @@ case "$1" in
         /usr/share/clearwater/infrastructure/scripts/memcached-extra
         /etc/init.d/memcached restart 11212
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-        service monit reload
+        reload clearwater-monit
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

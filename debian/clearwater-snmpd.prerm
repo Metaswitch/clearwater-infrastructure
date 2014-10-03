@@ -58,7 +58,7 @@ case "$1" in
 
         # Clean up Monit configuration for snmpd
         rm -f /etc/monit/conf.d/snmpd.monit
-        service monit reload || /bin/true
+        reload clearwater-monit || /bin/true
     ;;
 
     failed-upgrade)
