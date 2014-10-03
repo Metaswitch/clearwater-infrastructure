@@ -8,12 +8,12 @@ check program poll_memcached with path "/usr/share/clearwater/bin/poll_memcached
 
 
 # Monitor the service's PID file and check its CPU usage. Issue an alarm for
-# any restart, and clear upon qualified recovery.
+# any restart, clear after the process has run for 30s.
 
 check process memcached with pidfile "/var/run/memcached_11211.pid"
 
-  start = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit MEMCACHED_PROC_FAIL_CRITICAL && /etc/init.d/memcached start 11211'"
-  stop  = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit MEMCACHED_PROC_FAIL_CRITICAL && /etc/init.d/memcached stop 11211'"
+  start = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit MEMCACHED_PROC_FAIL_CRITICAL; /etc/init.d/memcached start 11211'"
+  stop  = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit MEMCACHED_PROC_FAIL_CRITICAL; /etc/init.d/memcached stop 11211'"
 
   if cpu usage is greater than 60 percent for 2 cycles
      then alert

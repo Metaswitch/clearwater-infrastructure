@@ -37,7 +37,7 @@
 
 # This script is used to clear all currently active SNMP alarms issued by a
 # specified issuer. It takes a single parameter which identifies the issuer
-# who's alarms are to be cleared. For example:
+# whose alarms are to be cleared. For example:
 #
 #   clear_alarms.py "monit"
 
@@ -48,7 +48,7 @@ import alarms
 
 
 if len(sys.argv) != 2:
-  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count")
+  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %s" % " ".join(sys.argv[:])")
   sys.exit(0)
 
 alarms.sendrequest(["clear-alarms", sys.argv[1]])

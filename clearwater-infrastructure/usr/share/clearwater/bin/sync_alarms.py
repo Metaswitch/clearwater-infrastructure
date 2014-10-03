@@ -47,7 +47,7 @@ import alarms
 
 
 if len(sys.argv) != 1:
-  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count")
+  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %s" % " ".join(sys.argv[:])")
   sys.exit(0)
 
 alarms.sendrequest(["sync-alarms"])

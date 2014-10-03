@@ -63,7 +63,7 @@ case "$1" in
 
         # Set up Monit configuration for snmpd
         install -D --mode=0644 /usr/share/clearwater/conf/snmpd.monit /etc/monit/conf.d/
-        service monit reload || true
+        service monit reload 
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

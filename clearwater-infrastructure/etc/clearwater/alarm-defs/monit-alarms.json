@@ -6,7 +6,7 @@
       "index" : 4500,
       "severity" : "CLEARED",
       "cause" : "SOFTWARE_ERROR",
-      "description" : "monit: Process failure cleared",
+      "description" : "Monit: Process failure cleared",
       "details" : "The Monit process has been restored to normal operation."
     },
 
@@ -15,7 +15,7 @@
       "index" : 4500,
       "severity" : "WARNING",
       "cause" : "SOFTWARE_ERROR",
-      "description" : "monit: Process failure",
+      "description" : "Monit: Process failure",
       "details" : "Upstart has detected that the Monit process has failed. A restart will automatically be attempted. If this alarm does not clear, an unrecoverable failure may have occurred."
     }
 
