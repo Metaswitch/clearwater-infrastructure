@@ -47,7 +47,7 @@ import alarms
 
 
 if len(sys.argv) != 3:
-  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %s" % " ".join(sys.argv[:])")
+  syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %d, cmd: %s" % (len(sys.argv), " ".join(sys.argv[:])))
   sys.exit(0)
 
 alarms.sendrequest(["issue-alarm", sys.argv[1], sys.argv[2]])
