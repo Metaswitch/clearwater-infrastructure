@@ -46,10 +46,9 @@ import syslog
 import alarms
 
 
-if len(sys.argv) != 3:
+if len(sys.argv) == 3:
+  alarms.sendrequest(["issue-alarm", sys.argv[1], sys.argv[2]])
+else:
   syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %d, cmd: %s" % (len(sys.argv), " ".join(sys.argv[:])))
-  sys.exit(0)
-
-alarms.sendrequest(["issue-alarm", sys.argv[1], sys.argv[2]])
 
 sys.exit(0)

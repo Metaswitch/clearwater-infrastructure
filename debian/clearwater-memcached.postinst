@@ -53,14 +53,11 @@ set -e
 
 case "$1" in
     configure)
-        # Trigger snmpd restart to load Memcached alarm-defs
-        initctl emit --no-wait snmpd-config-change
-
         mv /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
         /usr/share/clearwater/infrastructure/scripts/memcached
         /etc/init.d/memcached restart 11211
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-        reload clearwater-monit
+        reload clearwater-monit || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

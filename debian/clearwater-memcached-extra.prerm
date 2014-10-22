@@ -52,8 +52,8 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        rm /etc/monit/conf.d/memcached_11212.monit
-        reload clearwater-monit
+        rm -f /etc/monit/conf.d/memcached_11212.monit
+        reload clearwater-monit &> /dev/null || true
     ;;
 
     failed-upgrade)
