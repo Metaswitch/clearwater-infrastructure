@@ -73,7 +73,7 @@ do_start()
         done
 
         # Reload monit to pick up any changes to its config files
-        service monit reload
+        reload clearwater-monit
 
         return 0
 }

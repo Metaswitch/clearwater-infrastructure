@@ -51,6 +51,8 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+EGGS_DIR=/usr/share/clearwater/infrastructure/eggs
+
 add_section() {
   file=$1
   tag=$2
@@ -67,6 +69,7 @@ case "$1" in
           add_section $HOME_DIR/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
         done
         [ ! -d /etc/skel ] || add_section /etc/skel/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+        /usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

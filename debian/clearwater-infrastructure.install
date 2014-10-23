@@ -1,1 +1,3 @@
-clearwater-infrastructure/* /
+clearwater-infrastructure/etc/* /etc
+clearwater-infrastructure/usr/* /usr
+clearwater-infrastructure/PyZMQ/eggs/pyzmq* usr/share/clearwater/infrastructure/eggs
