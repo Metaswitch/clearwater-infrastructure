@@ -1,0 +1,6 @@
+*~
+.buildout_downloads/
+.installed.cfg
+_env/
+bin/
+eggs/
