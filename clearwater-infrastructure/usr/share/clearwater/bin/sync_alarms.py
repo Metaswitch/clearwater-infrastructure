@@ -36,9 +36,10 @@
 
 
 # This script is intended to be used by an external management system to
-# synchronize SNMP alarm state. It is invoked without any parameters and
+# synchronize SNMP alarm state. When invoked without any parameters it
 # will trigger a clear for all known alarms on this node, followed by a
-# re-issue of all currently active alarms.
+# re-issue of all currently active alarms. When invoked with the --noclear
+# option it will only re-issue all currently active alarms.
 
 
 import sys

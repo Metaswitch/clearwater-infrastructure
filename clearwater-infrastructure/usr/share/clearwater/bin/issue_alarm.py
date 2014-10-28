@@ -38,7 +38,7 @@
 # This script is used to issue an SNMP alarm. It takes two parameters, the
 # name of the alarm issuer and the alarm identifier. For example:
 #
-#   issue_alarm.py "monit" "SPROUT_PROC_FAIL_CRITICAL"
+#   issue_alarm.py "monit" "1000.3"
 
 
 import sys
