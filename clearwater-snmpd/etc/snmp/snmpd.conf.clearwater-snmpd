@@ -211,3 +211,4 @@ view clearwater included .1.2.826.0.1.1578918.9
 dlmod sprout_handler /usr/lib/clearwater/sprout_handler.so
 dlmod bono_handler /usr/lib/clearwater/bono_handler.so
 dlmod homestead_handler /usr/lib/clearwater/homestead_handler.so
+dlmod mmtel_handler /usr/lib/clearwater/mmtel_handler.so
