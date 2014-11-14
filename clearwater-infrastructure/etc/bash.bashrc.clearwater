@@ -1,5 +1,23 @@
+# Get the version of Ubuntu we are running
+get_ubuntu_version()
+{
+  lsb_release -a 2>&1 | grep "^Release:" | cut -f 2
+}
+
+# List all the packages installed.
+packages()
+{
+  ub_version=$(get_ubuntu_version)
+  if [[ "$ub_version" == 12\.04* ]]
+  then
+    dpkg-query -W -f='${PackageSpec}\n'
+  else
+    dpkg-query -W -f='${binary:Package}\n'
+  fi
+}
+
 type=$(. /etc/clearwater/config
-       dpkg-query -W -f='${PackageSpec}\n' |
+       for package in $(packages); do echo $package; done |
        egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|ralf)$' |
        sed -e 's/clearwater-sip-stress/sipp/g' |
        tr "\\n" "-" |
@@ -17,3 +35,4 @@ else
     PS1='${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
 fi
 unset type node_idx
+

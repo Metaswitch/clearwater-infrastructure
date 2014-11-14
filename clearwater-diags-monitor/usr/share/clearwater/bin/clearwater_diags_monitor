@@ -85,12 +85,23 @@ copy_to_dump()
 }
 
 
+# Get the version of Ubuntu we are running
+get_ubuntu_version()
+{
+  lsb_release -a 2>&1 | grep "^Release:" | cut -f 2
+}
+
 # List all the clearwater packages installed.
 clearwater_packages()
 {
-  dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+  ub_version=$(get_ubuntu_version)
+  if [[ "$ub_version" == 12\.04* ]]
+  then
+    dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+  else
+    dpkg-query -W -f='${binary:Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+  fi
 }
-
 
 # Get information about all the packages installed.
 get_package_info()
@@ -566,7 +577,7 @@ do
   (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
   rm -rf "$CURRENT_DUMP_DIR"
-  
+
   mv $CURRENT_DUMP_ARCHIVE $FINAL_DUMP_ARCHIVE
 
   # We should have dealt with all the trigger files by now, unless there are
