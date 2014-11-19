@@ -121,7 +121,7 @@ move_to_dump()
 # List all the clearwater packages installed.
 clearwater_packages()
 {
-  dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+  dpkg-query -W -f='${Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
 }
 
 
