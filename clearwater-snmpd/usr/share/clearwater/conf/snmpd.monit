@@ -1,0 +1,8 @@
+# Monitor the service's PID file.
+
+check process snmpd pidfile /var/run/snmpd.pid
+
+  start program    = "/etc/init.d/snmpd start"
+  stop program     = "/etc/init.d/snmpd stop"
+  restart program  = "/etc/init.d/snmpd restart"
+

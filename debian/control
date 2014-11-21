@@ -5,13 +5,13 @@ Priority: optional
 # clearwater-infrastructure explicitly checks for packages of this name when
 # updating
 Maintainer: Project Clearwater Maintainers <maintainers@projectclearwater.org>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), python2.7
 Standards-Version: 3.9.2
 Homepage: http://projectclearwater.org/
 
 Package: clearwater-infrastructure
 Architecture: all
-Depends: dnsmasq, monit, ntp, python2.7
+Depends: dnsmasq, clearwater-monit, ntp, python2.7, python-setuptools
 Suggests: clearwater-auto-config, clearwater-auto-upgrade
 Recommends: clearwater-diags-monitor
 Description: Common infrastructure for all Clearwater servers
