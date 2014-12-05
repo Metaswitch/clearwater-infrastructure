@@ -57,6 +57,10 @@ case "$1" in
         cp /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.pre-clearwater-snmpd
         cp /etc/snmp/snmpd.conf.clearwater-snmpd /etc/snmp/snmpd.conf
 
+        # Create the folder to store the statistics UNIX domain sockets.
+        mkdir -p /var/run/clearwater/stats
+        chmod -R o+wr /var/run/clearwater/stats
+
         # Update snmpd.conf based upon the content of Clearwater config
         /usr/share/clearwater/infrastructure/scripts/snmpd 
         service snmpd restart || true
