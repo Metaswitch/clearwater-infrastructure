@@ -43,7 +43,7 @@
 #
 # For example:
 #
-#   ent_log.py "namespace" CL_SIG_NS_MISMATCH $signaling_namespace
+#   ent_log.py namespace CL_SIG_NS_MISMATCH $signaling_namespace
 
 
 import sys

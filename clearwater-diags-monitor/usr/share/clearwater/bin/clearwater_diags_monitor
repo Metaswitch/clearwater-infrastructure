@@ -48,21 +48,11 @@ DUMPS_DIR=$DIAGS_DIR/dumps
 
 # Setup prefix to use when running commands that need to execute within
 # the signaling network namespace for multi-interface configurations. 
-if [ -n "$signaling_namespace" ]
-then
-  SIG_NETNS="ip netns exec $signaling_namespace"
-else
-  SIG_NETNS=""
-fi
+[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Setup dig's server argument for when it needs to execute within the
 # signaling network namespace for multi-interface configurations.
-if [ -n "$signaling_dns_server" ]
-then
-  SIG_DNS="@$signaling_dns_server"
-else
-  SIG_DNS=""
-fi
+[ -z "$signaling_dns_server" ] || namespace_dig_server="@$signaling_dns_server"
 
 
 log()
@@ -239,16 +229,16 @@ check_connectivity_to_domain()
   file=$CURRENT_DUMP_DIR/connectivity_to_$domain.txt
 
   # First check we can resolve the domain name.
-  $SIG_NETNS dig $SIG_DNS $domain >> $file
+  $namespace_prefix dig $namespace_dig_server $domain >> $file
 
   # Now check that we can contact every server in the domain.
   echo "Check connectivity:" >> $file
 
   # List the servers by using dig again requesting just the answer section (the
   # addresses are in column 5).
-  for ip in $($SIG_NETNS dig $SIG_DNS +noall +answer $domain | awk '{print $5}' )
+  for ip in $($namespace_prefix dig $namespace_dig_server +noall +answer $domain | awk '{print $5}' )
   do
-    if $SIG_NETNS netcat -w1 $ip $port
+    if $namespace_prefix netcat -w1 $ip $port
     then
       echo "$ip:$port OK" >> $file
     else
@@ -371,15 +361,15 @@ get_cassandra_info()
   copy_to_dump "/etc/cassandra"
 
   # Get information about the Cassandra ring.
-  $SIG_NETNS nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
-  $SIG_NETNS nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
-  $SIG_NETNS nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
-  $SIG_NETNS nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
-  $SIG_NETNS nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
+  $namespace_prefix nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
+  $namespace_prefix nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
+  $namespace_prefix nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
+  $namespace_prefix nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
+  $namespace_prefix nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
 
   # Cassandra data format.
-  echo "DESC SCHEMA;" | $SIG_NETNS cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
-  echo "DESC CLUSTER;" | $SIG_NETNS cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+  echo "DESC SCHEMA;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
+  echo "DESC CLUSTER;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
 
   # Get the newest hprof file (make sure we move this file as it's likely big
   # and since it is used to trigger diags collections).
@@ -412,7 +402,7 @@ get_memcached_info()
 
   # Also get internal memcached stats (by sending the server a message saying
   # "stats").
-  echo "stats" | $SIG_NETNS netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
+  echo "stats" | $namespace_prefix netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
 }
 
 
@@ -421,9 +411,10 @@ get_memcached_info()
 #
 log "clearwater-diags-monitor starting"
 
-if [ "$EUID" != "0" ]
+if [ ! -z $signaling_namespace ] && [ $EUID -ne 0 ]
 then
-  log "attempted to run as non-root user, aborting"
+    echo "When using multiple networks, diags collection must be run as root"
+    exit 2
 fi
 
 cd $CRASH_DIR
