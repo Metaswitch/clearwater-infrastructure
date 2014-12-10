@@ -1,2 +1,4 @@
 *~
 debian/copyright
+clearwater-socket-factory/clearwater_socket_factory
+clearwater-socket-factory/test_client
