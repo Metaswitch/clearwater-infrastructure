@@ -57,8 +57,9 @@ int create_server()
   memset(&addr, 0, sizeof(addr));
 
   addr.sun_family = AF_LOCAL;
-  unlink(SOCKET_PATH);
   strcpy(addr.sun_path, SOCKET_PATH);
+
+  unlink(SOCKET_PATH);
 
   if (bind(fd,
            (struct sockaddr *) &(addr),
@@ -67,6 +68,9 @@ int create_server()
     perror("Failed to bind server unix socket");
     return -1;
   }
+
+  /* chmod the socket so that any process can connect to it */
+  chmod(SOCKET_PATH, 0777);
 
   if (listen(fd, MAX_PENDING) < 0)
   {
