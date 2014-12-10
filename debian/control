@@ -50,7 +50,7 @@ Description: Diagnostics monitor and bundler for all Clearwater servers
 
 Package: clearwater-socket-factory
 Architecture: all
-Description: Package to enable other processes to establish connections using a different network namespace
+Description: Enables other processes to establish connections using a different network namespace
 
 # NB clearwater-auto-config packages do NOT depend on infrastructure, as they
 # need to load before infrastructure

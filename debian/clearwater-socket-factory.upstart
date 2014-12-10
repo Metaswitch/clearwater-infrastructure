@@ -10,4 +10,4 @@ stop on runlevel [!2345]
 
 respawn
 
-exec /usr/share/clearwater/bin/clearwater_socket_server
+exec /usr/share/clearwater/bin/clearwater_socket_factory
