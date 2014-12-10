@@ -1,0 +1,13 @@
+# clearwater-socket-factory
+#
+# This process runs in the default namespace, and enables processes running in
+# different namespaces to obtain sockets in the default namespace.
+
+description "Clearwater socket factory server"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+
+exec /usr/share/clearwater/bin/clearwater_socket_server
