@@ -7,9 +7,54 @@
 #include <stdio.h>
 #include <netdb.h>
 #include <errno.h>
+#include <time.h>
+#include <stdarg.h>
 
 #define SOCKET_PATH "/tmp/clearwater_mgmt_namespace_socket"
 #define MAX_PENDING 5
+
+#define LOG_FILENAME "/var/log/clearwater-socket-factory.log"
+FILE* LOG_FILE = NULL;
+
+void write_timestamp(FILE* stream)
+{
+  time_t t;
+  time(&t);
+  struct tm* time_info = localtime(&t);
+
+  char buffer[64];
+  strftime(buffer, sizeof(buffer), "%Y:%m:%d %H:%M:%S: ", time_info);
+  fputs(buffer, stream);
+}
+
+
+void logmsg(char* format, ...)
+{
+  write_timestamp(LOG_FILE);
+
+  va_list args;
+  va_start(args, format);
+  vfprintf(LOG_FILE, format, args);
+  va_end(args);
+
+  fputs("\n", LOG_FILE);
+  fflush(LOG_FILE);
+}
+
+
+void logerrno(char* format, ...)
+{
+  write_timestamp(LOG_FILE);
+
+  va_list args;
+  va_start(args, format);
+  vfprintf(LOG_FILE, format, args);
+  va_end(args);
+
+  fprintf(LOG_FILE, ": %d %s\n", errno, strerror(errno));
+  fflush(LOG_FILE);
+}
+
 
 int get_shared_socket(char* target)
 {
@@ -22,7 +67,7 @@ int get_shared_socket(char* target)
 
   if (sep == NULL)
   {
-    fprintf(stderr, "  Bad target: %s\n", target);
+    logmsg("  Bad target: %s", target);
     rc = -1;
     goto EXIT_LABEL;
   }
@@ -37,12 +82,12 @@ int get_shared_socket(char* target)
 
   if (getaddrinfo(host, port, &hints, &addrs) != 0)
   {
-    fprintf(stderr, "  Could not resolve %s: %s\n", host, strerror(errno));
+    logerrno("  Could not resolve %s", host);
     rc = -2;
     goto EXIT_LABEL;
   }
 
-  printf("  Attempting to connect\n");
+  logmsg("  Attempting to connect");
   rc = -3;
 
   for (p = addrs; p != NULL; p = p->ai_next)
@@ -50,7 +95,7 @@ int get_shared_socket(char* target)
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
     {
-      perror("Could not create shared socket");
+      logerrno("Could not create shared socket");
       rc = -4;
       goto EXIT_LABEL;
     }
@@ -66,7 +111,7 @@ int get_shared_socket(char* target)
                    (char *)&timeout,
                    sizeof(timeout)) < 0)
     {
-      perror("  Failed to set timeout on shared socket");
+      logerrno("  Failed to set timeout on shared socket");
       rc = -5;
       close(sock);
       goto EXIT_LABEL;
@@ -79,7 +124,7 @@ int get_shared_socket(char* target)
                 &(((struct sockaddr_in*)(p->ai_addr))->sin_addr),
                 str,
                 sizeof(str));
-      fprintf(stderr, "    Could not connect to %s: %s\n", str, strerror(errno));
+      logerrno("    Could not connect to %s", str);
       close(sock);
     }
     else
@@ -92,11 +137,11 @@ int get_shared_socket(char* target)
 
   if (rc < 0)
   {
-    fprintf(stderr, "  All connections failed\n");
+    logmsg("  All connections failed");
     goto EXIT_LABEL;
   }
 
-  printf("  Shared socket connected\n");
+  logmsg("  Shared socket connected");
 
 EXIT_LABEL:
 
@@ -141,7 +186,7 @@ int send_file_descriptor(int socket, int fd_to_send)
 void process_one_request(int listen_socket)
 {
   int client_sock = accept(listen_socket, NULL, NULL);
-  printf("Received new request\n");
+  logmsg("Received new request");
 
   /*
    * The client should now tell us the address it wants to connect to in the
@@ -155,7 +200,7 @@ void process_one_request(int listen_socket)
 
   if (setsockopt(client_sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
   {
-    perror("  Could not set timeout on client socket");
+    logerrno("  Could not set timeout on client socket");
     close(client_sock);
     return;
   }
@@ -165,20 +210,20 @@ void process_one_request(int listen_socket)
 
   if (len <= 0)
   {
-    perror("  Could not read target address");
+    logerrno("  Could not read target address");
     close(client_sock);
     return;
   }
   else if (len >= sizeof(buf))
   {
-    fprintf(stderr, "  Target address is too long (%lu)\n", len);
+    logmsg("  Target address is too long (%lu)", len);
     close(client_sock);
     return;
   }
 
   /* NUL temrinate the target string */
   buf[len] = 0;
-  printf("  Asked to connect to %s\n", buf);
+  logmsg("  Asked to connect to %s", buf);
 
   int shared_sock = get_shared_socket(buf);
 
@@ -200,11 +245,18 @@ int create_server()
   struct sockaddr_un addr;
   int fd;
 
-  printf("Starting server\n");
+  LOG_FILE = fopen(LOG_FILENAME, "a");
+  if (LOG_FILE == NULL)
+  {
+    fprintf(stderr, "Could not open %s for writing", LOG_FILENAME);
+    return -1;
+  }
+
+  logmsg("Starting server");
 
   if ((fd = socket(AF_LOCAL, SOCK_STREAM, 0)) < 0)
   {
-    perror("Failed to create server unix socket");
+    logerrno("Failed to create server unix socket");
     return fd;
   }
 
@@ -219,7 +271,7 @@ int create_server()
            (struct sockaddr *) &(addr),
            sizeof(addr)) < 0)
   {
-    perror("Failed to bind server unix socket");
+    logerrno("Failed to bind server unix socket");
     return -1;
   }
 
@@ -228,11 +280,11 @@ int create_server()
 
   if (listen(fd, MAX_PENDING) < 0)
   {
-    perror("Failed to listen on server unix socket");
+    logerrno("Failed to listen on server unix socket");
     return -1;
   }
 
-  printf("Listening for requests\n");
+  logmsg("Listening for requests");
 
   for (;;)
   {
@@ -244,6 +296,5 @@ int create_server()
 
 int main()
 {
-  create_server();
-  return;
+  return create_server();
 }
