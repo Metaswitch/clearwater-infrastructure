@@ -51,7 +51,7 @@ int get_shared_socket(char* target)
     if (sock < 0)
     {
       perror("Could not create shared socket");
-      rc = -3;
+      rc = -4;
       goto EXIT_LABEL;
     }
 
@@ -67,7 +67,7 @@ int get_shared_socket(char* target)
                    sizeof(timeout)) < 0)
     {
       perror("  Failed to set timeout on shared socket");
-      rc = -4;
+      rc = -5;
       close(sock);
       goto EXIT_LABEL;
     }
