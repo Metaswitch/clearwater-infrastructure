@@ -34,6 +34,10 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+NAME=memcached
+INITD_PATH=/etc/init.d/$NAME
+DEFAULT_PATH=/etc/default/$NAME
+
 . /etc/clearwater/config
 
 # On an IPv6 system memcached need to be configured to listen on the hostname
@@ -49,3 +53,47 @@ sed -e 's/^-l .*$/-l '$listen_address'/g
         s/^-m .*$/-m 512/g
         s/^# *-v *$/-v/g
         s/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
+
+# Update init.d script to run daemon in context of $namespace_prefix
+
+[ -z $signaling_namespace ] || namespace_prefix="ip netns exec $signaling_namespace"
+
+INITD_TEMP=$(mktemp -t $NAME-initd.XXXXXX) || exit 1
+
+sed 's/^\(\s\{1,\}\)\(\<start-stop-daemon\>.*--\<start\>.*\)$/\1$namespace_prefix \2 # clearwater-infrastructure/' $INITD_PATH > $INITD_TEMP
+
+if ! cmp -s $INITD_PATH $INITD_TEMP
+then
+  # initd script update needed, so copy the $namespace_prefix mod
+  cp $INITD_TEMP $INITD_PATH
+fi
+
+rm $INITD_TEMP
+
+
+# Update default configuration with $namespace_prefix if needed
+
+DEFAULT_TEMP=$(mktemp -t $NAME-default.XXXXXX) || exit 1
+
+if [ -f $DEFAULT_PATH ]
+then
+  cat $DEFAULT_PATH | grep -v "# clearwater-infrastructure" > $DEFAULT_TEMP
+else
+  touch $DEFAULT_TEMP
+  chmod +r $DEFAULT_TEMP
+fi
+
+echo "namespace_prefix=\"$namespace_prefix\" # clearwater-infrastructure" >> $DEFAULT_TEMP
+
+# Compare files to see if action is needed. If the source file does
+# not exist cmp will return non-zero and we will create it.
+if ! cmp -s $DEFAULT_PATH $DEFAULT_TEMP
+then
+  # default configuration update needed, so copy the change and
+  # restart the service
+  cp $DEFAULT_TEMP $DEFAULT_PATH
+  service $NAME stop
+fi
+
+rm $DEFAULT_TEMP
+
