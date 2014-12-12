@@ -210,8 +210,12 @@ void process_one_request(int listen_socket)
     return;
   }
 
+  /*
+   * Read the target address.  We want to NUL terminate this so tell `recv` to
+   * read at most one less byte than available in the buffer.
+   */
   char buf[1024];
-  size_t len = recv(client_sock, buf, sizeof(buf), 0);
+  size_t len = recv(client_sock, buf, sizeof(buf) - 1, 0);
 
   if (len <= 0)
   {
@@ -219,14 +223,7 @@ void process_one_request(int listen_socket)
     close(client_sock);
     return;
   }
-  else if (len >= sizeof(buf))
-  {
-    logmsg("Target address is too long (%lu)", len);
-    close(client_sock);
-    return;
-  }
 
-  /* NUL terminate the target string */
   buf[len] = 0;
   logmsg("Asked to connect to %s", buf);
 
@@ -296,7 +293,8 @@ int create_server()
     process_one_request(fd);
   }
 
-  return fd;
+  close(fd);
+  return 0;
 }
 
 int main()
