@@ -34,7 +34,10 @@ static int recv_file_descriptor(int socket)
   message.msg_iovlen = 1;
 
   if((res = recvmsg(socket, &message, 0)) <= 0)
+  {
+    fprintf(stderr, "recvmsg returned %d (%d %s)\n", res, errno, strerror(errno));
     return res;
+  }
 
   /* Iterate through header to find if there is a file descriptor */
   for(control_message = CMSG_FIRSTHDR(&message);
@@ -49,6 +52,7 @@ static int recv_file_descriptor(int socket)
     }
   }
 
+  fprintf(stderr, "No socket received\n");
   return -1;
 }
 
@@ -101,10 +105,14 @@ int main(int argc, char** argv)
 
   int sock = get_magic_socket(argv[1], argv[2]);
 
+  if (sock < 0)
+  {
+    return -2;
+  }
+
   char* msg = "Hello there\n";
   printf("Connected. Sending message\n");
   send(sock, msg, strlen(msg), 0);
-
   close(sock);
 
   return 0;
