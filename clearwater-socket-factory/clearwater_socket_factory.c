@@ -63,11 +63,18 @@ int get_shared_socket(char* target)
   struct addrinfo* addrs = NULL;
   struct addrinfo* p;
 
+  /*
+   * Parse the target string. It will be of the form `<host>:<port>`.
+   *
+   * Note that the socket factory currently only supports IPv4 addresses, so we
+   * don't make any attempts to de-bracket an IPv6 address. Also we request IPv4
+   * addresses from `getaddrinfo` below.
+   */
   char* sep = strrchr(target, ':');
 
   if (sep == NULL)
   {
-    logmsg("  Bad target: %s", target);
+    logmsg("Bad target: %s", target);
     rc = -1;
     goto EXIT_LABEL;
   }
@@ -82,12 +89,12 @@ int get_shared_socket(char* target)
 
   if (getaddrinfo(host, port, &hints, &addrs) != 0)
   {
-    logerrno("  Could not resolve %s", host);
+    logerrno("Could not resolve %s", host);
     rc = -2;
     goto EXIT_LABEL;
   }
 
-  logmsg("  Attempting to connect");
+  logmsg("Attempting to connect");
   rc = -3;
 
   for (p = addrs; p != NULL; p = p->ai_next)
@@ -111,7 +118,7 @@ int get_shared_socket(char* target)
                    (char *)&timeout,
                    sizeof(timeout)) < 0)
     {
-      logerrno("  Failed to set timeout on shared socket");
+      logerrno("Failed to set timeout on shared socket");
       rc = -5;
       close(sock);
       goto EXIT_LABEL;
@@ -124,7 +131,7 @@ int get_shared_socket(char* target)
                 &(((struct sockaddr_in*)(p->ai_addr))->sin_addr),
                 str,
                 sizeof(str));
-      logerrno("    Could not connect to %s", str);
+      logerrno("Could not connect to %s", str);
       close(sock);
     }
     else
@@ -137,11 +144,11 @@ int get_shared_socket(char* target)
 
   if (rc < 0)
   {
-    logmsg("  All connections failed");
+    logmsg("All connections failed");
     goto EXIT_LABEL;
   }
 
-  logmsg("  Shared socket connected");
+  logmsg("Shared socket connected");
 
 EXIT_LABEL:
 
@@ -189,10 +196,8 @@ void process_one_request(int listen_socket)
   logmsg("Received new request");
 
   /*
-   * The client should now tell us the address it wants to connect to in the
-   * form `<host>:<port>`
-   *
-   * Wait at most 1s for this.
+   * The client should now tell us the address it wants to connect to.  Wait at
+   * most 1s for this.
    */
   struct timeval timeout;
   timeout.tv_sec = 1;
@@ -200,7 +205,7 @@ void process_one_request(int listen_socket)
 
   if (setsockopt(client_sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
   {
-    logerrno("  Could not set timeout on client socket");
+    logerrno("Could not set timeout on client socket");
     close(client_sock);
     return;
   }
@@ -210,24 +215,24 @@ void process_one_request(int listen_socket)
 
   if (len <= 0)
   {
-    logerrno("  Could not read target address");
+    logerrno("Could not read target address");
     close(client_sock);
     return;
   }
   else if (len >= sizeof(buf))
   {
-    logmsg("  Target address is too long (%lu)", len);
+    logmsg("Target address is too long (%lu)", len);
     close(client_sock);
     return;
   }
 
-  /* NUL temrinate the target string */
+  /* NUL terminate the target string */
   buf[len] = 0;
-  logmsg("  Asked to connect to %s", buf);
+  logmsg("Asked to connect to %s", buf);
 
   int shared_sock = get_shared_socket(buf);
 
-  if(shared_sock < 0)
+  if (shared_sock < 0)
   {
     close(client_sock);
     return;
@@ -256,7 +261,7 @@ int create_server()
 
   if ((fd = socket(AF_LOCAL, SOCK_STREAM, 0)) < 0)
   {
-    logerrno("Failed to create server unix socket");
+    logerrno("Failed to create server UNIX socket");
     return fd;
   }
 
@@ -271,16 +276,16 @@ int create_server()
            (struct sockaddr *) &(addr),
            sizeof(addr)) < 0)
   {
-    logerrno("Failed to bind server unix socket");
+    logerrno("Failed to bind server UNIX socket");
     return -1;
   }
 
-  /* chmod the socket so that any process can connect to it */
+  /* Allow other processes to connect to the socket */
   chmod(SOCKET_PATH, 0777);
 
   if (listen(fd, MAX_PENDING) < 0)
   {
-    logerrno("Failed to listen on server unix socket");
+    logerrno("Failed to listen on server UNIX socket");
     return -1;
   }
 
