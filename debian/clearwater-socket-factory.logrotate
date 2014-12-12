@@ -1,0 +1,11 @@
+/var/log/clearwater-socket-factory.log
+{
+        rotate 3
+        weekly
+        size 10M
+        missingok
+        notifempty
+        compress
+        copytruncate
+}
+
