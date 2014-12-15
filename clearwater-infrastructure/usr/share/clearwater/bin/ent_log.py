@@ -67,7 +67,7 @@ PDLogs = {
   'CL_SIG_NS_MISMATCH': (
     CL_SCRIPT_ID + 1,
     syslog.LOG_ERR,
-    'Fatal - ClearWater signaling network namespace (%s) does not exist.',
+    'Fatal - Clearwater signaling network namespace (%s) does not exist.',
     'The signaling network namespace (signaling_namespace) defined in /etc/clearwater/config '
     'does not exist in the kernel (ip netns list).',
     'Call processing is not available.',
