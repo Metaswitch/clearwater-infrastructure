@@ -43,6 +43,18 @@ DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
 
+
+. /etc/clearwater/config
+
+# Setup prefix to use when running commands that need to execute within
+# the signaling network namespace for multi-interface configurations. 
+[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
+
+# Setup dig's server argument for when it needs to execute within the
+# signaling network namespace for multi-interface configurations.
+[ -z "$signaling_dns_server" ] || namespace_dig_server="@$signaling_dns_server"
+
+
 log()
 {
   printf "[$(date --utc +"%d-%h-%Y %H:%M:%S %Z")] $@\n"
@@ -217,16 +229,16 @@ check_connectivity_to_domain()
   file=$CURRENT_DUMP_DIR/connectivity_to_$domain.txt
 
   # First check we can resolve the domain name.
-  dig $domain >> $file
+  $namespace_prefix dig $namespace_dig_server $domain >> $file
 
   # Now check that we can contact every server in the domain.
   echo "Check connectivity:" >> $file
 
   # List the servers by using dig again requesting just the answer section (the
   # addresses are in column 5).
-  for ip in $(dig +noall +answer $domain | awk '{print $5}' )
+  for ip in $($namespace_prefix dig $namespace_dig_server +noall +answer $domain | awk '{print $5}' )
   do
-    if netcat -w1 $ip $port
+    if $namespace_prefix netcat -w1 $ip $port
     then
       echo "$ip:$port OK" >> $file
     else
@@ -240,9 +252,17 @@ check_connectivity_to_domain()
 get_network_info()
 {
   copy_to_dump "/etc/hosts"
+
   ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
   netstat -rn > $CURRENT_DUMP_DIR/routes.txt
   netstat -anp > $CURRENT_DUMP_DIR/netstat.txt
+
+  for ns in `ip netns list`
+  do
+    ip netns exec $ns ifconfig -a > $CURRENT_DUMP_DIR/ifconfig_$ns.txt
+    ip netns exec $ns netstat -rn > $CURRENT_DUMP_DIR/routes_$ns.txt
+    ip netns exec $ns netstat -anp > $CURRENT_DUMP_DIR/netstat_$ns.txt
+  done
 }
 
 
@@ -341,15 +361,15 @@ get_cassandra_info()
   copy_to_dump "/etc/cassandra"
 
   # Get information about the Cassandra ring.
-  nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
-  nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
-  nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
-  nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
-  nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
+  $namespace_prefix nodetool status > $CURRENT_DUMP_DIR/nodetool_status.txt
+  $namespace_prefix nodetool info > $CURRENT_DUMP_DIR/nodetool_info.txt
+  $namespace_prefix nodetool cfstats > $CURRENT_DUMP_DIR/nodetool_cfstats.txt
+  $namespace_prefix nodetool tpstats > $CURRENT_DUMP_DIR/nodetool_tpstats.txt
+  $namespace_prefix nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
 
   # Cassandra data format.
-  echo "DESC SCHEMA;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
-  echo "DESC CLUSTER;" | cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+  echo "DESC SCHEMA;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
+  echo "DESC CLUSTER;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
 
   # Get the newest hprof file (make sure we move this file as it's likely big
   # and since it is used to trigger diags collections).
@@ -382,7 +402,7 @@ get_memcached_info()
 
   # Also get internal memcached stats (by sending the server a message saying
   # "stats").
-  echo "stats" | netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
+  echo "stats" | $namespace_prefix netcat 127.0.0.1 11211 > $CURRENT_DUMP_DIR/memcached_stats.txt
 }
 
 
@@ -390,6 +410,12 @@ get_memcached_info()
 # Script starts here.
 #
 log "clearwater-diags-monitor starting"
+
+if [ ! -z $signaling_namespace ] && [ $EUID -ne 0 ]
+then
+    echo "When using multiple networks, diags collection must be run as root"
+    exit 2
+fi
 
 cd $CRASH_DIR
 
@@ -511,9 +537,9 @@ do
   # Gather component specific diags for all installed components.
   #
   # Spin through the list of each diags script and execute it. Do this by
-  # sourcing the script in (so it has access to all functions defined in this
-  # file) but also do it in a subshell (to prevent the script from polluting our
-  # environment).
+  # sourcing the script in (so it has access to all functions and environment
+  # variables defined in this file) but also do it in a subshell (to prevent
+  # the script from polluting our environment).
   scripts=$(find /usr/share/clearwater/clearwater-diags-monitor/scripts/ -maxdepth 1 -type f 2>/dev/null)
   log "Running extra diags scripts: $(echo $scripts)"
 
