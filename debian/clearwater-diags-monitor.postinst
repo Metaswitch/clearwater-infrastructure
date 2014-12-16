@@ -69,6 +69,7 @@ case "$1" in
         chmod a+rwx /var/clearwater-diags-monitor/dumps
 
         chmod a+x /usr/share/clearwater/bin/gather_diags
+        reload clearwater-monit || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

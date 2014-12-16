@@ -1,0 +1,6 @@
+# Monitor the service's PID file.
+
+check process clearwater_diags_monitor with pidfile "/var/run/clearwater_diags_monitor.pid"
+  start = "/etc/init.d/clearwater-diags-monitor start"
+  stop  = "/etc/init.d/clearwater-diags-monitor stop"
+
