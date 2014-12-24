@@ -53,7 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        mv /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
+        install /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
         /usr/share/clearwater/infrastructure/scripts/memcached
         /etc/init.d/memcached restart 11211
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
