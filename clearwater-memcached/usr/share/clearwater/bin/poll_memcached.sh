@@ -42,10 +42,11 @@ sleep 5
 
 # Grab our configuration - we just use the local IP address.
 . /etc/clearwater/config
+[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 PORT=11211
 
 # Do the poll - connect, issue a version command and check that it looks correct.
-nc -v -w 2 $local_ip $PORT <<< "version" 2> /tmp/poll_memcached.sh.nc.stderr.$$ | tee /tmp/poll_memcached.sh.nc.stdout.$$ | head -1 | egrep -q "^VERSION "
+$namespace_prefix nc -v -w 2 $local_ip $PORT <<< "version" 2> /tmp/poll_memcached.sh.nc.stderr.$$ | tee /tmp/poll_memcached.sh.nc.stdout.$$ | head -1 | egrep -q "^VERSION "
 rc=$?
 
 # Check the return code and log if appropriate
