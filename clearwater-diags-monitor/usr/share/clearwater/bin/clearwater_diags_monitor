@@ -545,12 +545,14 @@ do
 
   for diags_script in $scripts
   do
-    # Give all the scripts their own subdirectory to write diags to (to stop
-    # them from overwriting each other's diags).
-    CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
-    mkdir $CURRENT_DUMP_DIR;
+    (
+      # Give all the scripts their own subdirectory to write diags to (to stop
+      # them from overwriting each other's diags).
+      CURRENT_DUMP_DIR=$CURRENT_DUMP_DIR/$(basename $diags_script);
+      mkdir $CURRENT_DUMP_DIR;
 
-    . $diags_script
+      . $diags_script
+    )
   done
 
   # Copy this script to the dump file so we can tell what diags /should/ have
