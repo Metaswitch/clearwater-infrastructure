@@ -42,7 +42,7 @@
 # Default-Stop:      0 1 6
 # Short-Description: Clearwater infrastructure
 # Description:       Determines and applies local configuration
-# X-Start-Before:    memcached bono sprout restund
+# X-Start-Before:    memcached bono sprout restund homer homestead homestead-prov ralf memento
 ### END INIT INFO
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
