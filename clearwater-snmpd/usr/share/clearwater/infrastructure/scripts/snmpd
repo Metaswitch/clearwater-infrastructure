@@ -33,21 +33,23 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 #
 
-# This script adds informsink entries to /etc/snmp/snmpd.conf based upon
-# the snmp_ip Clearwater config setting.
+#
+# Add informsink entries to /etc/snmp/snmpd.conf based upon the snmp_ip
+# Clearwater config setting.
+#
 
 START_MARK="# Project Clearwater informsink start"
 END_MARK="# Project Clearwater informsink end"
 
 . /etc/clearwater/config
 
-# Create a temporary copy of snmpd.conf with contents up to the start of 
+# Create a temporary copy of snmpd.conf with contents up to the start of
 # Clearwater informsink definitions.
 
 sed '1,/'"$START_MARK"'/ !d' /etc/snmp/snmpd.conf > /tmp/snmpd.conf.$$
 
 # Add informslink definitions to end of temporary copy based upon comma
-# seperated list of hosts defined by snmp_ip. 
+# seperated list of hosts defined by snmp_ip.
 
 IFS=',' read -a SNMP_HOSTS <<< "$snmp_ip"
 
@@ -63,7 +65,7 @@ sed '/'"$END_MARK"'/,$ !d' /etc/snmp/snmpd.conf >> /tmp/snmpd.conf.$$
 
 # Compare original with the temporary copy. If it has changed replace
 # the original and trigger an snmpd restart to pick up the changes,
-# otherwise remove the temporary copy. 
+# otherwise remove the temporary copy.
 
 diff /etc/snmp/snmpd.conf /tmp/snmpd.conf.$$ > /dev/null
 
@@ -75,3 +77,9 @@ then
 else
   rm /tmp/snmpd.conf.$$
 fi
+
+#
+# Create the folder to store the statistics UNIX domain sockets.
+#
+mkdir -p /var/run/clearwater/stats
+chmod -R o+wr /var/run/clearwater/stats
