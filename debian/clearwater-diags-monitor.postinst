@@ -62,11 +62,11 @@ case "$1" in
 
         # Create the temporary diagnostics directory and give it appropriate permissions.
         mkdir -p /var/clearwater-diags-monitor/tmp
-        chmod a+rwx /var/clearwater-diags-monitor/tmp
+        chmod 755 /var/clearwater-diags-monitor/tmp
 
         # Do the same for the dumps directory.
         mkdir -p /var/clearwater-diags-monitor/dumps
-        chmod a+rwx /var/clearwater-diags-monitor/dumps
+        chmod 755 /var/clearwater-diags-monitor/dumps
 
         chmod a+x /usr/share/clearwater/bin/gather_diags
         reload clearwater-monit || true
