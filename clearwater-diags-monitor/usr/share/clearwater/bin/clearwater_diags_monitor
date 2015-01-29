@@ -413,11 +413,17 @@ log "clearwater-diags-monitor starting"
 
 if [ ! -z $signaling_namespace ] && [ $EUID -ne 0 ]
 then
-    echo "When using multiple networks, diags collection must be run as root"
-    exit 2
+  echo "When using multiple networks, diags collection must be run as root"
+  exit 2
 fi
 
 cd $CRASH_DIR
+
+if [ $? -ne 0 ]; then
+  echo "Crash directory didn't exist, creating"
+  mkdir -p $CRASH_DIR
+  cd $CRASH_DIR
+fi
 
 while true
 do
@@ -441,7 +447,7 @@ do
   #
   # Note the filenames are currently space separated, so use tr to put them each
   # on one line.
-  triggers=$(echo $trigger_files | tr ' ' '\n' | awk 'BEGIN{FS="."} {print $2}' | sort | uniq)
+  triggers=$(echo $trigger_files | tr ' ' '\n' | awk 'BEGIN{FS="."} /^core/{print $2}' | sort | uniq)
 
   if [ -z "$triggers" ]
   then
