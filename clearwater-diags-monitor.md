@@ -6,7 +6,7 @@ The `clearwater-diags-monitor` monitors the system for errors and collects diagn
 * A native clearwater process crashes (bono, sprout, restund, homestead)
 * An unhandled python exception occurs (homer, homestead-prov, ellis)
 * Monit spots that a process has become unresponsive.
-* Manually triggered by running `/usr/share/clearwater/bin/gather_diags`
+* Manually triggered by running `/usr/share/clearwater/bin/gather_diags` with sudo permissions.
 
 Diagnostics dumps are written to `/var/clearwater-diags-monitor/dumps` as a gzipped tarball. The dump name is of the form `<timestamp>.<trigger>.tar.gz`. This can be extracted by running the command `tar -zxf <tarball-name>`
 
