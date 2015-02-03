@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/bin/sh
+
+# @file unixdomainsockets
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2013  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -31,55 +33,8 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
-#
 
-#
-# Add informsink entries to /etc/snmp/snmpd.conf based upon the snmp_ip
-# Clearwater config setting.
-#
+# Create the directory to contain the stats and alarm Unix domain sockets
+mkdir -p /var/run/clearwater/stats || true
+chmod -R 0777 /var/run/clearwater || true
 
-START_MARK="# Project Clearwater informsink start"
-END_MARK="# Project Clearwater informsink end"
-
-. /etc/clearwater/config
-
-# Create a temporary copy of snmpd.conf with contents up to the start of
-# Clearwater informsink definitions.
-
-sed '1,/'"$START_MARK"'/ !d' /etc/snmp/snmpd.conf > /tmp/snmpd.conf.$$
-
-# Add informslink definitions to end of temporary copy based upon comma
-# seperated list of hosts defined by snmp_ip.
-
-IFS=',' read -a SNMP_HOSTS <<< "$snmp_ip"
-
-for HOST in "${SNMP_HOSTS[@]}";
-do
-  echo "informsink $HOST clearwater" >> /tmp/snmpd.conf.$$
-done
-
-# Copy remainder of snmpd.conf from the end of informsink definitions to
-# the temporary copy.
-
-sed '/'"$END_MARK"'/,$ !d' /etc/snmp/snmpd.conf >> /tmp/snmpd.conf.$$
-
-# Compare original with the temporary copy. If it has changed replace
-# the original and trigger an snmpd restart to pick up the changes,
-# otherwise remove the temporary copy.
-
-diff /etc/snmp/snmpd.conf /tmp/snmpd.conf.$$ > /dev/null
-
-if [ $? -ne 0 ];
-then
-  mv /tmp/snmpd.conf.$$ /etc/snmp/snmpd.conf
-
-  service snmpd restart
-else
-  rm /tmp/snmpd.conf.$$
-fi
-
-#
-# Create the folder to store the statistics UNIX domain sockets.
-#
-mkdir -p /var/run/clearwater/stats
-chmod -R o+wr /var/run/clearwater/stats
