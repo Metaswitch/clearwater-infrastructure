@@ -202,6 +202,9 @@ view clearwater included .1.3.6.1.2.1.1.3.0
 # UCD-SNMP-MIB memory stats
 view clearwater included .1.3.6.1.4.1.2021.4
 
+# UCD-SNMP-MIB disk stats
+view clearwater included .1.3.6.1.4.1.2021.9
+
 # UCD-SNMP-MIB CPU stats
 view clearwater included .1.3.6.1.4.1.2021.11
 
