@@ -641,9 +641,19 @@ do
 
   # Delete old dumps until we're using less than 1GB of disk space.  du reports
   # in units of block size (kB).
+  #
+  # Take care not to delete the diagnostic dum we've just taken even if it
+  # means exceeding the 1GB limit.
   while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
   do
     dump_to_delete=$(ls -t $DUMPS_DIR | tail -n 1)
+
+    if [ "$DUMPS_DIR/$dump_to_delete" == "$FINAL_DUMP_ARCHIVE" ]
+    then
+      log "Not deleting the dump just taken"
+      break
+    fi
+
     log "Deleting dump $dump_to_delete"
     rm -rf "$DUMPS_DIR/$dump_to_delete"
   done
