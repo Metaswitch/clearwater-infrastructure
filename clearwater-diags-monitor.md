@@ -10,7 +10,7 @@ The `clearwater-diags-monitor` monitors the system for errors and collects diagn
 
 Diagnostics dumps are written to `/var/clearwater-diags-monitor/dumps` as a gzipped tarball. The dump name is of the form `<timestamp>.<trigger>.tar.gz`. This can be extracted by running the command `tar -zxf <tarball-name>`
 
-The diags monitor automatically deletes old dumps so that the total size of all dumps doesn't exceed 1GB.
+The diags monitor automatically deletes old dumps so that the total size of all dumps doesn't exceed 1GB. However, it will not delete the dump just taken, even if that dump exceeds the 1GB threshold.
 
 Diagnostics collected
 ---------------------
