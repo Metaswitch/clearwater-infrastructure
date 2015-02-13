@@ -646,11 +646,18 @@ do
   # means exceeding the 1GB limit.
   while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
   do
+    # Get oldest dump in the directory and deleted it.
+    #
+    # If this is the dump we've just taken, it means we've deleted everything
+    # in the directory except this dump and we're still over the limit.  In
+    # this case, leave the latest diags set in place (even though this means
+    # breaching the 1GB threshold).
     dump_to_delete=$(ls -t $DUMPS_DIR | tail -n 1)
 
     if [ "$DUMPS_DIR/$dump_to_delete" == "$FINAL_DUMP_ARCHIVE" ]
     then
-      log "Not deleting the dump just taken"
+
+      log "Diags dump just taken is $(du -ks $FINAL_DUMP_ARCHIVE | cut -f 1) KB. This will be preserved, despite the usual limit of 1GB on the /var/clearwater-diags-monitor/dumps directory"
       break
     fi
 
