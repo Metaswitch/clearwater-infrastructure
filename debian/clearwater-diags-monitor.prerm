@@ -67,10 +67,10 @@ case "$1" in
         fi
 
         # Stop clearwater-diags-monitor by deleting it from monit and then stopping it.
-        # Use || /bin/true to ignore a failure, because set -e is in effect.
+        # Use || true to ignore a failure, because set -e is in effect.
         rm -f /etc/monit/conf.d/clearwater-diags-monitor.monit
         reload clearwater-monit &> /dev/null || true
-        service clearwater-diags-monitor stop || /bin/true
+        service clearwater-diags-monitor stop || true
     ;;
 
     failed-upgrade)
