@@ -463,7 +463,9 @@ do
   # Now wait for CPU load to be at an acceptable level.  Each time it isn't,
   # check for new files in the crash directory and clear out the newest ones
   # until we're not using more than 1GB - we don't want to run out of disk
-  # space.
+  # space.  Pause for 20s before we start, just so that any previous process
+  # has an opportunity to restart first.
+  sleep 20
   while [ $(idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER ]
   do
     log "CPU usage too high - not gathering diagnostics yet"
