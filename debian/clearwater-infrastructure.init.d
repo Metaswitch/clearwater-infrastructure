@@ -113,7 +113,7 @@ case "$1" in
         esac
         ;;
   status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+      echo "clearwater-infrastructure is not a long-running daemon so does not have a 'status' command"
        ;;
   reload|force-reload)
         log_daemon_msg "Reloading $DESC" "$NAME"
