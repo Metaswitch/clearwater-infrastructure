@@ -37,9 +37,6 @@
 # This script polls a memcached process and check whether it is healthy by checking
 # that the port is open.
 
-# In case memcached has only just restarted, give it a few seconds to come up.
-sleep 5
-
 # Grab our configuration - we just use the local IP address.
 . /etc/clearwater/config
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
