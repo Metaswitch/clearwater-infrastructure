@@ -1,4 +1,6 @@
-# @file memcached_11211.monit
+#!/bin/bash
+
+# @file poll-tcp.sh
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2015  Metaswitch Networks Ltd
@@ -32,28 +34,29 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Check the memcached process.
+# This script polls a process on the passed in port
 
-# Check the memcached process is listening. This depends on the memcached process (and so won't run
-# unless the memcached process is running)
-check program poll_memcached with path "/usr/share/clearwater/bin/poll_memcached.sh"
-  depends on memcached
+# Grab the command-line argument.
+[ $# = 1 ] || { echo "Usage: poll-tcp <port>" >&2 ; exit 2 ; }
+port=$1
 
-  # Aborting generates a core file and triggers diagnostic collection.
-  if status != 0 for 2 cycles then exec "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached stop 11211'"
+# Grab our configuration - we just use the local IP address.
+. /etc/clearwater/config
+[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
-# Monitor the service's PID file, CPU and memory use.
-check process memcached with pidfile "/var/run/memcached_11211.pid"
+# Do the poll - connect and check for success
+$namespace_prefix nc -v -w 2 $local_ip $port 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
+cat /tmp/poll-tcp.sh.nc.stderr.$$ | head -1 | egrep -q "succeeded"
+rc=$?
 
-  start program = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached start 11211'"
-  stop program = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached stop 11211'"
-  restart program = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached restart 11211'"
+# Check the return code and log if appropriate
+if [ $rc != 0 ] ; then
+  echo TCP poll failed to $local_ip $PORT >&2
+  cat /tmp/poll-tcp.sh.nc.stderr.$$       >&2
+  cat /tmp/poll-tcp.sh.nc.stdout.$$       >&2
+fi
+rm -f /tmp/poll-tcp.sh.nc.stderr.$$ /tmp/poll-tcp.sh.nc.stdout.$$
 
-  # Check the service's resource usage, and restart memcached if it's too high.
-  if cpu > 80% for 6 cycles then restart
-  if memory > 80% for 6 cycles then restart
+# Return the return code from the nc command (0 if connected, 1 if not).
+exit $rc
 
-  if uptime < 30 seconds
-     then exec "/bin/true"
-     else if succeeded
-         then exec "/usr/share/clearwater/bin/issue_alarm.py monit 3500.1"
