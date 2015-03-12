@@ -228,3 +228,4 @@ dlmod cdiv_handler /usr/lib/clearwater/cdiv_handler.so
 dlmod memento_handler /usr/lib/clearwater/memento_handler.so
 dlmod memento_as_handler /usr/lib/clearwater/memento_as_handler.so
 pass .1.2.826.0.1.1578918.9.8.4 /usr/share/clearwater/bin/memento-disk-usage-stats
+dlmod astaire_handler /usr/lib/clearwater/astaire_handler.so
