@@ -58,9 +58,9 @@ fi
 # cause conflicts when /etc/init.d/memcached is updated.
 if [ -e $INITD_PATH ]
 then
-  sed -e 's/^-l .*$/-l '$listen_address'/g'
-      -e "s/^-m .*$/-e 'ignore_vbucket=true;cache_size=512000000'/g"
-      -e 's/^# *-v *$/-v/g'
+  sed -e 's/^-l .*$/-l '$listen_address'/g'\
+      -e "s/^-m .*$/-e 'ignore_vbucket=true;cache_size=512000000'/g"\
+      -e 's/^# *-v *$/-v/g'\
       -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
 
   # Update init.d script to run daemon in context of $namespace_prefix
