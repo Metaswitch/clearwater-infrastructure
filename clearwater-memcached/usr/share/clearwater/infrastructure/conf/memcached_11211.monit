@@ -34,15 +34,7 @@
 
 # Check the memcached process.
 
-# Check the memcached process is listening. This depends on the memcached process (and so won't run
-# unless the memcached process is running)
-check program poll_memcached with path "/usr/share/clearwater/bin/poll_memcached.sh"
-  depends on memcached
-
-  # Stop memcached (so monit will restart it) if it's unresponsive.
-  if status != 0 for 2 cycles then exec "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached stop 11211'"
-
-# Monitor the service's PID file, CPU and memory use.
+# Monitor the service's PID file and memory use.
 check process memcached with pidfile "/var/run/memcached_11211.pid"
 
   start program = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached start 11211'"
@@ -50,10 +42,17 @@ check process memcached with pidfile "/var/run/memcached_11211.pid"
   restart program = "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached restart 11211'"
 
   # Check the service's resource usage, and restart memcached if it's too high.
-  if cpu > 80% for 6 cycles then restart
   if memory > 80% for 6 cycles then restart
 
   if uptime < 30 seconds
      then exec "/bin/true"
      else if succeeded
          then exec "/usr/share/clearwater/bin/issue_alarm.py monit 3500.1"
+
+# Check the memcached process is listening. This depends on the memcached process (and so won't run
+# unless the memcached process is running)
+check program poll_memcached with path "/usr/share/clearwater/bin/poll_memcached.sh"
+  depends on memcached
+
+  # Stop memcached (so monit will restart it) if it's unresponsive.
+  if status != 0 for 2 cycles then exec "/bin/bash -c '/usr/share/clearwater/bin/issue_alarm.py monit 3500.3; /etc/init.d/memcached stop 11211'"

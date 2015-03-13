@@ -34,7 +34,7 @@
 
 # Check the snmpd process.
 
-# Monitor the service's PID file, CPU and memory use.
+# Monitor the service's PID file and memory use.
 check process snmpd with pidfile "/var/run/snmpd.pid"
 
   start program = "/etc/init.d/snmpd start"
@@ -42,5 +42,4 @@ check process snmpd with pidfile "/var/run/snmpd.pid"
   restart program = "/etc/init.d/snmpd restart"
 
   # Check the service's resource usage, and restart snmpd if it's too high.
-  if cpu > 80% for 6 cycles then restart
   if memory > 80% for 6 cycles then restart
