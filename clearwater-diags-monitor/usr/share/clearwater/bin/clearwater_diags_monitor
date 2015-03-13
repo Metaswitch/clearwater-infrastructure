@@ -43,6 +43,11 @@ DIAGS_DIR=/var/clearwater-diags-monitor
 CRASH_DIR=$DIAGS_DIR/tmp
 DUMPS_DIR=$DIAGS_DIR/dumps
 
+# 1 gigabyte in kilobytes (assuming powers of 10 rather than powers of 2)
+ONE_GB_IN_KB=1000000
+
+# Required idle CPU for triggering gathering diagnostics
+MIN_IDLE_CPU_FOR_GATHER=40
 
 . /etc/clearwater/config
 
@@ -406,6 +411,26 @@ get_memcached_info()
 }
 
 
+# Return disk usage of a file or directory in kilobytes.
+disk_usage_in_kb()
+{
+  du -ks $1 | cut -f 1
+}
+
+
+# Gets the idle CPU averaged over a 10s period.
+idle_cpu()
+{
+  # Use sar to get the CPU usage over 10s, find the summary ("all") line, and
+  # then grab the idle value (last field on the row), removing any fractional
+  # part.
+  sar -P ALL 10 1 |
+  grep "Average:  *all" |
+  sed -e 's/^.* //g' |
+  sed -e 's/\..*//g'
+}
+
+
 #
 # Script starts here.
 #
@@ -435,6 +460,24 @@ do
     inotifywait -e create -qq .
   fi
 
+  # Now wait for CPU load to be at an acceptable level.  Each time it isn't,
+  # check for new files in the crash directory and clear out the newest ones
+  # until we're not using more than 1GB - we don't want to run out of disk
+  # space.  Pause for 20s before we start, just so that any previous process
+  # has an opportunity to restart first.
+  sleep 20
+  while [ $(idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER ]
+  do
+    log "CPU usage too high - not gathering diagnostics yet"
+    while [ $(disk_usage_in_kb .) -gt $ONE_GB_IN_KB ]
+    do
+      trigger_to_delete=$(ls -At | head -n 1)
+      log "Disk usage too high while waiting for CPU to idle - deleting $trigger_to_delete"
+      rm -rf $trigger_to_delete
+    done
+  done
+
+  # Now we can start gathering.  First find the trigger files.
   trigger_files=$(ls -Atr)
   log "Processing trigger files: $(echo $trigger_files)"
 
@@ -594,12 +637,12 @@ do
     ii=$(( $ii + 1 ))
 
     # Get the size of the core file and dump directory in kB.
-    core_file_size=$(du -k $core_file | cut -f 1)
-    curr_dump_size=$(du -ks $CURRENT_DUMP_DIR | cut -f 1)
+    core_file_size=$(disk_usage_in_kb $core_file)
+    curr_dump_size=$(disk_usage_in_kb $CURRENT_DUMP_DIR)
 
     # If we have room, copy in the core file. Otherwise don't copy this file or
     # any more.
-    if [ $(($core_file_size + $curr_dump_size)) -lt 1000000 ]
+    if [ $(($core_file_size + $curr_dump_size)) -lt $ONE_GB_IN_KB ]
     then
       log "Moving $core_file to dump"
       mv $core_file $CURRENT_DUMP_DIR
@@ -644,7 +687,7 @@ do
   #
   # Take care not to delete the diagnostic dump we've just taken even if it
   # means exceeding the 1GB limit.
-  while [ $(du -ks $DUMPS_DIR | cut -f 1) -gt 1000000 ]
+  while [ $(disk_usage_in_kb $DUMPS_DIR) -gt $ONE_GB_IN_KB ]
   do
     # Get oldest dump in the directory and delete it.
     #
