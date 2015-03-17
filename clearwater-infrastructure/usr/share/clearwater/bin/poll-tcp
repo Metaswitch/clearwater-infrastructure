@@ -37,21 +37,24 @@
 # This script polls a process on the passed in port
 
 # Grab the command-line argument.
-[ $# = 1 ] || { echo "Usage: poll-tcp <port>" >&2 ; exit 2 ; }
-port=$1
+[ $# -ge 1 ] || { echo "Usage: poll-tcp <port> [ip] (defaults to local_ip if none specified)" >&2 ; exit 2 ; }
+PORT=$1
+IP=$2
 
-# Grab our configuration - we just use the local IP address.
+# Grab our configuration - we just use the local IP address if no IP address
+# was specified.
 . /etc/clearwater/config
+[ -n "$IP" ] || IP=$local_ip
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Do the poll - connect and check for success
-$namespace_prefix nc -v -w 2 $local_ip $port 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
+$namespace_prefix nc -v -w 2 $IP $PORT 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
 cat /tmp/poll-tcp.sh.nc.stderr.$$ | head -1 | egrep -q "succeeded"
 rc=$?
 
 # Check the return code and log if appropriate
 if [ $rc != 0 ] ; then
-  echo TCP poll failed to $local_ip $PORT >&2
+  echo TCP poll failed to $IP $PORT >&2
   cat /tmp/poll-tcp.sh.nc.stderr.$$       >&2
   cat /tmp/poll-tcp.sh.nc.stdout.$$       >&2
 fi
