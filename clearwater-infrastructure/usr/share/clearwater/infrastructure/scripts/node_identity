@@ -39,7 +39,7 @@
 
 filename=/etc/clearwater/node_identity
 
-if [ ! -e "$filename" ]
+if [ ! -e "$filename" ]; then
   uuid=$( python -c "import uuid; print uuid.uuid4()" )
   echo "uuid=$uuid" > $filename
 fi
