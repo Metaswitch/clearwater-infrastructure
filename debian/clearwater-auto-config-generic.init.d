@@ -45,7 +45,7 @@
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
-# Changes in this command should be replicated in clearwater-auto-config-aws.init.d
+# Changes in this command should be replicated in clearwater-auto-config-*.init.d
 do_auto_config()
 {
   config=/etc/clearwater/config

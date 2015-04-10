@@ -5,6 +5,7 @@ hs_hostname=
 hs_provisioning_hostname=
 xdms_hostname=
 chronos_hostname=
+ralf_hostname=
 
 # Local IP configuration
 local_ip=
