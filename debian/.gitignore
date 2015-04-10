@@ -3,7 +3,6 @@
 /*.debhelper
 /*.substvars
 /files
-/clearwater-auto-config/
 /clearwater-infrastructure/
 /clearwater-memcached/
 /clearwater-memcached-extra/
@@ -13,6 +12,7 @@
 /clearwater-diags-monitor/
 /clearwater-socket-factory/
 /clearwater-auto-config-aws/
+/clearwater-auto-config-docker/
 /clearwater-auto-config-generic/
 /clearwater-log-cleanup/
 /clearwater-auto-upgrade/

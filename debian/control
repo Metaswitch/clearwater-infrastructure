@@ -60,6 +60,11 @@ Provides: clearwater-auto-config
 Architecture: all
 Description: Package containing the Clearwater auto-configuration tool for AWS
 
+Package: clearwater-auto-config-docker
+Provides: clearwater-auto-config
+Architecture: all
+Description: Package containing the Clearwater auto-configuration tool for Docker
+
 Package: clearwater-auto-config-generic
 Provides: clearwater-auto-config
 Architecture: all

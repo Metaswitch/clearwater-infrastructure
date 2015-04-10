@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @file clearwater-auto-config-aws.init.d
+# @file clearwater-auto-config-docker.init.d
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2013  Metaswitch Networks Ltd
@@ -35,40 +35,55 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 ### BEGIN INIT INFO
-# Provides:          clearwater-auto-config-aws
+# Provides:          clearwater-auto-config-docker
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: clearwater-auto-config-aws
-# Description:       clearwater-auto-config-aws
+# Short-Description: clearwater-auto-config-docker
+# Description:       clearwater-auto-config-docker
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
 # Changes in this command should be replicated in clearwater-auto-config-*.init.d
 do_auto_config()
 {
-  mkdir -p /etc/clearwater
   config=/etc/clearwater/config
-  # wget -qO - http://169.254.169.254/latest/user-data | sed 's/'`echo "\015"`'//g' >>$config
-  local_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/local-ipv4)
-  public_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/public-ipv4)
-  public_hostname=$(wget -qO - http://169.254.169.254/latest/meta-data/public-hostname)
+  if [ -f /etc/clearwater/force_ipv6 ]
+  then
+    # The sed expression finds the first IPv6
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9. ]* \)\([0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  else
+    # The sed expression finds the first IPv4 address in the space-separate list of IPv4 and IPv6 addresses.
+    # If there are no IPv4 addresses it finds the first IPv6 address.
+    ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
+  fi
 
-  sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
-          s/^public_ip=.*$/public_ip='$public_ip'/g
-          s/^public_hostname=.*$/public_hostname='$public_hostname'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g
-          s/^xdms_hostname=.*$/xdms_hostname='$public_hostname':7888/g
-          s/^hs_hostname=.*$/hs_hostname='$public_hostname':8888/g
-          s/^chronos_hostname=.*$/chronos_hostname='$local_ip':7253/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$public_hostname':8889/g
-          s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
+  # Add square brackets around the address iff it is an IPv6 address
+  bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
 
-  rm /etc/clearwater/config
-  mv /etc/clearwater/config2 /etc/clearwater/config
+  # Get the details of the linked Docker containers.  See
+  # https://docs.docker.com/userguide/dockerlinks/#environment-variables
+  # for the definition of this API.
+  [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
+  [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
+  [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
+  [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
+  [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
+  [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+
+  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
+          s/^public_ip=.*$/public_ip='$ip'/g
+          s/^public_hostname=.*$/public_hostname='$ip'/g
+          s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
+          s/^xdms_hostname=.*$/xdms_hostname='$xdms_hostname'/g
+          s/^hs_hostname=.*$/hs_hostname='$hs_hostname'/g
+          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
+          s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
+          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g' -i $config
+
   # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm /etc/clearwater/cluster_settings
+  rm -f /etc/clearwater/cluster_settings
 }
 
 case "$1" in
@@ -77,13 +92,7 @@ case "$1" in
     exit 0
   ;;
 
-  status)
-    exit 0
-  ;;
-
-  stop)
-    echo "Remove any chef PEM files"
-    find /etc/chef/*.pem -exec rm -f {} \; || true
+  status|stop)
     exit 0
   ;;
 
