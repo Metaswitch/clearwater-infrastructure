@@ -62,6 +62,9 @@ do_auto_config()
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
 
+  # Get the details of the linked Docker containers.  See
+  # https://docs.docker.com/userguide/dockerlinks/#environment-variables
+  # for the definition of this API.
   [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
   [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
   [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
