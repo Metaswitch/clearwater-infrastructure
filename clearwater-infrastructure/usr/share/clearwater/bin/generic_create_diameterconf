@@ -37,7 +37,7 @@
 # This file creates a freeDiameter config file, and appropriate
 # TLS keys, for either Ralf, Homestead or Cedar.
 
-usage="Usage: generic_create_diameterconf [homestead|ralf|cedar] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS"
+usage="Usage: generic_create_diameterconf [homestead|ralf|cedar] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS CHECK_DESTINATION_HOST"
 
 name=$1
 identity=$2
@@ -45,8 +45,9 @@ realm=$3
 port=$4
 sec_port=$5
 acl_required=$6
+check_dh=$7
 
-if [[ $# != 6 ]]
+if [[ $# != 7 ]]
 then
     # Usage message to stderr
     echo $usage >&2
@@ -125,6 +126,15 @@ then
   acl_commenter=""
 fi
 
+# By default assume that the Destination-Host AVP should be checked on incoming requests, 
+# so comment out the rt_ignore_dh.fdx Load Extension line. If ignoring the Destination-Host
+# is allowed, uncomment it.
+dh_commenter="#";
+if [[  $check_dh == "true" ]]
+then
+  dh_commenter=""
+fi
+
 # Set up the configuration for $name with the right IP addresses and ports
 cat > $cfg_dir/$name.conf <<EOF
 # -------- Local ---------
@@ -159,5 +169,8 @@ LoadExtension = "$fd_dir/dict_nasreq.fdx";
 LoadExtension = "$fd_dir/dict_sip.fdx";
 LoadExtension = "$fd_dir/dict_dcca.fdx";
 LoadExtension = "$fd_dir/dict_dcca_3gpp.fdx";
+
+# Uncomment to allow ignoring the Destination-Host AVP on incoming requests
+$dh_commenter LoadExtension = "$fd_dir/rt_ignore_dh.fdx";
 
 EOF
