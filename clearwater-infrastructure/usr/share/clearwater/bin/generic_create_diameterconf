@@ -130,7 +130,7 @@ fi
 # so comment out the rt_ignore_dh.fdx Load Extension line. If ignoring the Destination-Host
 # is allowed, uncomment it.
 dh_commenter="#";
-if [[  $check_dh == "true" ]]
+if [[  $check_dh == "false" ]]
 then
   dh_commenter=""
 fi
