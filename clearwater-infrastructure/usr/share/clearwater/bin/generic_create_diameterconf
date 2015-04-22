@@ -127,7 +127,7 @@ then
 fi
 
 # By default assume that the Destination-Host AVP should be checked on incoming requests, 
-# so comment out the rt_ignore_dh.fdx Load Extension line. If ignoring the Destination-Host
+# so comment out the rt_change_dh.fdx Load Extension line. If ignoring the Destination-Host
 # is allowed, uncomment it.
 dh_commenter="#";
 if [[  $check_dh == "false" ]]
@@ -171,6 +171,6 @@ LoadExtension = "$fd_dir/dict_dcca.fdx";
 LoadExtension = "$fd_dir/dict_dcca_3gpp.fdx";
 
 # Uncomment to allow ignoring the Destination-Host AVP on incoming requests
-$dh_commenter LoadExtension = "$fd_dir/rt_ignore_dh.fdx";
+$dh_commenter LoadExtension = "$fd_dir/rt_change_dh.fdx";
 
 EOF
