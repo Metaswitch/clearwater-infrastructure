@@ -1,2 +1,5 @@
 # Get activity reports every minute - this is a finer granularity than the default /etc/cron.d/sysstat
-* * * * * root /usr/lib/sysstat/sadc 1 1 /var/log/sysstat/clearwater-sa`date +\%d`
+# Specify -F to force rotation at midnight.
+0 0 * * * root /usr/lib/sysstat/sadc -F 1 1 /var/log/sysstat/clearwater-sa`date +\%d` > /dev/null 2>&1
+1-59 0 * * * root /usr/lib/sysstat/sadc 1 1 /var/log/sysstat/clearwater-sa`date +\%d` > /dev/null 2>&1
+* 1-23 * * * root /usr/lib/sysstat/sadc 1 1 /var/log/sysstat/clearwater-sa`date +\%d` > /dev/null 2>&1
