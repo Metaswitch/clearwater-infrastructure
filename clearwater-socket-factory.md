@@ -4,6 +4,8 @@ The `clearwater-socket-factory` is a service that runs in the system's default n
 
 When traffic separation is enabled on a Clearwater node the default namespace is used for management traffic. This service is used by processes in the signalling namespace (such as Sprout) to obtain connectons to the Metaswitch Service Assurance Server (which lives in the management network).
 
+For security reasons, the socket factory is only allowed to connect to a restricted set of hosts (currently only one is supported). This is to prevent an unprivileged process (such as Sprout) from requesting connections to arbitrary hosts in the default namespace.
+
 ## Interface
 
 `clearwater-socket-factory` runs as a daemon process. Clients communicate with it over a named UNIX socket.
@@ -20,7 +22,9 @@ See the [example client](clearwater-socket-factory/test_client.c) for more detai
 
 ### Error Conditions
 
-If the daemon encounters an error it will indicate this to the client by either:
+If the daemon is asked to connect to a host other than the configured "allowed host" it assumes that the allowed host must have changed. It exists immediately so that it can be restarted and pick up the new value.
+
+If the daemon encounters any other errors it will indicate this to the client by either:
 
 * Closing the connection to client.
 * Sending the client a message containing an invalid (negative) file descriptor.
