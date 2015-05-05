@@ -16,6 +16,8 @@
 #define LOG_FILENAME "/var/log/clearwater-socket-factory.log"
 FILE* LOG_FILE = NULL;
 
+char* allowed_host = NULL;
+
 void write_timestamp(FILE* stream)
 {
   time_t t;
@@ -82,6 +84,13 @@ int get_shared_socket(char* target)
   *sep = 0;
   char* host = target;
   char* port = sep + 1;
+
+  if (strcmp(host, allowed_host) != 0)
+  {
+    logmsg("Supplied host (%s) does not match allowed host (%s). Exiting",
+           host, allowed_host);
+    exit(2);
+  }
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_INET;
@@ -297,7 +306,30 @@ int create_server()
   return 0;
 }
 
-int main()
+void usage()
 {
+  fprintf(stderr,
+          "Usage is: clearwater_socket_factory ALLOWED_HOST\n"
+          "\n"
+          "Parameters:\n"
+          "  ALLOWED_HOST - The hostname that the factory is allowed to connect to.\n"
+          "                 This is a security measure to prevent an unprivileged process\n"
+          "                 from using the factory to connect to arbitrary hosts\n");
+}
+
+void parse_args(int argc, char** argv)
+{
+  if (argc != 2)
+  {
+    usage();
+    exit(1);
+  }
+
+  allowed_host = argv[1];
+}
+
+int main(int argc, char** argv)
+{
+  parse_args(argc, argv);
   return create_server();
 }
