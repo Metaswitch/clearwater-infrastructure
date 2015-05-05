@@ -10,4 +10,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec /usr/share/clearwater/bin/clearwater_socket_factory
+script
+  . /etc/clearwater/config
+  /usr/share/clearwater/bin/clearwater_socket_factory "$sas_server"
+end script
