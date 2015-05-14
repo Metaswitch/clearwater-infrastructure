@@ -53,11 +53,28 @@ sip_ip=$(/usr/share/clearwater/bin/bracket_ipv6_address.py $local_ip)
 # Send the SIP message.  The nc line also includes checking the first line of the response says
 # "SIP/2.0 200 OK".
 #
-# The -q option keeps netcat around for 1 second after sending the OPTIONS to
+# The -q option keeps netcat around after sending the OPTIONS to
 # allow the pollee time to send a response before the connection is
 # closed.
+#
+# We can expect OPTIONS response time to scale with target latency (because a
+# high target latency allows worker threads to become tied up with slow
+# requests, thereby delaying OPTIONS responses).  Set the value of -q to be
+# 0.5 secs more than the target latency, rounded up (i.e. 1500000 us more,
+# rounded down).
+#
+# Note that the -w option (the overall timeout) needs to be larger than the -q
+# option - set it to the calculated -q value plus 1.
+wait_time=1
+
+if [ ! -z "$target_latency_us" ]
+then
+  wait_time=$(( $(($target_latency_us + 1500000)) / 1000000 ))
+fi
+
 when_nc_started=$(date --utc  --rfc-3339=ns)
-nc -v -C -w 2 -q 1 $local_ip $port <<EOF 2> /tmp/poll-sip.nc.stderr.$$ | tee /tmp/poll-sip.nc.stdout.$$ | head -1 | egrep -q "^SIP/2.0 (200|503)"
+
+nc -v -C -w $(( $wait_time + 1 )) -q $wait_time $local_ip $port <<EOF 2> /tmp/poll-sip.nc.stderr.$$ | tee /tmp/poll-sip.nc.stdout.$$ | head -1 | egrep -q "^SIP/2.0 (200|503)"
 OPTIONS sip:poll-sip@$sip_ip:$port SIP/2.0
 Via: SIP/2.0/TCP $sip_ip;rport;branch=z9hG4bK-$id
 Max-Forwards: 2
