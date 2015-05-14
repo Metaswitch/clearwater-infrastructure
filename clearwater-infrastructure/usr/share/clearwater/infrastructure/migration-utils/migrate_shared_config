@@ -124,3 +124,6 @@ impu_cache_ttl=$impu_cache_ttl
 hss_reregistration_time=$hss_reregistration_time
 hss_port=$hss_port
 EOF
+
+# Comment out any blank values
+perl -p -i -e 's/^(.*=)$/#$1/' /etc/clearwater/shared_config
