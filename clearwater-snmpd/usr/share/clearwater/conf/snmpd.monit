@@ -35,8 +35,8 @@
 # Check the snmpd process.
 
 # Monitor the service's PID file and memory use.
-check process snmpd with pidfile "/var/run/snmpd.pid"
-
+check process snmpd_process with pidfile "/var/run/snmpd.pid"
+  group snmpd
   start program = "/etc/init.d/snmpd start"
   stop program = "/etc/init.d/snmpd stop"
   restart program = "/etc/init.d/snmpd restart"
