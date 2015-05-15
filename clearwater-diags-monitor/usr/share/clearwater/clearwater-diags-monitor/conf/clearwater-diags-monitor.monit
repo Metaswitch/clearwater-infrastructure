@@ -34,7 +34,9 @@
 
 # Check the clearwater-diags-monitor process.
 
-check process clearwater_diags_monitor with pidfile "/var/run/clearwater_diags_monitor.pid"
+check process clearwater_diags_monitor_process with pidfile "/var/run/clearwater_diags_monitor.pid"
+  group clearwater_diags_monitor
+
   start program = "/etc/init.d/clearwater-diags-monitor start"
   stop program = "/etc/init.d/clearwater-diags-monitor stop"
   restart program = "/etc/init.d/clearwater-diags-monitor restart"
