@@ -373,8 +373,8 @@ get_cassandra_info()
   $namespace_prefix nodetool netstats > $CURRENT_DUMP_DIR/nodetool_netstats.txt
 
   # Cassandra data format.
-  echo "DESC SCHEMA;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_schema.txt
-  echo "DESC CLUSTER;" | $namespace_prefix cqlsh -3 > $CURRENT_DUMP_DIR/cassandra_cluster.txt
+  echo "DESC SCHEMA;" | $namespace_prefix cqlsh > $CURRENT_DUMP_DIR/cassandra_schema.txt
+  echo "DESC CLUSTER;" | $namespace_prefix cqlsh > $CURRENT_DUMP_DIR/cassandra_cluster.txt
 
   # Get the newest hprof file (make sure we move this file as it's likely big
   # and since it is used to trigger diags collections).
