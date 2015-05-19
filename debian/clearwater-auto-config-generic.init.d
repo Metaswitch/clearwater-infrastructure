@@ -68,6 +68,7 @@ do_auto_config()
           s/^sprout_hostname=.*$/sprout_hostname='$ip'/g
           s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
           s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
+          s/^chronos_hostname=.*$/chronos_hostname='$bracketed_ip':7253/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g
           s/^upstream_hostname=.*$/upstream_hostname='$ip'/g' -i $config
 
