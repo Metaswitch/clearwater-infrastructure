@@ -44,22 +44,19 @@ clearwater_packages()
 
 CURRENT_CW_COMPONENTS=$(clearwater_packages)
 
-# Return whether any of the specified clearwater components are installed.
+# Return whether the specified clearwater component is installed.
 #
-# For example `cw_component_installed bono sprout` will return 0 (true) if bono
-# OR sprout are installed.
+# For example `cw_component_installed bono` will return 0 (true) if bono
+# is installed.
 #
 # Params:
-#   $1 - The list of components to check.
+#   $1 - The component to check.
 cw_component_installed()
 {
-  for comp in "$@"
-  do
-    if echo $CURRENT_CW_COMPONENTS | tr ' ' '\n' | grep -q "^$comp$"
-    then
-      return 0
-    fi
-  done
+  if echo $CURRENT_CW_COMPONENTS | tr ' ' '\n' | grep -q "^$1$"
+  then
+    return 0
+  fi
 
   return 1
 }
