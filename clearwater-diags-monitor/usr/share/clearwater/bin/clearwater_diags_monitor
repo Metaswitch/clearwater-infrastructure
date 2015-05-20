@@ -568,7 +568,7 @@ do
   get_process_info
 
   # Database statuses.
-  if cw_component_installed homer homestead
+  if cw_component_installed homer homestead memento
   then
     get_cassandra_info
   fi
@@ -578,7 +578,7 @@ do
     get_mysql_info
   fi
 
-  if cw_component_installed sprout ralf
+  if cw_component_installed sprout ralf memento
   then
     get_memcached_info
   fi
