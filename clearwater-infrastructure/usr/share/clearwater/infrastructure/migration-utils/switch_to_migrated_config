@@ -50,8 +50,17 @@ backup=/etc/clearwater/config.`date +%Y%m%d%H%M%S%N`.migration_backup
 cp /etc/clearwater/config $backup
 echo "Old config backed up to $backup"
 cat <<EOF > /etc/clearwater/config
-[ -f /etc/clearwater/shared_config ] && . /etc/clearwater/shared_config
+if [ -f /etc/clearwater/shared_config ]
+then
+  . /etc/clearwater/shared_config
+fi
+
 . /etc/clearwater/local_config
-[ -f /etc/clearwater/user_settings ] && . /etc/clearwater/user_settings
+
+if [ -f /etc/clearwater/user_settings ]
+then
+  . /etc/clearwater/user_settings
+fi
+
 EOF
 echo "Config migration complete. You should now restart clearwater-infrastructure and any clearwater services on this node."
