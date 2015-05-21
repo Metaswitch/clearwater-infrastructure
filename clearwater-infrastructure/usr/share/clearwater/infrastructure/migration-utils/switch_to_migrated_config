@@ -32,6 +32,8 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
+set -e
+
 if [ ! -e /etc/clearwater/local_config ]
 then
 	echo "/etc/clearwater/local_config must exist before this script is run"
