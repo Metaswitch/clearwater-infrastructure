@@ -51,4 +51,12 @@ hs_diameteridentity=$hs_diameteridentity
 ralf_diameteridentity=$ralf_diameteridentity
 etcd_cluster=$etcd_cluster
 node_idx=$node_idx
+alias_list=$alias_list
+#chronos_hostname=$chronos_hostname
+
+local_site_name=$local_site_name
+remote_site_name=$local_site_name
 EOF
+
+# Comment out any blank values
+perl -p -i -e 's/^(.*=)$/#$1/' /etc/clearwater/local_config
