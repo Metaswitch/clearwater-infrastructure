@@ -59,7 +59,7 @@ MIN_IDLE_CPU_FOR_GATHER=40
 # signaling network namespace for multi-interface configurations.
 [ -z "$signaling_dns_server" ] || namespace_dig_server="@$signaling_dns_server"
 
-$management_local_ip=${management_local_ip:-$local_ip}
+management_local_ip=${management_local_ip:-$local_ip}
 
 log()
 {
@@ -404,8 +404,8 @@ get_etcd_info()
 {
   clearwater-etcdctl member list > $CURRENT_DUMP_DIR/etcd_member_list.txt
   clearwater-etcdctl cluster-health > $CURRENT_DUMP_DIR/etcd_cluster_health.txt
-  curl "http://$local_management_ip:4000/v2/keys/clearwater?consistent=true&recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state.txt
-  curl "http://$local_management_ip:4000/v2/keys/clearwater?recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state_no_consistency.txt
+  curl "http://$management_local_ip:4000/v2/keys/clearwater?consistent=true&recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state.txt
+  curl "http://$management_local_ip:4000/v2/keys/clearwater?recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state_no_consistency.txt
 }
 
 get_cluster_manager_info()
