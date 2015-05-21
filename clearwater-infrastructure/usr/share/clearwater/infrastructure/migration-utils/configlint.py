@@ -48,7 +48,6 @@ sprout_hostname
 bono_hostname
 hs_hostname
 hs_provisioning_hostname
-chronos_hostname
 ralf_hostname
 cdf_identity
 xdms_hostname
@@ -74,7 +73,6 @@ enforce_user_phone
 enforce_global_only_lookups
 hs_listen_port
 ralf_listen_port
-alias_list
 default_session_expires
 enum_server
 enum_suffix
@@ -127,11 +125,15 @@ hss_port
 local_ip
 public_ip
 public_hostname
+chronos_hostname
 signaling_namespace
 etcd_cluster
 node_idx
 ralf_diameteridentity
 hs_diameteridentity
+alias_list
+local_site_name
+remote_site_name
 """.split()
 
 for option in settings:
