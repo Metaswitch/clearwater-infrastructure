@@ -64,8 +64,7 @@ cw_component_installed()
 
 for component in sprout memento ralf
 do
-  cw_component_installed $component
-  if [[ $? -eq 0 ]]
+  if cw_component_installed $component
   then
     echo "Reloading $component"
     service $component reload
