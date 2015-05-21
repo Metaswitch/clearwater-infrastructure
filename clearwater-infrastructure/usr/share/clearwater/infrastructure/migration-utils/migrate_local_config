@@ -55,7 +55,7 @@ alias_list=$alias_list
 #chronos_hostname=$chronos_hostname
 
 local_site_name=$local_site_name
-remote_site_name=$local_site_name
+remote_site_name=$remote_site_name
 EOF
 
 # Comment out any blank values
