@@ -63,7 +63,7 @@ add_section() {
 }
 
 add_config_shim() {
-  if [[ ! -e /etc/clearwater/config ]]
+  if [ ! -e /etc/clearwater/config ]
   then
     cat <<EOF > /etc/clearwater/config
 if [ -f /etc/clearwater/shared_config ]
