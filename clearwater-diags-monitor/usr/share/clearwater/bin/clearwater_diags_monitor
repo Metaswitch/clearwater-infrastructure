@@ -59,6 +59,7 @@ MIN_IDLE_CPU_FOR_GATHER=40
 # signaling network namespace for multi-interface configurations.
 [ -z "$signaling_dns_server" ] || namespace_dig_server="@$signaling_dns_server"
 
+management_local_ip=${management_local_ip:-$local_ip}
 
 log()
 {
@@ -398,6 +399,24 @@ get_mysql_info()
   echo "show databases" | mysql > $CURRENT_DUMP_DIR/mysql_show_databases.txt
 }
 
+# Get information about the etcd cluster.
+get_etcd_info()
+{
+  clearwater-etcdctl member list > $CURRENT_DUMP_DIR/etcd_member_list.txt
+  clearwater-etcdctl cluster-health > $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  curl "http://$management_local_ip:4000/v2/keys/clearwater?consistent=true&recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state.txt
+  curl "http://$management_local_ip:4000/v2/keys/clearwater?recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state_no_consistency.txt
+}
+
+get_cluster_manager_info()
+{
+  /usr/share/clearwater/clearwater-cluster-manager/scripts/check_cluster_health > $CURRENT_DUMP_DIR/etcd_datatore_clusters_health.txt
+}
+
+get_config_manager_info()
+{
+  /usr/share/clearwater/clearwater-config-manager/scripts/check_config_sync > $CURRENT_DUMP_DIR/etcd_config_sync.txt
+}
 
 # Get information about the memcached database.
 get_memcached_info()
@@ -581,6 +600,21 @@ do
   if cw_component_installed sprout ralf memento
   then
     get_memcached_info
+  fi
+
+  if cw_component_installed clearwater-etcd
+  then
+    get_etcd_info
+  fi
+
+  if cw_component_installed clearwater-cluster-manager
+  then
+    get_cluster_manager_info
+  fi
+
+  if cw_component_installed clearwater-config-manager
+  then
+    get_config_manager_info
   fi
 
   # Gather component specific diags for all installed components.

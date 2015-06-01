@@ -42,16 +42,14 @@ import re
 import zmq
 import syslog
 import os.path
-
+from subprocess import call
 
 def alarms_enabled():
-  config = "/etc/clearwater/config"
-  if os.path.isfile(config):
-    reg = re.compile('^snmp_ip\s*=\s*[^\s]+\s*$')
-    for line in open(config):
-        if reg.match(line):
-            return True
-  return False
+    # Shell out to see if snmp_ip is configured
+    rc = call('. /etc/clearwater/config; [ "x$snmp_ip" != "x" ]',
+              shell=True)
+    has_snmp_ip = (rc == 0)
+    return has_snmp_ip
 
 
 def sendrequest(request):

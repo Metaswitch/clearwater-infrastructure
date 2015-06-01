@@ -54,7 +54,7 @@ node_idx=$node_idx
 alias_list=$alias_list
 
 local_site_name=$local_site_name
-remote_site_name=$local_site_name
+remote_site_name=$remote_site_name
 EOF
 
 # Comment out any blank values

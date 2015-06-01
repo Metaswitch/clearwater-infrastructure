@@ -119,6 +119,7 @@ num_http_threads
 impu_cache_ttl
 hss_reregistration_time
 hss_port
+snmp_ip
 trusted_peers
 
 

@@ -62,9 +62,29 @@ add_section() {
     echo "#-$tag" ; } >> $file
 }
 
+add_config_shim() {
+  if [ ! -e /etc/clearwater/config ]
+  then
+    cat <<EOF > /etc/clearwater/config
+if [ -f /etc/clearwater/shared_config ]
+then
+  . /etc/clearwater/shared_config
+fi
+
+. /etc/clearwater/local_config
+
+if [ -f /etc/clearwater/user_settings ]
+then
+  . /etc/clearwater/user_settings
+fi
+EOF
+  fi
+}
+
 case "$1" in
     configure)
         add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+        add_config_shim
         for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
           add_section $HOME_DIR/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
         done
