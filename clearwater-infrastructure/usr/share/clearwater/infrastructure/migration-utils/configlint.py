@@ -120,6 +120,7 @@ impu_cache_ttl
 hss_reregistration_time
 hss_port
 snmp_ip
+trusted_peers
 
 
 local_ip
