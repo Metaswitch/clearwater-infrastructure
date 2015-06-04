@@ -33,6 +33,13 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 #
 
+# Do nothing if snmpd.conf is absent (e.g. mid-install)
+
+if [ ! -e /etc/snmp/snmpd.conf ]
+then
+    exit 0
+fi
+
 #
 # Add informsink entries to /etc/snmp/snmpd.conf based upon the snmp_ip
 # Clearwater config setting.
