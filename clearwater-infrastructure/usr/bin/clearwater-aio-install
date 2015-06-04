@@ -41,7 +41,7 @@ then
   exit 1
 fi
 
-if [ $# -ne 2 ]
+if [ $# -ne 4 ]
 then
   echo "Usage: clearwater-aio-install [repo] [auto_config_package] [number_start] [number_count]"
   exit 1
