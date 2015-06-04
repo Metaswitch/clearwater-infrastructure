@@ -41,7 +41,7 @@ then
   exit 1
 fi
 
-if [ $# -lt 1 || $# -gt 4 ]
+if [[ $# -lt 1 || $# -gt 4 ]]
 then
   echo "Usage: clearwater-aio-install [auto_config_package] <repo> <number_start> <number_count>"
   exit 1
@@ -57,7 +57,7 @@ number_count=$4
 [ -n "$number_count" ] || number_count=1000
 
 # Set up the repo
-echo deb \$repo binary/ > /etc/apt/sources.list.d/clearwater.list
+echo deb $repo binary/ > /etc/apt/sources.list.d/clearwater.list
 curl -L http://repo.cw-ngv.com/repo_key | sudo apt-key add -
 apt-get update
 
