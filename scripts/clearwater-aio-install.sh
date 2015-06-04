@@ -41,16 +41,20 @@ then
   exit 1
 fi
 
-if [ $# -ne 4 ]
+if [ $# -lt 1 || $# -gt 4 ]
 then
-  echo "Usage: clearwater-aio-install [repo] [auto_config_package] [number_start] [number_count]"
+  echo "Usage: clearwater-aio-install [auto_config_package] <repo> <number_start> <number_count>"
   exit 1
 fi
 
-repo=$1
-auto_package=$2
+auto_package=$1
+repo=$2 
 number_start=$3
 number_count=$4
+
+[ -n "$repo" ] || repo=http://repo.cw-ngv.com/stable
+[ -n "$number_start" ] || number_start=6505550000
+[ -n "$number_count" ] || number_count=1000
 
 # Set up the repo
 echo deb \$repo binary/ > /etc/apt/sources.list.d/clearwater.list
@@ -59,7 +63,7 @@ apt-get update
 
 # Install the clearwater packages
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y --force-yes clearwater-cassandra $auto_package
+apt-get install -y --force-yes $auto_package clearwater-cassandra
 apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov
 
 # Create numbers on Ellis
