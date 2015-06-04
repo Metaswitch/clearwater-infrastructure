@@ -49,24 +49,24 @@
 do_auto_config()
 {
   mkdir -p /etc/clearwater
-  config=/etc/clearwater/config
-  # wget -qO - http://169.254.169.254/latest/user-data | sed 's/'`echo "\015"`'//g' >>$config
+ 
+  local_config=/etc/clearwater/local_config
+  shared_config=/etc/clearwater/shared_config
+
   local_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/local-ipv4)
   public_ip=$(wget -qO - http://169.254.169.254/latest/meta-data/public-ipv4)
   public_hostname=$(wget -qO - http://169.254.169.254/latest/meta-data/public-hostname)
 
   sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
           s/^public_ip=.*$/public_ip='$public_ip'/g
-          s/^public_hostname=.*$/public_hostname='$public_hostname'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g
+          s/^public_hostname=.*$/public_hostname='$public_hostname'/g' -i $local_config
+
+  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$public_hostname':7888/g
           s/^hs_hostname=.*$/hs_hostname='$public_hostname':8888/g
-          s/^chronos_hostname=.*$/chronos_hostname='$local_ip':7253/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$public_hostname':8889/g
-          s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' < /etc/clearwater/config > /etc/clearwater/config2
+          s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' -i $shared_config
 
-  rm /etc/clearwater/config
-  mv /etc/clearwater/config2 /etc/clearwater/config
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm /etc/clearwater/cluster_settings
 }

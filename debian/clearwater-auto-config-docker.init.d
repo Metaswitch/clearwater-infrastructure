@@ -48,7 +48,9 @@
 # Changes in this command should be replicated in clearwater-auto-config-*.init.d
 do_auto_config()
 {
-  config=/etc/clearwater/config
+  local_config=/etc/clearwater/local_config
+  shared_config=/etc/clearwater/shared_config
+
   if [ -f /etc/clearwater/force_ipv6 ]
   then
     # The sed expression finds the first IPv6
@@ -62,6 +64,10 @@ do_auto_config()
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
 
+  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
+          s/^public_ip=.*$/public_ip='$ip'/g
+          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+
   # Get the details of the linked Docker containers.  See
   # https://docs.docker.com/userguide/dockerlinks/#environment-variables
   # for the definition of this API.
@@ -72,15 +78,12 @@ do_auto_config()
   [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
   [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
 
-  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
+  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$xdms_hostname'/g
           s/^hs_hostname=.*$/hs_hostname='$hs_hostname'/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
           s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
-          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g' -i $config
+          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g' -i $shared_config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
