@@ -73,7 +73,24 @@ PDLogs = {
     'Call processing is not available.',
     'Create the network namespace in the kernel, or adjust the value of signaling_namespace '
     'in /etc/clearwater/config to match the desired network namespace if it exists.'
-  )
+  ),
+  'CL_ETCD_STARTED': (
+    CL_SCRIPT_ID + 2,
+    syslog.LOG_NOTICE,
+    'clearwater-etcd has started.',
+    'The application is starting.',
+    'Normal.',
+    'None.'
+  ),
+  'CL_ETCD_EXITED': (
+    CL_SCRIPT_ID + 3,
+    syslog.LOG_ERR,
+    'clearwater-etcd is exiting.',
+    'The application is exiting.',
+    'Shared config management and datastore cluster management are no longer available.',
+    'This occurs normally when the application is stopped. Wait for monit to restart the application.'
+  ),
+
 }
 
 if len(sys.argv) >= 3:
