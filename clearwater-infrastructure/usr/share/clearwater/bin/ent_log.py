@@ -90,18 +90,6 @@ PDLogs = {
     'Shared config management and datastore cluster management are no longer available.',
     'This occurs normally when the application is stopped. Wait for monit to restart the application.'
   ),
-  'CL_ETCD_POLL_FAILED': (
-    CL_SCRIPT_ID + 4,
-    syslog.LOG_ERR,
-    'clearwater-etcd has become unresponsive.',
-    'A regular monitoring check has not received a response from clearwater-etcd.',
-    'Shared config management and datastore cluster management are no longer available.',
-    'Monit will automatically restart unresponsive processes. '
-      'This should resolve the issue without the need for further action.'
-  ),
-
-
-
 
 }
 
