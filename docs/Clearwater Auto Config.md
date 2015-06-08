@@ -5,9 +5,9 @@ This document briefly describes how the Clearwater automatic configuration
 process works. This function is used when deploying an All-In-One node using 
 [Chef](http://clearwater.readthedocs.org/en/latest/Creating_a_deployment_with_Chef/index.html#creating-an-all-in-one-aio-node), 
 a deployment using [Docker](https://github.com/Metaswitch/clearwater-docker/blob/master/README.md), 
-and building an [OVF](http://clearwater.readthedocs.org/en/latest/All_in_one_OVF_Installation/index.html)
+or building an [OVF](http://clearwater.readthedocs.org/en/latest/All_in_one_OVF_Installation/index.html)
 
-Also, AIO nodes can be saved as [Amazon AMIs](http://clearwater.readthedocs.org/en/latest/All_in_one_EC2_AMI_Installation/index.html), 
+AIO nodes can also be saved as [Amazon AMIs](http://clearwater.readthedocs.org/en/latest/All_in_one_EC2_AMI_Installation/index.html), 
 from which new systems can be launched. Such newly launched instances behave 
 much as if the original system (the one that was saved as an AMI) had been 
 rebooted, but coming back up with different local and public IP addresses, 

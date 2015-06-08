@@ -8,12 +8,12 @@ clearwater-infrastructure package.
 The basic process is as follows.
 
 -   Before clearwater-infrastructure is installed, the node needs to have set 
-    up the configuration files in `/etc/clearwater`. These are created in 
+    up the configuration files in `/etc/clearwater/`. These are created in 
     different ways depending on the type of install: see the installation methods
     [page](http://clearwater.readthedocs.org/en/latest/Installation_Instructions/index.html)
     for more details. 
 -   If the node is an All-In-One node, then it should install the 
-    clearwater-auto-config-aws/generic/docker package before installing 
+    `clearwater-auto-config-<aws|generic|docker>` package before installing 
     clearwater-infrastructure. This will set up the configuration automatically 
     (more details [here](https://github.com/Metaswitch/clearwater-infrastructure/blob/master/docs/Clearwater%20Auto%20Config.md))
 -   The clearwater-infrastructure install creates the file 
