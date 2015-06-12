@@ -45,10 +45,9 @@ IP=$2
 # was specified.
 . /etc/clearwater/config
 [ -n "$IP" ] || IP=$local_ip
-[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Do the poll - connect and check for success
-$namespace_prefix nc -v -w 2 $IP $PORT 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
+nc -v -w 2 $IP $PORT 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
 cat /tmp/poll-tcp.sh.nc.stderr.$$ | head -1 | egrep -q "succeeded"
 rc=$?
 
