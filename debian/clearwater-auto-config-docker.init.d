@@ -68,22 +68,37 @@ do_auto_config()
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
 
-  # Get the details of the linked Docker containers.  See
-  # https://docs.docker.com/userguide/dockerlinks/#environment-variables
-  # for the definition of this API.
-  [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
-  [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
-  [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
-  [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
-  [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
-  [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+  if [ -z $ZONE ]
+  then
+    # Configure using Docker links.  Get the details of the linked Docker containers.  See
+    # https://docs.docker.com/userguide/dockerlinks/#environment-variables
+    # for the definition of this API.
+    [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
+    [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
+    [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
+    [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
+    [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
+    [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+    home_domain = "example.com"
+  else
+    # Configure relative to the base zone and rely on DNS entries.
+    sprout_hostname=sprout.$ZONE
+    hs_hostname=hs.$ZONE:8888
+    hs_provisioning_hostname=hs.$ZONE:8889
+    xdms_hostname=homer.$ZONE:7888
+    upstream_hostname=sprout.$ZONE
+    ralf_hostname=ralf.$ZONE:10888
+    home_domain=$ZONE
+  fi
 
-  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
+  sed -e 's/^home_domain=.*$/home_domain='$home_domain'/g
+          s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$xdms_hostname'/g
           s/^hs_hostname=.*$/hs_hostname='$hs_hostname'/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
           s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
-          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g' -i $shared_config
+          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+          s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
