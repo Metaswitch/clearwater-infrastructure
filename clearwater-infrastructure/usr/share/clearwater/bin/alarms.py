@@ -40,6 +40,7 @@
 
 import re
 import zmq
+import sys
 import syslog
 import os.path
 from subprocess import call
