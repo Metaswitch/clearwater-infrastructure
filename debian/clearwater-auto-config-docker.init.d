@@ -79,7 +79,7 @@ do_auto_config()
     [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
     [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
     [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
-    home_domain = "example.com"
+    home_domain="example.com"
   else
     # Configure relative to the base zone and rely on DNS entries.
     sprout_hostname=sprout.$ZONE
