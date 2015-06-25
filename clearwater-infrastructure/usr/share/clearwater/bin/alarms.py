@@ -78,7 +78,6 @@ def sendrequest(request):
 
       context.destroy(100)
 
-  except:
-    e = sys.exc_info()[0]
-    syslog.syslog(syslog.LOG_ERR, e)
+  except Exception as e:
+    syslog.syslog(syslog.LOG_ERR, str(e))
 
