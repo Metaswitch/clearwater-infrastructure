@@ -100,6 +100,18 @@ do_auto_config()
           s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
           s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
+  # Extract DNS server from resolv.conf.
+  nameserver=`grep nameserver /etc/resolv.conf | awk '{print $2}'`
+  if [ -n $nameserver ]
+  then
+    if grep -q "^signaling_dns_server" $shared_config
+    then
+      sed -e 's/^signaling_dns_server=.*/signaling_dns_server='$nameserver'/g' -i $shared_config
+    else
+      echo "signaling_dns_server="$nameserver >> $shared_config
+    fi
+  fi
+
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
 }
