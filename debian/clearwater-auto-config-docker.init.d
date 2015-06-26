@@ -62,7 +62,7 @@ do_auto_config()
   fi
 
   # Add square brackets around the address iff it is an IPv6 address
-  bracketed_ip=$(python /usr/share/clearwater/bin/bracket_ipv6_address.py $ip)
+  bracketed_ip=$(python /usr/share/clearwater/clearwater-auto-config-docker/bin/bracket_ipv6_address.py $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
