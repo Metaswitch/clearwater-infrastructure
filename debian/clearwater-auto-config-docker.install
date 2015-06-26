@@ -1,2 +1,3 @@
 clearwater-auto-config/* /
 clearwater-infrastructure/usr/share/clearwater/bin/bracket_ipv6_address.py /usr/share/clearwater/clearwater-auto-config-docker/bin/bracket_ipv6_address.py
+clearwater-infrastructure/usr/share/clearwater/bin/is_address_ipv6.py /usr/share/clearwater/clearwater-auto-config-docker/bin/is_address_ipv6.py
