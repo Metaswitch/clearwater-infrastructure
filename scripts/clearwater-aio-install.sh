@@ -33,8 +33,10 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 # This installs the Clearwater packages onto an AIO node. It sets up which
-# repo to pull the packages from, and creates numbers on Ellis. This is 
+# repo to pull the packages from, and creates numbers on Ellis. This is
 # used by the OVF install, AIO install through Chef, and the AMI creation
+set -e
+
 if [[ $EUID -ne 0 ]]
 then
   echo "You must run this script with root permissions"
@@ -48,7 +50,7 @@ then
 fi
 
 auto_package=$1
-repo=$2 
+repo=$2
 number_start=$3
 number_count=$4
 
