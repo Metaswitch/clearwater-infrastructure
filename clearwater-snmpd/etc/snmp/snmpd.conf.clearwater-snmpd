@@ -188,11 +188,9 @@ linkUpDownNotifications  yes
 #  AgentX Sub-agents
 #
                                            #  Run as an AgentX master agent
- master          agentx
-                                           #  Listen for network connections (from localhost)
-                                           #    rather than the default named socket /var/agentx/master
-#agentXSocket    tcp:localhost:705
-agentXPerms 777
+master          agentx
+agentXSocket /var/agentx/master
+agentXPerms 777 777 root snmp
 
 rocommunity clearwater 0.0.0.0/0 -V clearwater
 rocommunity6 clearwater ::/0 -V clearwater
