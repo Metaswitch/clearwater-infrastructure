@@ -61,10 +61,13 @@ case "$1" in
         mkdir -p /var/run/clearwater/stats
         chmod -R o+wr /var/run/clearwater/stats
 
-        # SNMPd doesn't reset the /var/agentx directory permissions automatically after a config
-        # change (http://net-snmp-coders.narkive.com/bCaMJSZF/user-permissions-and-agentx#post4) so
-        # do that manually
-        chmod 777 /var/agentx
+        if [ -e /var/agentx ]
+        then
+          # SNMPd doesn't reset the /var/agentx directory permissions automatically after a config
+          # change (http://net-snmp-coders.narkive.com/bCaMJSZF/user-permissions-and-agentx#post4)
+          # so do that manually
+          chmod 777 /var/agentx
+        fi
 
         # Update snmpd.conf based upon the content of Clearwater config
         /usr/share/clearwater/infrastructure/scripts/snmpd 
