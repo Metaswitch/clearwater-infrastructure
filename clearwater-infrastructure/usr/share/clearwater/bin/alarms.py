@@ -59,7 +59,7 @@ def sendrequest(request):
       context = zmq.Context.instance()
 
       client = context.socket(zmq.REQ)
-      client.connect("tcp://127.0.0.1:6664")
+      client.connect("ipc:///var/run/clearwater/alarms")
 
       poller = zmq.Poller()
       poller.register(client, zmq.POLLIN)

@@ -73,7 +73,7 @@ if [ $? -ne 0 ];
 then
   mv /tmp/snmpd.conf.$$ /etc/snmp/snmpd.conf
 
-  initctl emit --no-wait snmpd-config-change
+  service snmpd restart
 else
   rm /tmp/snmpd.conf.$$
 fi
