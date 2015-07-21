@@ -68,47 +68,56 @@ do_auto_config()
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
 
-  if [ -z $ZONE ]
+  if [ -n $ETCD_PROXY ]
   then
-    # Configure using Docker links.  Get the details of the linked Docker containers.  See
-    # https://docs.docker.com/userguide/dockerlinks/#environment-variables
-    # for the definition of this API.
-    [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
-    [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
-    [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
-    [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
-    [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
-    [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
-    home_domain="example.com"
+    # Set up etcd proxy configuration from environment.  Shared configuration
+    # should be uploaded and shared manually.
+    sed -e '/^etcd_cluster=.*/d
+            /^etcd_proxy=.*/d' -i $local_config
+    echo "etcd_proxy=$ETCD_PROXY" >> $local_config
+
+    # Remove the default shared configuration file.
+    rm -f $shared_config
   else
-    # Configure relative to the base zone and rely on DNS entries.
-    sprout_hostname=sprout.$ZONE
-    hs_hostname=hs.$ZONE:8888
-    hs_provisioning_hostname=hs.$ZONE:8889
-    xdms_hostname=homer.$ZONE:7888
-    upstream_hostname=sprout.$ZONE
-    ralf_hostname=ralf.$ZONE:10888
-    home_domain=$ZONE
-  fi
-
-  sed -e 's/^home_domain=.*$/home_domain='$home_domain'/g
-          s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
-          s/^xdms_hostname=.*$/xdms_hostname='$xdms_hostname'/g
-          s/^hs_hostname=.*$/hs_hostname='$hs_hostname'/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
-          s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
-          s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
-          s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
-
-  # Extract DNS server from resolv.conf.
-  nameserver=`grep nameserver /etc/resolv.conf | awk '{print $2}'`
-  if [ -n $nameserver ]
-  then
-    if grep -q "^signaling_dns_server" $shared_config
+    # Set up shared configuration on each node.
+    if [ -z $ZONE ]
     then
-      sed -e 's/^signaling_dns_server=.*/signaling_dns_server='$nameserver'/g' -i $shared_config
+      # Configure using Docker links.  Get the details of the linked Docker containers.  See
+      # https://docs.docker.com/userguide/dockerlinks/#environment-variables
+      # for the definition of this API.
+      [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
+      [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
+      [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
+      [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
+      [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
+      [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+      home_domain="example.com"
     else
-      echo "signaling_dns_server="$nameserver >> $shared_config
+      # Configure relative to the base zone and rely on DNS entries.
+      sprout_hostname=sprout.$ZONE
+      hs_hostname=hs.$ZONE:8888
+      hs_provisioning_hostname=hs.$ZONE:8889
+      xdms_hostname=homer.$ZONE:7888
+      upstream_hostname=sprout.$ZONE
+      ralf_hostname=ralf.$ZONE:10888
+      home_domain=$ZONE
+    fi
+
+    sed -e 's/^home_domain=.*$/home_domain='$home_domain'/g
+            s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
+            s/^xdms_hostname=.*$/xdms_hostname='$xdms_hostname'/g
+            s/^hs_hostname=.*$/hs_hostname='$hs_hostname'/g
+            s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
+            s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
+            s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
+
+    # Extract DNS server from resolv.conf.
+    nameserver=`grep nameserver /etc/resolv.conf | awk '{print $2}'`
+    if [ -n $nameserver ]
+    then
+      sed -e '/^signaling_dns_server=.*/d' -i $shared_config
+      echo "signaling_dns_server=$nameserver" >> $shared_config
     fi
   fi
 
