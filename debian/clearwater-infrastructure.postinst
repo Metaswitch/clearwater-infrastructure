@@ -90,6 +90,11 @@ case "$1" in
         done
         [ ! -d /etc/skel ] || add_section /etc/skel/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
         /usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg
+
+        # Restart the alarm agent
+        if [ -x "/etc/init.d/clearwater-snmp-alarm-agent" ]; then
+          service clearwater-snmp-alarms-agent stop || /bin/true
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
