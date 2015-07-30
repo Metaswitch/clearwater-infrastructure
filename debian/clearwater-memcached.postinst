@@ -57,6 +57,11 @@ case "$1" in
         /usr/share/clearwater/infrastructure/scripts/memcached
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
         reload clearwater-monit || /bin/true
+
+        # Restart the alarm agent
+        if [ -x "/etc/init.d/clearwater-snmp-alarm-agent" ]; then
+          service clearwater-snmp-alarms-agent stop || /bin/true
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
