@@ -34,6 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Sets up the namespace_prefix (only set if the signaling_namespace is in use)
+# Returns the namespace_prefix (only set if the signaling_namespace is in use).
 . /etc/clearwater/config
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
+$namespace_prefix $*
