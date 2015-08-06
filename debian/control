@@ -18,7 +18,7 @@ Description: Common infrastructure for all Clearwater servers
 
 Package: clearwater-memcached
 Architecture: all
-Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.2)
+Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.3)
 Conflicts: clearwater-infinispan
 Suggests: clearwater-secure-connections
 Description: memcached configured for Clearwater
