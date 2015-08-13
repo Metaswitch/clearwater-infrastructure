@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 #define SOCKET_PATH "/tmp/clearwater_mgmt_namespace_socket"
 
@@ -110,7 +111,7 @@ int main(int argc, char** argv)
     return -2;
   }
 
-  char* msg = "Hello there\n";
+  const char* msg = "Hello there\n";
   printf("Connected. Sending message\n");
   send(sock, msg, strlen(msg), 0);
   close(sock);
