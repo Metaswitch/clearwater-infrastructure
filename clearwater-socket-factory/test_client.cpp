@@ -14,7 +14,6 @@
 
 static int recv_file_descriptor(int socket)
 {
-  int sent_fd;
   struct msghdr message;
   struct iovec iov[1];
   struct cmsghdr *control_message = NULL;
