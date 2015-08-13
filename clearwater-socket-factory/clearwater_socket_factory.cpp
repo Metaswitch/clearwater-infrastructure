@@ -261,11 +261,14 @@ int get_shared_socket(char* target,
   if (rc < 0)
   {
     logmsg("All connections failed");
-    freeaddrinfo(addrs);
-    return rc;
+  }
+  else
+  {
+    logmsg("Shared socket connected");
   }
 
-  logmsg("Shared socket connected");
+  freeaddrinfo(addrs);
+  return rc;
 }
 
 int send_file_descriptor(int socket, int fd_to_send)
