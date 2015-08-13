@@ -10,34 +10,34 @@ stop on runlevel [!2345]
 
 respawn
 
-MGMT_WHITELIST_DIR=/etc/clearwater-socket-factory/management.d/*
-SIGNALING_WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d/*
-
-get_daemon_args()
-{
-  . /etc/clearwater/config
-
-  if [ ! -z $signaling_namespace ]
-  then
-    signaling_namespace="--signaling_ns=$signaling_namespace"
-  fi
-
-  # The whitelists are comma separated lists of hosts. They're built up from
-  # each line of each file in the correct directory. We also remove duplicates.
-  if [ -d $MGMT_WHITELIST_DIR ]; then
-    mgmt_allowed_hosts="--mgmt_allowed_hosts=$(echo $(cat $MGMT_WHITELIST_DIR | sort | uniq) | sed -e 's/ /,/g')"
-  fi
-
-  if [ -d $SIGNALING_WHITELIST_DIR ]; then
-    signaling_allowed_hosts="--signaling_allowed_hosts=$(echo $(cat $SIGNALING_WHITELIST_DIR | sort | uniq) | sed -e 's/ /,/g')"
-  fi
-
-  DAEMON_ARGS="$signaling_namespace
-               $mgmt_allowed_hosts
-               $signaling_allowed_hosts"
-}
-
 script
+  MGMT_WHITELIST_DIR=/etc/clearwater-socket-factory/management.d/*
+  SIGNALING_WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d/*
+
+  get_daemon_args()
+  {
+    . /etc/clearwater/config
+
+    if [ ! -z $signaling_namespace ]
+    then
+      signaling_namespace="--signaling_namespace=$signaling_namespace"
+    fi
+
+    # The whitelists are comma separated lists of hosts. They're built up from
+    # each line of each file in the correct directory. We also remove duplicates.
+    if [ -d $MGMT_WHITELIST_DIR ]; then
+      mgmt_allowed_hosts="--management_allowed_hosts=$(echo $(cat $MGMT_WHITELIST_DIR | sort | uniq) | sed -e 's/ /,/g')"
+    fi
+
+    if [ -d $SIGNALING_WHITELIST_DIR ]; then
+      signaling_allowed_hosts="--signaling_allowed_hosts=$(echo $(cat $SIGNALING_WHITELIST_DIR | sort | uniq) | sed -e 's/ /,/g')"
+    fi
+
+    DAEMON_ARGS="$signaling_namespace
+                 $mgmt_allowed_hosts
+                 $signaling_allowed_hosts"
+  }
+
   . /etc/clearwater/config
   get_daemon_args
   /usr/share/clearwater/bin/clearwater_socket_factory $DAEMON_ARGS

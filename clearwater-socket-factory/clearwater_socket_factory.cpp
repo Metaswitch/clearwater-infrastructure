@@ -86,11 +86,11 @@ enum OptionTokens
 
 const static struct option long_opt[] =
 {
-  {"signaling-ns",            required_argument, NULL, OPT_SIGNALING_NS},
-  {"mgmt-allowed-hosts",      required_argument, NULL, OPT_MGMT_ALLOWED_HOSTS},
-  {"signaling-allowed-hosts", required_argument, NULL, OPT_SIGNALING_ALLOWED_HOSTS},
-  {"help",                    no_argument,       NULL, 'h'},
-  {NULL,                      0,                 NULL, 0},
+  {"signaling-namespace",      required_argument, NULL, OPT_SIGNALING_NS},
+  {"management-allowed-hosts", required_argument, NULL, OPT_MGMT_ALLOWED_HOSTS},
+  {"signaling-allowed-hosts",  required_argument, NULL, OPT_SIGNALING_ALLOWED_HOSTS},
+  {"help",                     no_argument,       NULL, 'h'},
+  {NULL,                       0,                 NULL, 0},
 };
 
 
@@ -98,9 +98,11 @@ void usage(void)
 {
   puts("Options:\n"
        "\n"
-       " --signalling-ns <namespace>   The name of the signaling namespace. If not\n"
+       " --signalling-namespace <namespace>\n"
+       "                               The name of the signaling namespace. If not\n"
        "                               specified, assume the default namespace.\n"
-       " --mgmt-allowed-hosts <hosts>  A comma separated list of whitelisted hosts in\n"
+       " --management-allowed-hosts <hosts>\n"
+       "                               A comma separated list of whitelisted hosts in\n"
        "                               the management namespace.\n"
        " --signaling-allowed-hosts <hosts>\n"
        "                               A comma separated list of whitelisted hosts in\n"
@@ -189,7 +191,7 @@ int get_shared_socket(char* target,
                 allowed_hosts.end(),
                 host) == allowed_hosts.end())
   {
-    logmsg("Supplied host (%s) does not match the allowed hosts in this namespace. Exiting",
+    logmsg("Requested host (%s) is not permitted in this namespace. Exiting",
            host);
     exit(2);
   }
@@ -396,13 +398,16 @@ int create_unix_domain_socket(const char* socket_path)
 
 int create_server(struct options& options)
 {
+  std::vector<int> ns_fds;
   int mgmt_ns_fd = open(DEFAULT_NS_FD_PATH, 0);
   if (mgmt_ns_fd == -1)
   {
-    logerrno("Failed to open %s and retrieve management ns fd",
+    logerrno("Failed to open %s and retrieve management namespace fd",
              DEFAULT_NS_FD_PATH);
     exit(3);
   }
+  ns_fds.push_back(mgmt_ns_fd);
+
   int signaling_ns_fd;
   if (options.signaling_ns != "")
   {
@@ -414,6 +419,7 @@ int create_server(struct options& options)
                signaling_ns_fd_path.c_str());
       exit(3);
     }
+    ns_fds.push_back(signaling_ns_fd);
   }
   else
   {
@@ -444,6 +450,7 @@ int create_server(struct options& options)
         setns(mgmt_ns_fd, CLONE_NEWNET);
         process_one_request(fds[0].fd, options.mgmt_allowed_hosts);
       }
+
       if (fds[1].revents & POLLIN)
       {
         setns(signaling_ns_fd, CLONE_NEWNET);
@@ -454,6 +461,14 @@ int create_server(struct options& options)
 
   close(fds[0].fd);
   close(fds[1].fd);
+
+  for (std::vector<int>::iterator it = ns_fds.begin();
+       it != ns_fds.end();
+       ++it)
+  {
+    close(*it);
+  }
+
   return 0;
 }
 
