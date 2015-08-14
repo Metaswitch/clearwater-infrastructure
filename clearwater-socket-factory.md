@@ -33,11 +33,11 @@ If the daemon encounters any other errors it will indicate this to the client by
 
 `clearwater-socket-factory` has 3 configuration options:
 
-* signaling-namespace - this is the name of the signaling namespace.
-* management-allowed-hosts - this is a comma separated lists of hosts in the management network that clearwater-socket-factory is allowed to provide sockets for.
-* signaling-allowed-hosts - this is a comma separated lists of hosts in the signaling network that clearwater-socket-factory is allowed to provide sockets for.
+* `signaling-namespace` - this is the name of the signaling namespace.
+* `management-allowed-hosts` - this is a comma separated lists of hosts in the management network that `clearwater-socket-factory` is allowed to provide sockets for.
+* `signaling-allowed-hosts` - this is a comma separated lists of hosts in the signaling network that `clearwater-socket-factory` is allowed to provide sockets for.
 
-`clearwater-socket-factory` has an upstart script which is built into its Debian package. When deployed with this upstart script, the process will continually respawn when it exits. The upstart script reads signaling_namespace in /etc/clearwater/config to use as the signaling-namespace option, and it builds up lists of allowed hosts by reading each line of each file in /etc/clearwater-socket-factory/signaling.d and /etc/clearwater-socket-factory/management.d to use as the signaling-allowed-hosts and management-allowed-hosts options. If these directories don't exist, or are empty, the whitelist is empty.
+`clearwater-socket-factory` has an upstart script which is built into its Debian package. When deployed with this upstart script, the process will continually respawn when it exits. The upstart script reads `signaling_namespace` in `/etc/clearwater/config` to use as the `signaling-namespace` option, and it builds up lists of allowed hosts by reading each line of each file in `/etc/clearwater-socket-factory/signaling.d` and `/etc/clearwater-socket-factory/management.d` to use as the `signaling-allowed-hosts` and `management-allowed-hosts` options. If either of these directories don't exist, or are empty, the corresponding whitelist is empty.
 
 ## Limitations
 
