@@ -67,9 +67,11 @@ SCRIPTNAME=/etc/init.d/$NAME
 do_start()
 {
         # Fill in any files that depend on it
-        for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/ 2>/dev/null)
+        for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/* 2>/dev/null)
         do
-          /usr/share/clearwater/infrastructure/scripts/$SCRIPT
+          if [ -f "$SCRIPT" ]; then
+            $SCRIPT
+          fi
         done
 
         # Reload monit to pick up any changes to its config files
