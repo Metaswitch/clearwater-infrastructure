@@ -6,12 +6,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
+#ifndef SOCKET_PATH
 #define SOCKET_PATH "/tmp/clearwater_mgmt_namespace_socket"
+#endif
 
 static int recv_file_descriptor(int socket)
 {
-  int sent_fd;
   struct msghdr message;
   struct iovec iov[1];
   struct cmsghdr *control_message = NULL;
@@ -33,9 +35,14 @@ static int recv_file_descriptor(int socket)
   message.msg_iov = iov;
   message.msg_iovlen = 1;
 
-  if((res = recvmsg(socket, &message, 0)) <= 0)
+  if((res = recvmsg(socket, &message, 0)) < 0)
   {
     fprintf(stderr, "recvmsg returned %d (%d %s)\n", res, errno, strerror(errno));
+    return res;
+  }
+  else if(res == 0)
+  {
+    fprintf(stderr, "recvmsg indicates socket was closed\n");
     return res;
   }
 
@@ -105,14 +112,16 @@ int main(int argc, char** argv)
 
   int sock = get_magic_socket(argv[1], argv[2]);
 
-  if (sock < 0)
+  if (sock <= 0)
   {
     return -2;
   }
 
-  char* msg = "Hello there\n";
+  const char* msg = "Hello there\n";
   printf("Connected. Sending message\n");
+
   send(sock, msg, strlen(msg), 0);
+
   close(sock);
 
   return 0;
