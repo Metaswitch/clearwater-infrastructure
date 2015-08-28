@@ -53,6 +53,7 @@ set -e
 case "$1" in
     remove|upgrade|deconfigure)
         rm -f /etc/monit/conf.d/memcached_11211.monit
+        rm -f /etc/default/memcached
         reload clearwater-monit &> /dev/null || true
     ;;
 
