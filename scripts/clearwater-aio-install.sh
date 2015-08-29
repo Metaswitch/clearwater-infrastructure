@@ -74,7 +74,7 @@ sed -e 's/#HEAP_NEWSIZE=".*"/HEAP_NEWSIZE="128M"/g' -i /etc/cassandra/cassandra-
 service cassandra stop
 
 # Install the remaining clearwater packages
-apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov
+apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov clearwater-prov-tools
 
 # Create numbers on Ellis
 export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
