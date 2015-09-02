@@ -68,7 +68,7 @@ do_auto_config()
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
 
-  if [ -n $ETCD_PROXY ]
+  if [ -n "$ETCD_PROXY" ]
   then
     # Set up etcd proxy configuration from environment.  Shared configuration
     # should be uploaded and shared manually.
@@ -80,7 +80,7 @@ do_auto_config()
     rm -f $shared_config
   else
     # Set up shared configuration on each node.
-    if [ -z $ZONE ]
+    if [ -z "$ZONE" ]
     then
       # Configure using Docker links.  Get the details of the linked Docker containers.  See
       # https://docs.docker.com/userguide/dockerlinks/#environment-variables
@@ -114,7 +114,7 @@ do_auto_config()
 
     # Extract DNS server from resolv.conf.
     nameserver=`grep nameserver /etc/resolv.conf | awk '{print $2}'`
-    if [ -n $nameserver ]
+    if [ -n "$nameserver" ]
     then
       sed -e '/^signaling_dns_server=.*/d' -i $shared_config
       echo "signaling_dns_server=$nameserver" >> $shared_config
