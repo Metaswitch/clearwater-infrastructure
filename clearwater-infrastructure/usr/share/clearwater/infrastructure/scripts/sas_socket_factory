@@ -47,5 +47,3 @@ if [ ! -z $sas_server ]; then
 else
   rm -f /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
 fi
-
-restart clearwater-socket-factory
