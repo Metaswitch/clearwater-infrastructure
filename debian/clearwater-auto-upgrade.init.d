@@ -61,8 +61,7 @@ do_upgrade()
         if ! fuser -s /var/lib/dpkg/lock
         then
             export DEBIAN_FRONTEND=noninteractive
-            sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/clearwater.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-            sudo apt-get install -y --force-yes --only-upgrade $(dpkg-query -W -f='${PackageSpec} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1)
+            clearwater-upgrade -y --force-yes
         fi
 
         return 0

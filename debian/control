@@ -77,4 +77,5 @@ Description: Script to prevent sprout/bono log files from growing too large
 
 Package: clearwater-auto-upgrade
 Architecture: all
+Depends: clearwater-infrastructure
 Description: Package enabling automatic upgrade of Clearwater software
