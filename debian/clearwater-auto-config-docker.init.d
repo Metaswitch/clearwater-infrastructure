@@ -112,8 +112,9 @@ do_auto_config()
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
-    # Extract DNS server from resolv.conf.
-    nameserver=`grep nameserver /etc/resolv.conf | awk '{print $2}'`
+    # Extract DNS servers from resolv.conf and comma-separate them.
+    nameserver=`grep nameserver /etc/resolv.conf | cut -d ' ' -f 2`
+    nameserver=`echo $nameserver | tr ' ' ','`
     if [ -n "$nameserver" ]
     then
       sed -e '/^signaling_dns_server=.*/d' -i $shared_config
