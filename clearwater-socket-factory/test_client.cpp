@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #ifndef SOCKET_PATH
-#define SOCKET_PATH "/tmp/clearwater_mgmt_namespace_socket"
+#define SOCKET_PATH "/tmp/clearwater_management_namespace_socket"
 #endif
 
 static int recv_file_descriptor(int socket)

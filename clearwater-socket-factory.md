@@ -12,7 +12,7 @@ For security reasons, the socket factory is only allowed to connect to a restric
 
 To request a new TCP connection from the factory a client should do the following:
 
-* Create a new UNIX socket and connect to `/tmp/clearwater_mgmt_namespace_socket` or `/tmp/clearwater_signaling_namespace_socket`.
+* Create a new UNIX socket and connect to `/tmp/clearwater_management_namespace_socket` or `/tmp/clearwater_signaling_namespace_socket`.
 * Create a target string of the form `<host>:<port>` and send this in the UNIX socket using `send`.  `<host>` may be an IPv4 address, or a hostname that resolves to one or more IPv4 addresses.
 * The daemon will now establish a TCP connection to the specified target and sends a message over the UNIX socket containing the TCP socket in the control data.
 * The client receives this message and iterates though the control headers on the message until it finds one containing a socket (where the level is `SOL_SOCKET` and the type is `SCM_RIGHTS`).
