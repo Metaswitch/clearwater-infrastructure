@@ -55,6 +55,12 @@ case "$1" in
         rm -f /etc/monit/conf.d/memcached_11211.monit
         rm -f /etc/default/memcached
         reload clearwater-monit &> /dev/null || true
+
+        # Remove any clearwater-cluster-manager plugins
+        rm -f /usr/share/clearwater/clearwater-cluster-manager/plugins/memcached*
+        if [ -x "/etc/init.d/clearwater-cluster-manager" ]; then
+          service clearwater-cluster-manager stop || /bin/true
+        fi
     ;;
 
     failed-upgrade)
