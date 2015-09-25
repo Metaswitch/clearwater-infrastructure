@@ -23,12 +23,6 @@ Conflicts: clearwater-infinispan
 Suggests: clearwater-secure-connections
 Description: memcached configured for Clearwater
 
-Package: clearwater-memcached-extra
-Architecture: all
-Depends: clearwater-infrastructure, memcached
-Suggests: clearwater-secure-connections
-Description: Redundant memcached configured for Clearwater
-
 Package: clearwater-tcp-scalability
 Architecture: all
 Description: TCP scalability improvements for Clearwater

@@ -33,40 +33,9 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-
-set -ue
-
-# List all the clearwater packages installed.
-clearwater_packages()
-{
-    dpkg-query -W -f='${Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
-}
-
-CURRENT_CW_COMPONENTS=$(clearwater_packages)
-
-# Return whether the specified clearwater component is installed.
-#
-# For example `cw_component_installed bono` will return 0 (true) if bono
-# is installed.
-#
-# Params:
-#   $1 - The component to check.
-cw_component_installed()
-{
-  if echo $CURRENT_CW_COMPONENTS | tr ' ' '\n' | grep -q "^$1$"
-  then
-    return 0
-  fi
-
-  return 1
-}
-
-
-for component in sprout memento ralf
-do
-  if cw_component_installed $component
-  then
-    echo "Reloading $component"
-    service $component reload
+for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/memcached/* 2>/dev/null) 
+do 
+  if [ -f "$SCRIPT" ]; then
+    $SCRIPT
   fi
 done

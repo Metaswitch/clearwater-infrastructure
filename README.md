@@ -20,8 +20,6 @@ It contains the following packages:
 
 * clearwater-memcached: memcached configuration.
 
-* clearwater-memcached-extra: redundant memcached configuration.
-
 * clearwater-tcp-scalability: TCP scalability improvements.
 
 * clearwater-secure-connections: secure connections between regions.
