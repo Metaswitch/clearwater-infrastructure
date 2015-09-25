@@ -1,8 +1,5 @@
-#!/bin/bash
-# @file reload_memcached_users
-#
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015 Metaswitch Networks Ltd
+# Copyright (C) 2015  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,9 +30,37 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/memcached/* 2>/dev/null) 
-do 
-  if [ -f "$SCRIPT" ]; then
-    $SCRIPT
-  fi
-done
+from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER
+from metaswitch.clearwater.cluster_manager import constants
+
+def write_memcached_cluster_settings(filename, cluster_view):
+    """Writes out the memcached cluster_settings file"""
+    valid_servers_states = [constants.LEAVING_ACKNOWLEDGED_CHANGE,
+                            constants.LEAVING_CONFIG_CHANGED,
+                            constants.NORMAL_ACKNOWLEDGED_CHANGE,
+                            constants.NORMAL_CONFIG_CHANGED,
+                            constants.NORMAL]
+    valid_new_servers_states = [constants.NORMAL,
+                                constants.NORMAL_ACKNOWLEDGED_CHANGE,
+                                constants.NORMAL_CONFIG_CHANGED,
+                                constants.JOINING_ACKNOWLEDGED_CHANGE,
+                                constants.JOINING_CONFIG_CHANGED]
+    servers_ips = sorted(["{}:11211".format(k)
+                          for k, v in cluster_view.iteritems()
+                          if v in valid_servers_states])
+
+    new_servers_ips = sorted(["{}:11211".format(k)
+                              for k, v in cluster_view.iteritems()
+                              if v in valid_new_servers_states])
+
+    new_file_contents = WARNING_HEADER + "\n"
+
+    if new_servers_ips == servers_ips:
+        new_file_contents += "servers={}\n".format(",".join(servers_ips))
+    else:
+        new_file_contents += "servers={}\nnew_servers={}\n".format(
+            ",".join(servers_ips),
+            ",".join(new_servers_ips))
+
+    with open(filename, "w") as f:
+        f.write(new_file_contents)

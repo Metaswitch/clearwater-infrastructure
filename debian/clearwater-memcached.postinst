@@ -58,6 +58,13 @@ case "$1" in
         [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
         reload clearwater-monit || /bin/true
 
+        # Stop the cluster manager, so that it is restarted by Monit and picks
+        # up the new Memcached scaling plugins. We check whether the process is
+        # installed to avoid warning logs when etcd isn't being used
+        if [ -x "/etc/init.d/clearwater-cluster-manager" ]; then
+          service clearwater-cluster-manager stop || /bin/true
+        fi
+
         # Restart the alarm agent
         if [ -x "/etc/init.d/clearwater-snmp-alarm-agent" ]; then
           service clearwater-snmp-alarm-agent stop || /bin/true
