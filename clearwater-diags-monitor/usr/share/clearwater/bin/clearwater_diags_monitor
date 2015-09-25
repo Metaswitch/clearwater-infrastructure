@@ -410,7 +410,7 @@ get_etcd_info()
 
 get_cluster_manager_info()
 {
-  /usr/share/clearwater/clearwater-cluster-manager/scripts/check_cluster_health > $CURRENT_DUMP_DIR/etcd_datatore_clusters_health.txt
+  /usr/share/clearwater/clearwater-cluster-manager/scripts/check_cluster_state > $CURRENT_DUMP_DIR/etcd_cluster_state.txt
 }
 
 get_config_manager_info()
