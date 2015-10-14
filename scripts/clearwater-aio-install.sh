@@ -35,7 +35,6 @@
 # This installs the Clearwater packages onto an AIO node. It sets up which
 # repo to pull the packages from, and creates numbers on Ellis. This is
 # used by the OVF install, AIO install through Chef, and the AMI creation
-set -e
 
 if [[ $EUID -ne 0 ]]
 then
@@ -74,8 +73,8 @@ sed -e 's/#HEAP_NEWSIZE=".*"/HEAP_NEWSIZE="128M"/g' -i /etc/cassandra/cassandra-
 service cassandra stop
 
 # Install the remaining clearwater packages
-apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov clearwater-prov-tools
+apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov clearwater-prov-tools && echo SUCCESS
 
 # Create numbers on Ellis
-export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
-python /usr/share/clearwater/ellis/src/metaswitch/ellis/tools/create_numbers.py --start $number_start --count $number_count
+# export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
+/usr/share/clearwater/ellis/env/bin/python /usr/share/clearwater/ellis/src/metaswitch/ellis/tools/create_numbers.py --start $number_start --count $number_count && echo SUCCESS
