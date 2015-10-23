@@ -545,6 +545,9 @@ do
   # Log files.
   copy_to_dump '/var/log'
 
+  # PID files
+  copy_to_dump '/var/run'
+
   # Config files
   copy_to_dump '/etc/clearwater'
   copy_to_dump '/etc/snmp'
