@@ -65,7 +65,7 @@ A diagnostic dump contains the following information:
   * `mysql_show_status.txt` - mysql server status.
   * `mysql_show_databases` - summary of available databases.
 
-In addition, the diags monitor collects diagnostsics that are specific to the clearwater node type(s).  These are stored in a directory named after the node type, e.g. `bono_diags`.  The diags that are collected depend on the node type but may contain:
+In addition, the diags monitor collects diagnostics that are specific to the clearwater node type(s).  These are stored in a directory named after the node type, e.g. `bono_diags`.  The diags that are collected depend on the node type but may contain:
 
 * Node-type specific config files.
 
