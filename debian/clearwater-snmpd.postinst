@@ -72,11 +72,12 @@ case "$1" in
 
         # Update snmpd.conf based upon the content of Clearwater config
         /usr/share/clearwater/infrastructure/scripts/snmpd 
-        service snmpd restart || true
 
         # Set up Monit configuration for snmpd
         install -D --mode=0644 /usr/share/clearwater/conf/snmpd.monit /etc/monit/conf.d/
         reload clearwater-monit || true
+
+        service snmpd stop || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
