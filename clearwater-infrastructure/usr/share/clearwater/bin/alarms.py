@@ -45,38 +45,30 @@ import syslog
 import os.path
 from subprocess import call
 
-def alarms_enabled():
-    # Shell out to see if snmp_ip is configured
-    rc = call('. /etc/clearwater/config; [ "x$snmp_ip" != "x" ]',
-              shell=True)
-    has_snmp_ip = (rc == 0)
-    return has_snmp_ip
-
 
 def sendrequest(request):
   try:
-    if alarms_enabled():
-      context = zmq.Context.instance()
+    context = zmq.Context.instance()
 
-      client = context.socket(zmq.REQ)
-      client.connect("ipc:///var/run/clearwater/alarms") 
+    client = context.socket(zmq.REQ)
+    client.connect("ipc:///var/run/clearwater/alarms")
 
-      poller = zmq.Poller()
-      poller.register(client, zmq.POLLIN)
+    poller = zmq.Poller()
+    poller.register(client, zmq.POLLIN)
 
-      for reqelem in request[0:-1]:
-        client.send(reqelem, zmq.SNDMORE)
+    for reqelem in request[0:-1]:
+      client.send(reqelem, zmq.SNDMORE)
 
-      client.send(request[-1])
+    client.send(request[-1])
 
-      socks = dict(poller.poll(2000))
+    socks = dict(poller.poll(2000))
 
-      if client in socks:
-        message = client.recv()
-      else:
-        syslog.syslog(syslog.LOG_ERR, "dropped request: '%s'" % " ".join(request))
+    if client in socks:
+      message = client.recv()
+    else:
+      syslog.syslog(syslog.LOG_ERR, "dropped request: '%s'" % " ".join(request))
 
-      context.destroy(100)
+    context.destroy(100)
 
   except Exception as e:
     syslog.syslog(syslog.LOG_ERR, str(e))
