@@ -38,6 +38,9 @@ script
                  $signaling_allowed_hosts"
   }
 
+  # Sleep for 2 seconds, to avoid upstart respawning socket-factory too quickly
+  sleep 2
+  
   . /etc/clearwater/config
   get_daemon_args
   /usr/share/clearwater/bin/clearwater_socket_factory $DAEMON_ARGS
