@@ -18,7 +18,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-const char* MGMT_SOCKET_PATH = "/tmp/clearwater_mgmt_namespace_socket";
+const char* MGMT_SOCKET_PATH = "/tmp/clearwater_management_namespace_socket";
 const char* SIGNALING_SOCKET_PATH = "/tmp/clearwater_signaling_namespace_socket";
 const int MAX_PENDING = 5;
 
