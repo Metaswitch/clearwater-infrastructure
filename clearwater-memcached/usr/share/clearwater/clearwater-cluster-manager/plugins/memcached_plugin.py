@@ -31,17 +31,45 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 from metaswitch.clearwater.cluster_manager.plugin_base import SynchroniserPluginBase
-from metaswitch.clearwater.etcd_shared.plugin_utils import run_command
+from metaswitch.clearwater.etcd_shared.plugin_utils import run_command, WARNING_HEADER
 from metaswitch.clearwater.cluster_manager.alarms import issue_alarm
-from metaswitch.clearwater.cluster_manager import pdlogs, alarm_constants
+from metaswitch.clearwater.cluster_manager import pdlogs, alarm_constants, constants
 import logging
 
-from os import sys, path
-sys.path.append(path.dirname(path.abspath(__file__)))
-from memcached_utils import write_memcached_cluster_settings
 
 _log = logging.getLogger("memcached_plugin")
 
+def write_memcached_cluster_settings(filename, cluster_view):
+    """Writes out the memcached cluster_settings file"""
+    valid_servers_states = [constants.LEAVING_ACKNOWLEDGED_CHANGE,
+                            constants.LEAVING_CONFIG_CHANGED,
+                            constants.NORMAL_ACKNOWLEDGED_CHANGE,
+                            constants.NORMAL_CONFIG_CHANGED,
+                            constants.NORMAL]
+    valid_new_servers_states = [constants.NORMAL,
+                                constants.NORMAL_ACKNOWLEDGED_CHANGE,
+                                constants.NORMAL_CONFIG_CHANGED,
+                                constants.JOINING_ACKNOWLEDGED_CHANGE,
+                                constants.JOINING_CONFIG_CHANGED]
+    servers_ips = sorted(["{}:11211".format(k)
+                          for k, v in cluster_view.iteritems()
+                          if v in valid_servers_states])
+
+    new_servers_ips = sorted(["{}:11211".format(k)
+                              for k, v in cluster_view.iteritems()
+                              if v in valid_new_servers_states])
+
+    new_file_contents = WARNING_HEADER + "\n"
+
+    if new_servers_ips == servers_ips:
+        new_file_contents += "servers={}\n".format(",".join(servers_ips))
+    else:
+        new_file_contents += "servers={}\nnew_servers={}\n".format(
+            ",".join(servers_ips),
+            ",".join(new_servers_ips))
+
+    with open(filename, "w") as f:
+        f.write(new_file_contents)
 
 class MemcachedPlugin(SynchroniserPluginBase):
     def __init__(self, params):
