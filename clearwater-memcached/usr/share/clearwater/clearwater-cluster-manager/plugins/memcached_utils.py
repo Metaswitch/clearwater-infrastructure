@@ -31,6 +31,7 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER
+from metaswitch.clearwater.etcd_shared.plugin_utils import safely_write
 from metaswitch.clearwater.cluster_manager import constants
 
 def write_memcached_cluster_settings(filename, cluster_view):
@@ -62,5 +63,4 @@ def write_memcached_cluster_settings(filename, cluster_view):
             ",".join(servers_ips),
             ",".join(new_servers_ips))
 
-    with open(filename, "w") as f:
-        f.write(new_file_contents)
+    safely_write(filename, new_file_contents)
