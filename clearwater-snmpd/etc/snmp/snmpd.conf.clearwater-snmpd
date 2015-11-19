@@ -227,7 +227,6 @@ proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.6.1 .1.2.8
 # SUB
 proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.7.1 .1.2.826.0.1.1578918.999.3.83.85.66
 
-
 #Proxy for the different Chronos scalar statistics
 #
 # REG
@@ -236,7 +235,6 @@ proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.8.1.0 .1.2
 proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.8.2.0 .1.2.826.0.1.1578918.998.4.67.65.76.76.2.1
 # SUB
 proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.8.3.0 .1.2.826.0.1.1578918.998.3.83.85.66.2.1
-
 
 # Create an internal community that can access anything but is only usable locally.
 rocommunity clearwater-internal 127.0.0.0/8 -V clearwater-internal
