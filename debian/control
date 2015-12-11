@@ -34,7 +34,7 @@ Description: Secure connections between regions for Clearwater
 
 Package: clearwater-snmpd
 Architecture: all
-Depends: snmpd (= 5.7.2~dfsg-clearwater1), libsnmp-base (= 5.7.2~dfsg-clearwater1), libsnmp30 (= 5.7.2~dfsg-clearwater1), clearwater-infrastructure
+Depends: snmpd (= 5.7.2~dfsg-clearwater2), libsnmp-base (= 5.7.2~dfsg-clearwater2), libsnmp30 (= 5.7.2~dfsg-clearwater2), clearwater-infrastructure
 Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
 Package: clearwater-diags-monitor
