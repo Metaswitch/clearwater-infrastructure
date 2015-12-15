@@ -195,7 +195,8 @@ agentXPerms 777 777 root snmp
 rocommunity clearwater 0.0.0.0/0 -V clearwater
 rocommunity6 clearwater ::/0 -V clearwater
 
-# SNMP uptime
+# SNMP system OIDs
+view clearwater included .1.3.6.1.2.1.1.1.0
 view clearwater included .1.3.6.1.2.1.1.3.0
 
 # UCD-SNMP-MIB memory stats
