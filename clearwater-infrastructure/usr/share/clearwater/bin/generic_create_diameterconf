@@ -173,4 +173,8 @@ LoadExtension = "$fd_dir/dict_dcca_3gpp.fdx";
 # Uncomment to allow ignoring the Destination-Host AVP on incoming requests
 $dh_commenter LoadExtension = "$fd_dir/rt_change_dh.fdx";
 
+# If we receive an AVP that is marked as mandatory from one of these vendors,
+# we ignore the mandatory flag.
+UntrustedAVPVendors = 19444;
+
 EOF
