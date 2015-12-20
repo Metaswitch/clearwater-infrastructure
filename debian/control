@@ -74,3 +74,8 @@ Package: clearwater-auto-upgrade
 Architecture: all
 Depends: clearwater-infrastructure
 Description: Package enabling automatic upgrade of Clearwater software
+
+Package: clearwater-radius-auth
+Architecture: all
+Depends: libpam-radius-auth, libnss-ato
+Description: Package enabling RADIUS authentication on Clearwater nodes
