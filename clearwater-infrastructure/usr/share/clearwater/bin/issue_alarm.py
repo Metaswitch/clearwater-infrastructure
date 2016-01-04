@@ -40,8 +40,8 @@
 #
 #   issue_alarm.py "monit" "1000.3"
 # Note the alarm identifier uses ituAlarmPerceivedSeverity. We can
-# translate this to alarmModelState using the function AlarmTableDef::state
-# this mapping is described in RFC 3877 section 5.4
+# translate this to alarmModelState using the function AlarmTableDef::state.
+# This mapping is described in RFC 3877 section 5.4
 # https://tools.ietf.org/html/rfc3877#section-5.4
 
 import sys
