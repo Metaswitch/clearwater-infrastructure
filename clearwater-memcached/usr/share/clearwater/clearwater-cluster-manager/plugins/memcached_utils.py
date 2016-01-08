@@ -30,7 +30,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER
+from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER, combine_ip_port
 from metaswitch.clearwater.etcd_shared.plugin_utils import safely_write
 from metaswitch.clearwater.cluster_manager import constants
 
@@ -46,11 +46,11 @@ def write_memcached_cluster_settings(filename, cluster_view):
                                 constants.NORMAL_CONFIG_CHANGED,
                                 constants.JOINING_ACKNOWLEDGED_CHANGE,
                                 constants.JOINING_CONFIG_CHANGED]
-    servers_ips = sorted(["{}:11211".format(k)
+    servers_ips = sorted([combine_ip_port(k, 11211)
                           for k, v in cluster_view.iteritems()
                           if v in valid_servers_states])
 
-    new_servers_ips = sorted(["{}:11211".format(k)
+    new_servers_ips = sorted([combine_ip_port(k, 11211)
                               for k, v in cluster_view.iteritems()
                               if v in valid_new_servers_states])
 
