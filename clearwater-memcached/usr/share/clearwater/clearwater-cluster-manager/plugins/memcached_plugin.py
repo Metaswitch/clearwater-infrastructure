@@ -31,7 +31,8 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 from metaswitch.clearwater.cluster_manager.plugin_base import SynchroniserPluginBase
-from metaswitch.clearwater.etcd_shared.plugin_utils import run_command, WARNING_HEADER
+from metaswitch.clearwater.etcd_shared.plugin_utils import run_command
+from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER
 from metaswitch.clearwater.cluster_manager.alarms import issue_alarm
 from metaswitch.clearwater.cluster_manager import pdlogs, alarm_constants, constants
 import logging
