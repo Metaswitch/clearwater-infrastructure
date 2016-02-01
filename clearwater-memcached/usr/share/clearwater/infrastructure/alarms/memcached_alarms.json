@@ -8,12 +8,18 @@
                 {
                     "severity": "CLEARED",
                     "details": "The Memcached process has been restored to normal operation.",
-                    "description": "Memcached: Process failure cleared"
+                    "description": "Memcached: Process failure cleared.",
+                    "cause": "The Memcached process has been restored to normal operation. The previously issued alarm has been cleared.",
+                    "effect": "Normal I-CSCF and S-CSCF or Ralf call detail event recording operations have resumed.",
+                    "action": "No action."
                 },
                 {
                     "severity": "CRITICAL",
                     "details": "Monit has detected that the Memcached process has failed. A restart will automatically be attempted. If this alarm does not clear, the Memcached process may have been stopped or an unrecoverable failure may have occurred.",
-                    "description": "Memcached: Process failure"
+                    "description": "Memcached: Process failure",
+                    "cause": "The system has detected that the Memcached process has failed.",
+                    "effect": "If Sprout reported the alarm then the I-CSCF and S-CSCF has reduced Memcached redundancy but is still operational. If Ralf reported the alarm then the call detail event recording capability has reduced redundancy but is still operational. If two Memcached process fail you may have lost data.",
+                    "action": "Monitor for the alarm to clear and confirm the system is operating normally. If the failed Memcached process fails to return to service then call Metaswitch Support."
                 }
             ]
         }

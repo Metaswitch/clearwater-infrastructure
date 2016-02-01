@@ -8,12 +8,18 @@
                 {
                     "severity": "CLEARED",
                     "details": "The Monit process has been restored to normal operation.",
-                    "description": "Monit: Process failure cleared"
+                    "description": "Monit: Process failure cleared",
+                    "cause": "The Monit process has been restored to normal operation. The previously issued alarm has been cleared.",
+                    "effect": "Normal Clearwater Core system monitoring operations have been restored.",
+                    "action": "No action."
                 },
                 {
                     "severity": "WARNING",
                     "details": "Upstart has detected that the Monit process has failed. A restart will automatically be attempted. If this alarm does not clear, an unrecoverable failure may have occurred.",
                     "description": "Monit: Process failure"
+                    "cause": "The system has detected that the Monit process has failed.",
+                    "effect": "Constant monitoring of Clearwater Core software processes (Sprout, Homestead, Ralf, etc.) has stopped. Clearwater Core process failures will not be detected until Monit restores to service and the alarm is cleared.",
+                    "action": "Monitor for this alarm to clear. If it does not clear then contact Metaswitch Support."
                 }
             ]
         }
