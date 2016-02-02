@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# @file check-clearwater-config
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2013  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+CONFIG_DIR=/etc/clearwater
+
+LOCAL_CONFIG=$CONFIG_DIR/local_config
+SHARED_CONFIG=$CONFIG_DIR/shared_config
+USER_SETTINGS=$CONFIG_DIR/user_settings
+CLEARWATER_CONFIG=$CONFIG_DIR/config
+
+# Check that a config file exists and is syntactically and semantically valid.
+# Params:
+#   1 - Either "mandatory" (if the file is required) or "optional" (otherwise).
+#   2 - The full name and path of the config file to check.
+check_file()
+{
+  local required=$1
+  local filename=$2
+
+  # Check that the file exists.
+  if [[ ! -e "$filename" ]]; then
+    if [[ "$required" = mandatory ]]; then
+      echo "ERROR: $filename does not exist" >&2
+      return 1
+    fi
+    return 0
+  fi
+
+  # There is no need to check that the file has read permissions - all files are
+  # readable to root.
+
+  # Check that the file is syntactically valid.
+  if ! bash -n $filename; then
+    echo "ERROR: $filename is not syntactically valid (see previous errors for details)" >&2
+    return 1
+  fi
+
+  return 0
+}
+
+
+check_option_locations()
+{
+  # Check that there are no local/user settings in the shared config. That could
+  # break things horribly.  We use `env -i` to run the script in a completely
+  # blank environment.
+  env -i /usr/share/clearwater/bin/check-option-locations.sh
+}
+
+
+check_config_values()
+{
+  # Check that the config contains acceptable values.  We use `env -i` to run
+  # the script in a completely blank environment.
+  env -i /usr/share/clearwater/bin/check-config-values.sh
+}
+
+#
+# Script starts here.
+#
+
+if [[ "$EUID" != 0 ]]; then
+  echo "$0 must be run as root" >&2
+  exit 2
+fi
+
+# The return code that the script will return.
+rc=0
+
+# Check the files are present (if required) and are syntactically correct.
+check_file mandatory $LOCAL_CONFIG       || rc=1
+check_file mandatory $SHARED_CONFIG      || rc=1
+check_file optional  $USER_SETTINGS      || rc=1
+check_file mandatory $CLEARWATER_CONFIG  || rc=1
+
+# If any of the files are invalid there isn't much point in continuing.
+if [[ "$rc" != 0 ]]; then
+  exit $rc
+fi
+
+# Check that the config options are in the correct files.  Currently this just
+# checks that no local/user settings are put into shared config.
+check_option_locations || rc=1
+
+# Check that the config is semantically correct (e.g. required options are
+# present, they are correctly formatted, etc).
+check_config_values || rc=1
+
+exit $rc
