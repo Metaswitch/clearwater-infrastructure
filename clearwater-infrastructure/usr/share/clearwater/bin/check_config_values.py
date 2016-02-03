@@ -35,9 +35,6 @@
 import os
 import sys
 
-# Flag indicating whether all the config checks have passed. This affects the
-# script's exit code.
-all_ok = True
 
 def error(option_name, message):
     """Utility method to print error messages to stderr.
@@ -47,24 +44,60 @@ def error(option_name, message):
     sys.stderr.write("ERROR: {}: {}\n".format(option_name, message))
 
 
-# Check that all mandatory options are present and correct.
-MANDATORY_OPTIONS = [
-  'local_ip',
-  'public_ip',
-  'public_hostname',
-  'etcd_cluster',
-  'home_domain',
-  'sprout_hostname',
-  'hs_hostname',
+class Option(object):
+    """Description of a config option"""
+
+    def __init__(self, name, mandatory=True, validator=None):
+        """Create a new config option
+
+           @param name      - The name of the option.
+           @param mandatory - Whether the option is mandatory or not.
+           @param validator - If supplied this must be a callable object that
+             checks the option's value. If the check fails this function must
+             print an error to stderr and return False. Otherwise it must return
+             True.
+        """
+        self.name = name
+        self.mandatory = mandatory
+        self.validator = validator
+
+
+# Options that we wish to check.
+OPTIONS = [
+  Option('local_ip', True),
+  Option('public_ip', True),
+  Option('public_hostname', True),
+  Option('etcd_cluster', True),
+  Option('home_domain', True),
+  Option('sprout_hostname', True),
+  Option('hs_hostname', True),
 ]
 
-for opt_name in MANDATORY_OPTIONS:
-    if not os.environ.has_key(opt_name):
-        error(opt_name, "option is mandatory but not present")
-        all_ok = False
+# Flag indicating whether all the config checks have passed. This affects the
+# script's exit code.
+all_ok = True
+
+# Check that each option is present (if mandatory) and correctly formatted (if
+# it has a particular format we wish to check).
+for option in OPTIONS:
+    value = os.environ.get(option.name)
+
+    if value:
+        # The option is present. If it has validator, run it now.
+        if option.validator:
+            if not option.validator(value):
+                # The validator is responsible for printing an error message.
+                all_ok = False
+
+    else:
+        # The option is not present, which is an error if it's mandatory.
+        if option.mandatory:
+            error(option.name, 'option is mandatory but not present')
+            all_ok = False
 
 #
-# Values of individual options can be checked here.
+# More advanced checks (e.g. checking consistency between multiple options) can
+# be performed here.
 #
 
 # Return an appropriate error code to the caller.
