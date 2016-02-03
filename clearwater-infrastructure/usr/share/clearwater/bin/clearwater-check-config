@@ -161,4 +161,9 @@ check_option_locations || rc=1
 # present, they are correctly formatted, etc).
 check_config_values || rc=1
 
+# Print out a soothing message to the user if all the checks passed.
+if [[ "$rc" -eq 0 ]]; then
+  echo "All config checks passed"
+fi
+
 exit $rc
