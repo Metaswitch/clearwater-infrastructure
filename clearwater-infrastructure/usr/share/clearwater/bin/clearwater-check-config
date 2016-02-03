@@ -72,20 +72,62 @@ check_file()
 }
 
 
+# Check that there are no options in shared config that it would be bad to
+# share (e.g. `local_ip`).
+#
+# This function is "unsafe" in the sense that it pollutes the environment, so
+# must be called from within a subshell (which `check_option_locations` does).
+check_option_locations_unsafe()
+{
+  #
+  # ATTENTION
+  #
+  # All variables in this script are in uppercase to avoid clashes with real
+  # options in the config files.
+#
+  # List all the options that definitely shouldn't be shared between nodes.
+  NON_SHARED_OPTIONS="local_ip public_ip public_hostname node_idx etcd_cluster etcd_cluster_key"
+
+  # Load the shared config
+  SHARED_CONFIG_FILE=/etc/clearwater/shared_config
+  source $SHARED_CONFIG_FILE
+
+  # Check each non-shared option in turn, and check its not present in our
+  # environment.
+  RC=0
+  for OPT in $NON_SHARED_OPTIONS; do
+    # The `${!OPT}` use bash indirection - it checks the variable who name is
+    # stored as the value of `OPT`
+    if [[ -n ${!OPT} ]]; then
+      echo "ERROR: $OPT is present in $SHARED_CONFIG_FILE"
+      RC=1
+    fi
+  done
+
+  exit $RC
+}
+
+
 check_option_locations()
 {
-  # Check that there are no local/user settings in the shared config. That could
-  # break things horribly.  We use `env -i` to run the script in a completely
-  # blank environment.
-  env -i /usr/share/clearwater/bin/check-option-locations.sh
+  # Call the function that actually does the checking. We need to call it from
+  # a subshell so export the function first.
+  export -f check_option_locations_unsafe
+  ( check_option_locations_unsafe )
 }
 
 
 check_config_values()
 {
-  # Check that the config contains acceptable values.  We use `env -i` to run
-  # the script in a completely blank environment.
-  env -i /usr/share/clearwater/bin/check-config-values.sh
+  # Run a python script to check the contents of the config file. We need to
+  # source in /etc/clearwater/config first so do this within a subshell. The
+  # `set -a` means that all variables from the config file get automatically
+  # exported so are accessible from python.
+  (
+    set -a
+    source /etc/clearwater/config
+    python /usr/share/clearwater/bin/check_config_contents.py
+  )
 }
 
 #
