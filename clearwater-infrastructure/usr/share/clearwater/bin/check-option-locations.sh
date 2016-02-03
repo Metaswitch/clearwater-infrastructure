@@ -41,13 +41,8 @@
 # in the config files.
 #
 
-# List all the options that should live in /etc/clearwwater/local_config or
-# /etc/clearwater/user_settings.
-LOCAL_OPTIONS="local_ip public_ip public_hostname node_idx etcd_cluster etcd_cluster_key"
-USER_SETTINGS="log_level log_directory max_log_directory_size num_pjsip_threads
-               num_worker_threads upstream_connections upstream_recycle_connections
-               authentication num_http_threads"
-NON_SHARED_OPTIONS="$LOCAL_OPTIONS $USER_SETTINGS"
+# List all the options that definitely shouldn't be shared between nodes.
+NON_SHARED_OPTIONS="local_ip public_ip public_hostname node_idx etcd_cluster etcd_cluster_key"
 
 # Load the shared config
 SHARED_CONFIG_FILE=/etc/clearwater/shared_config
