@@ -219,7 +219,7 @@ view clearwater included .1.2.826.0.1.1578918
 # ...except Chronos' infinite tables
 view clearwater excluded .1.2.826.0.1.1578918.999
 
-#Proxy for the different Chronos scalar statistics
+# Proxy for the different Chronos scalar statistics
 #
 # CALL
 proxy -v2c -c clearwater-internal localhost .1.2.826.0.1.1578918.9.10.5.1.0 .1.2.826.0.1.1578918.998.4.67.65.76.76.2.1
