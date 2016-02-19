@@ -47,49 +47,41 @@ error()
   echo "ERROR: $@" >&2
 }
 
-# Utility function to get an option from a specific config file.
-# Params:
-#   1 - The option to retrieve
-#   2 - The file to search
-get_option_from_file()
-{
-  opt_name=$1
-  filename=$2
-
-  # We're about to source in a config file so start a new shell to avoid
-  # polluting our environment.  The `${!opt}` is bash indirection - it retrieves
-  # the value of the parameter whose name is the value of `opt`
-  ( source $filename; echo ${!opt_name} )
-}
-
-# Check whether an option is present in a specific config file.
-# Params:
-#   1 - The option to check
-#   2 - The file to search
-is_option_in_file()
-{
-  opt_name=$1
-  filename=$2
-
-  [ -n "$( get_option_from_file $opt_name $filename )" ]
-}
-
 # Check that an option is not in a specific file. If it is, print an error to
 # stderr and return a false return code.
 # Params:
-#   1 - The option to check
-#   2 - The file to search
-check_option_not_in_file()
+#   1  - The file to search
+#   2+ - The options to check
+check_options_not_in_file()
 {
-  opt_name=$1
-  filename=$2
+  # This function is split up into two parts: check_options_not_in_file which is
+  # the entry point and int_check_options_not_in_file which actually does the
+  # work. The split is because the latter sources in config files and will
+  # pollute the namespace so we use the former function to run the latter in a
+  # subshell. We could just do this all in one function but it breaks syntax
+  # highlighting horribly :-(.
+  ( int_check_options_not_in_file $@ )
+}
 
-  if is_option_in_file $opt_name $filename; then
-    error "$opt_name should not be placed in $filename"
-    return 1
-  else
-    return 0
-  fi
+int_check_options_not_in_file()
+{
+  local local_rc=0
+
+  filename=$1;
+  shift
+
+  source $filename
+
+  for opt_name in $@; do
+    # Check if the option is set. The `${!opt}` is bash indirection - it
+    # retrieves the value of the parameter whose name is the value of `opt`
+    if [ -n "${!opt_name}" ]; then
+      error "$opt_name should not be placed in $filename"
+      local_rc=1
+    fi
+  done
+
+  return $local_rc
 }
 
 # Check that a config file exists and is syntactically and semantically valid.
@@ -128,18 +120,20 @@ check_option_locations()
   local local_rc=0
 
   # First, check that there are no options in shared config that really
-  # shouldn't be shared.
-  check_option_not_in_file "local_ip"         $SHARED_CONFIG || local_rc=1
-  check_option_not_in_file "public_ip"        $SHARED_CONFIG || local_rc=1
-  check_option_not_in_file "public_hostname"  $SHARED_CONFIG || local_rc=1
-  check_option_not_in_file "node_idx"         $SHARED_CONFIG || local_rc=1
-  check_option_not_in_file "etcd_cluster"     $SHARED_CONFIG || local_rc=1
-  check_option_not_in_file "etcd_cluster_key" $SHARED_CONFIG || local_rc=1
+  # shouldn't be shared. log_level is included in this list as it only works
+  # properly when its put in user_settings.
+  check_options_not_in_file $SHARED_CONFIG                                     \
+    local_ip                                                                   \
+    public_ip                                                                  \
+    public_hostname                                                            \
+    node_idx                                                                   \
+    etcd_cluster                                                               \
+    etcd_cluster_key                                                           \
+    log_level                                                                  \
+  || local_rc=1
 
-  # Now check that log_level is not set in any file other than user_settings.
-  # If it is it won't work.
-  check_option_not_in_file "log_level" $LOCAL_CONFIG  || local_rc=1
-  check_option_not_in_file "log_level" $SHARED_CONFIG || local_rc=1
+  # Do a similar check on local_config.
+  check_options_not_in_file $LOCAL_CONFIG log_level || local_rc=1
 
   return $local_rc
 }
@@ -154,14 +148,13 @@ check_config_values()
   (
     set -a
     source /etc/clearwater/config
-    python /usr/share/clearwater/bin/check_config_contents.py
+    python $(dirname $BASH_SOURCE)/check_config_values.py
   )
 }
 
 #
 # Script starts here.
 #
-
 if [[ "$EUID" != 0 ]]; then
   echo "$0 must be run as root" >&2
   exit 2
