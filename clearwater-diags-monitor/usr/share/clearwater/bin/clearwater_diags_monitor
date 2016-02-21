@@ -530,8 +530,8 @@ do
   BASE_DUMP=$(date --utc "+%Y%m%d%H%M%S")Z.$(hostname).$cause
   CURRENT_DUMP=$BASE_DUMP.temp
   CURRENT_DUMP_DIR=$DUMPS_DIR/$CURRENT_DUMP
-  CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.gz
-  FINAL_DUMP_ARCHIVE=$DUMPS_DIR/$BASE_DUMP.tar.gz
+  CURRENT_DUMP_ARCHIVE=$CURRENT_DUMP_DIR.tar.lz4
+  FINAL_DUMP_ARCHIVE=$DUMPS_DIR/$BASE_DUMP.tar.lz4
   CURRENT_CW_COMPONENTS=$(clearwater_packages)
 
   # Create a new dump directory.
@@ -694,7 +694,7 @@ do
   do
     core_file=${trigger_files_arr[$jj]}
     jj=$(( $jj + 1 ))
-    gzip $CURRENT_DUMP_DIR/$core_file
+    lz4 $CURRENT_DUMP_DIR/$core_file $CURRENT_DUMP_DIR/$core_file.lz4 && rm $CURRENT_DUMP_DIR/$core_file
   done
   #
   # Diags have been collected.  Time to zip up the diags bundle.
@@ -708,8 +708,10 @@ do
   # -p  Preserve file permissions.
   # -c  Create an archive.
   # -z  Zip the archive.
-  # -f  Name of the archive.
-  (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
+  # -f  Output file (stdout)
+  #
+  # We then pipe the tar output to lz4, to compress it quickly (much less CPU impact than gzip).
+  (cd $DUMPS_DIR; tar -pc -f - $CURRENT_DUMP | lz4 - $CURRENT_DUMP_ARCHIVE)
   log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
   rm -rf "$CURRENT_DUMP_DIR"
 
