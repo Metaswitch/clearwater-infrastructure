@@ -70,15 +70,17 @@ def is_domain_name(value):
     """Return whether the supplied string is a valid domain name"""
 
     # A domain consists of one or more labels separated by dots.  Each label
-    # must start with a letter and end with a letter or number. The characters
-    # in between can be either letters, numbers or a hyphen. In addition a
-    # label can be at most 63 characters long, and the address as a whole can
-    # be 255 characters long. See RFC 1035, section 2.3.1 for details.
+    # must start and end with a letter or number. The characters in between can
+    # be either letters, numbers or a hyphen. In addition a label can be at most
+    # 63 characters long, and the address as a whole can be 255 characters long.
+    #
+    # Note that RFC 1035, section 2.3.1 technically forbids labels from starting
+    # with a digit. However this does happen in practice, so we allow it.
     #
     # The following code builds a regex that only matches on valid domain names.
     # The only thing it does not police is the total length of the name, which
     # is checked separately below.
-    label_regex = r"[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
+    label_regex = r"[a-zA-Z\d]([a-zA-Z\d-]{0,61}[a-zA-Z\d])?"
     domain_regex = re.compile(r"^({0})(\.{0})*$".format(label_regex))
 
     if len(value) > 255 or not domain_regex.match(value):
