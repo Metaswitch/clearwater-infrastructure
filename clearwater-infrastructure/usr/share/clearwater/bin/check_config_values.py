@@ -1,3 +1,4 @@
+#
 # @file check_config_contents.py
 #
 # Project Clearwater - IMS in the Cloud
