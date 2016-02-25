@@ -37,13 +37,20 @@
 # Read our config file.
 . /etc/clearwater/config
 
+grep -v ' #+clearwater-infrastructure$' /etc/hosts > /tmp/hosts.$$
+
 # Check if the public hostname is actually an IPv4 address or an IPv6 address.
 if echo $public_hostname | egrep -v -q -e '^[0-9.]+$' -e '^[0-9A-Fa-f:]+$'
 then
   # If not, get the first (most-specific) part, and set that as the server's internal hostname.
-  echo $public_hostname | sed -e 's/\..*//g' >/etc/hostname
-  hostname $(cat /etc/hostname)
-  grep -v ' #+clearwater-infrastructure$' /etc/hosts >/tmp/hosts.$$
-  mv /tmp/hosts.$$ /etc/hosts
-  echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >>/etc/hosts
+  echo $public_hostname | sed -e 's/\..*//g' > /etc/hostname
+
+  # Also, ensure that the public hostname is resolvable
+  echo $local_ip $public_hostname '#+clearwater-infrastructure' >> /tmp/hosts.$$
 fi
+
+# Ensure that the local hostname is resolvable (regardless of whether it was us that set it or not)
+hostname $(cat /etc/hostname)
+echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >> /tmp/hosts.$$
+
+mv /tmp/hosts.$$ /etc/hosts
