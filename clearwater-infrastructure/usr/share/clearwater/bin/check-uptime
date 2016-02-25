@@ -3,7 +3,7 @@
 # @file check-uptime
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -49,7 +49,7 @@ pidfile=$1
 pid=$( cat $pidfile 2>/dev/null)
 
 value=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid" >&2 ; exit 1 ; }
-if [ "$value" -gt "$REQUIRED_UPTIME" ]; then
+if [ "$value" -ge "$REQUIRED_UPTIME" ]; then
   exit 0
 else
   exit 1
