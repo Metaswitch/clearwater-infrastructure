@@ -8,12 +8,18 @@
                 {
                     "severity": "CLEARED",
                     "details": "The Memcached process has been restored to normal operation.",
-                    "description": "Memcached: Process failure cleared"
+                    "description": "Memcached: Process failure cleared.",
+                    "cause": "The Memcached process has been restored to normal operation. The previously issued alarm has been cleared.",
+                    "effect": "Short lived data storage is working normally again.",
+                    "action": "No action."
                 },
                 {
                     "severity": "CRITICAL",
                     "details": "Monit has detected that the Memcached process has failed. A restart will automatically be attempted. If this alarm does not clear, the Memcached process may have been stopped or an unrecoverable failure may have occurred.",
-                    "description": "Memcached: Process failure"
+                    "description": "Memcached: Process failure.",
+                    "cause": "The system has detected that the Memcached process has failed.",
+                    "effect": "Redundancy of short lived data is compromised. If multiple Memcached processes have failed you may have lost data.",
+                    "action": "Monitor for the alarm to clear and confirm the system is operating normally. If the failed Memcached process does not return to service, contact your support represetntative.."
                 }
             ]
         }
