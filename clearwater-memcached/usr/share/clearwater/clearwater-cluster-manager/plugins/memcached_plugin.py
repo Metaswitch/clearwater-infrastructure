@@ -32,7 +32,7 @@
 
 from metaswitch.clearwater.cluster_manager.plugin_base import SynchroniserPluginBase
 from metaswitch.clearwater.etcd_shared.plugin_utils import run_command
-from metaswitch.clearwater.cluster_manager.alarms import issue_alarm
+from metaswitch.common.alarms import alarm_manager
 from metaswitch.clearwater.cluster_manager import pdlogs, alarm_constants
 import logging
 
@@ -45,8 +45,11 @@ _log = logging.getLogger("memcached_plugin")
 
 class MemcachedPlugin(SynchroniserPluginBase):
     def __init__(self, params):
-        issue_alarm(alarm_constants.MEMCACHED_NOT_YET_CLUSTERED_MAJOR)
         pdlogs.NOT_YET_CLUSTERED_ALARM.log(cluster_desc=self.cluster_description())
+        self._alarm = alarm_manager.get_alarm(
+            'cluster-manager',
+            alarm_constants.MEMCACHED_NOT_YET_CLUSTERED)
+        self._alarm.set()
         self._key = "/{}/{}/{}/clustering/memcached".format(params.etcd_key, params.local_site, params.etcd_cluster_key)
 
     def key(self):
@@ -72,7 +75,7 @@ class MemcachedPlugin(SynchroniserPluginBase):
 
     def on_stable_cluster(self, cluster_view):
         self.on_cluster_changing(cluster_view)
-        issue_alarm(alarm_constants.MEMCACHED_NOT_YET_CLUSTERED_CLEARED)
+        self._alarm.clear()
 
     def on_leaving_cluster(self, cluster_view):
         pass
