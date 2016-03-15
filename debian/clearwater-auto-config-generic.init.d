@@ -63,6 +63,7 @@ do_auto_config()
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
+          s/^etcd_cluster=.*$/etcd_cluster='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
 
   # Add square brackets around the address iff it is an IPv6 address
