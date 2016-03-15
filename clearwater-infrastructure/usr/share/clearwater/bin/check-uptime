@@ -41,17 +41,21 @@ REQUIRED_UPTIME=30
 # Bail out and return non-zero if anything goes wrong.
 set -e
 
-# The command-line argument is the pidfile for the process.
-[ $# = 1 ] || { echo "Usage: check-uptime <pidfile>" >&2 ; exit 2 ; }
+# The first command-line argument is the pidfile for the process.
+# The second and third arguments are passed through to the script issue_alarm,
+# for it to use to clear the process-not-ready alarm.
+[ $# = 3 ] || { echo "Usage: check-uptime <pidfile> <issuer> <alarm>" >&2 ; exit 2 ; }
 pidfile=$1
+issuer=$2
+alarm=$3
 
 # It's expected that there might not be a pidfile.
 pid=$( cat $pidfile 2>/dev/null)
 
 value=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid" >&2 ; exit 1 ; }
 if [ "$value" -ge "$REQUIRED_UPTIME" ]; then
+  "/usr/share/clearwater/bin/issue_alarm.py $issuer $alarm"
   exit 0
 else
   exit 1
 fi
-echo "Did not exit"
