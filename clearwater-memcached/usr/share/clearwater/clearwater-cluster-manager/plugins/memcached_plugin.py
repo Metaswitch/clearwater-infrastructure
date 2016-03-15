@@ -49,7 +49,6 @@ class MemcachedPlugin(SynchroniserPluginBase):
         self._alarm = alarm_manager.get_alarm(
             'cluster-manager',
             alarm_constants.MEMCACHED_NOT_YET_CLUSTERED)
-        self._alarm.set()
         self._key = "/{}/{}/{}/clustering/memcached".format(params.etcd_key, params.local_site, params.etcd_cluster_key)
 
     def key(self):
@@ -62,14 +61,17 @@ class MemcachedPlugin(SynchroniserPluginBase):
         return "local Memcached cluster"
 
     def on_cluster_changing(self, cluster_view):
+        self._alarm.set()
         write_memcached_cluster_settings("/etc/clearwater/cluster_settings",
                                          cluster_view)
         run_command("/usr/share/clearwater/bin/reload_memcached_users")
 
     def on_joining_cluster(self, cluster_view):
+        self._alarm.set()
         self.on_cluster_changing(cluster_view)
 
     def on_new_cluster_config_ready(self, cluster_view):
+        self._alarm.set()
         run_command("service astaire reload")
         run_command("service astaire wait-sync")
 
