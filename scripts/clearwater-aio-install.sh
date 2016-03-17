@@ -65,7 +65,7 @@ apt-get update
 
 # Install the initial clearwater packages
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y --force-yes $auto_package clearwater-etcd clearwater-cassandra < /dev/null
+apt-get install -y --force-yes $auto_package clearwater-management clearwater-cassandra < /dev/null
 
 # Patch Cassandra's configuration to reduce its memory usage, and stop it to
 # make monit restart it
