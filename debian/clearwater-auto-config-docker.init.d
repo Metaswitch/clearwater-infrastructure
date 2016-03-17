@@ -67,19 +67,26 @@ do_auto_config()
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+    sed -e '/^etcd_cluster=.*/d
+            /^etcd_proxy=.*/d' -i $local_config
 
   if [ -n "$ETCD_PROXY" ]
   then
     # Set up etcd proxy configuration from environment.  Shared configuration
     # should be uploaded and shared manually.
-    sed -e '/^etcd_cluster=.*/d
-            /^etcd_proxy=.*/d' -i $local_config
     echo "etcd_proxy=$ETCD_PROXY" >> $local_config
 
     # Remove the default shared configuration file.
     rm -f $shared_config
   else
-    # Set up shared configuration on each node.
+    # Use the etcd container that our Docker Compose file sets up. This is so
+    # we can rely on clearwater-cluster-manager to set up our datastores, as
+    # would happen on a non-Docker Clearwater cluster.
+    # We still want to auto-configure shared config on each node, though,
+    # rather than rely on it being uploaded.
+    
+    echo "etcd_proxy=etcd0=http://etcd:2380" >> $local_config
+    
     if [ -z "$ZONE" ]
     then
       # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
@@ -120,9 +127,6 @@ do_auto_config()
       echo "signaling_dns_server=$nameserver" >> $shared_config
     fi
   fi
-
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm -f /etc/clearwater/cluster_settings
 }
 
 case "$1" in
