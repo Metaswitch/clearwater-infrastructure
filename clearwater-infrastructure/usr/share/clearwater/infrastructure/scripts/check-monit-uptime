@@ -35,6 +35,5 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 # Monit 5.8.1 does not support passing arguments to check program scripts.
-# check-uptime provides common uptime-checking code. This wrapper script
-# uses it, and can be called with no arguments.
+# This wrapper script can be called with no arguments to clear the monit alarm.
 /usr/share/clearwater/bin/issue_alarm.py upstart 4500.1
