@@ -1,4 +1,6 @@
-# @file monit.monit
+#!/bin/sh
+
+# @file check-monit-uptime
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2016  Metaswitch Networks Ltd
@@ -32,8 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Clear the Monit alarm once Monit is up.
-check program monit_uptime with path /usr/share/clearwater/infrastructure/scripts/check-monit-uptime
-  group monit
-  every 3 cycles
-  if status != 0 then alert
+# Monit 5.8.1 does not support passing arguments to check program scripts.
+# check-uptime provides common uptime-checking code. This wrapper script
+# uses it, and can be called with no arguments.
+/usr/share/clearwater/bin/issue_alarm.py upstart 4500.1
