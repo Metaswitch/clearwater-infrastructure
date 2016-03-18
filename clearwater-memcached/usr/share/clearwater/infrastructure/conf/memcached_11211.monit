@@ -46,7 +46,7 @@ check process memcached_process with pidfile "/var/run/memcached_11211.pid"
   if memory > 80% for 6 cycles then restart
 
 # Clear any alarms if the process has been running long enough.
-check program memcached_uptime with path "/usr/share/clearwater/bin/check-uptime /var/run/memcached_11211.pid monit 3500.1"
+check program memcached_uptime with path /usr/share/clearwater/infrastructure/scripts/check-memcached-uptime
   group memcached
   depends on memcached_process
   every 3 cycles
