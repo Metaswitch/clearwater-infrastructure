@@ -35,5 +35,8 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 # Monit 5.8.1 does not support passing arguments to check program scripts.
-# This wrapper script can be called with no arguments to clear the monit alarm.
+# This wrapper script can be called with no arguments to clear the Monit alarm.
+#
+# By Monit calling this script, we can determine that Monit is alive,
+# and so it is safe to clear the Monit alarm raised by upstart.
 /usr/share/clearwater/bin/issue_alarm.py upstart 4500.1
