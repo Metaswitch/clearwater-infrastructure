@@ -62,13 +62,11 @@ class MemcachedPlugin(SynchroniserPluginBase):
 
     def on_cluster_changing(self, cluster_view):
         self._alarm.set()
-        write_memcached_cluster_settings("/etc/clearwater/cluster_settings",
-                                         cluster_view)
-        run_command("/usr/share/clearwater/bin/reload_memcached_users")
+        self.write_cluster_settings(cluster_view)
 
     def on_joining_cluster(self, cluster_view):
         self._alarm.set()
-        self.on_cluster_changing(cluster_view)
+        self.write_cluster_settings(cluster_view)
 
     def on_new_cluster_config_ready(self, cluster_view):
         self._alarm.set()
@@ -76,11 +74,16 @@ class MemcachedPlugin(SynchroniserPluginBase):
         run_command("service astaire wait-sync")
 
     def on_stable_cluster(self, cluster_view):
-        self.on_cluster_changing(cluster_view)
+        self.write_cluster_settings(cluster_view)
         self._alarm.clear()
 
     def on_leaving_cluster(self, cluster_view):
         pass
+
+    def write_cluster_settings(self, cluster_view):
+        write_memcached_cluster_settings("/etc/clearwater/cluster_settings",
+                                         cluster_view)
+        run_command("/usr/share/clearwater/bin/reload_memcached_users")
 
 def load_as_plugin(params):
     _log.info("Loading the Memcached plugin")
