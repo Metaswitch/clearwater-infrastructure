@@ -59,6 +59,7 @@ do_auto_config()
 
   sed -e 's/^local_ip=.*$/local_ip='$local_ip'/g
           s/^public_ip=.*$/public_ip='$public_ip'/g
+          s/^etcd_cluster=.*$/etcd_cluster='$local_ip'/g
           s/^public_hostname=.*$/public_hostname='$public_hostname'/g' -i $local_config
 
   sed -e 's/^sprout_hostname=.*$/sprout_hostname='$public_hostname'/g
