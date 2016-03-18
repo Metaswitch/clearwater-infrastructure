@@ -82,18 +82,17 @@ do_auto_config()
     # Set up shared configuration on each node.
     if [ -z "$ZONE" ]
     then
-      # Configure using Docker links.  Get the details of the linked Docker containers.  See
-      # https://docs.docker.com/userguide/dockerlinks/#environment-variables
-      # for the definition of this API.
-      [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
-      [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
-      [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
-      [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
-      [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
-      [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+      # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
+      # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
+      sprout_hostname=sprout
+      hs_hostname=homestead:8888
+      hs_provisioning_hostname=homestead:8889
+      xdms_hostname=homer:7888
+      upstream_hostname=sprout
+      ralf_hostname=ralf:10888
       home_domain="example.com"
     else
-      # Configure relative to the base zone and rely on DNS entries.
+      # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
