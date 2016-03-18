@@ -58,10 +58,7 @@ class RemoteMemcachedPlugin(SynchroniserPluginBase):
         return "remote Memcached cluster"
 
     def on_cluster_changing(self, cluster_view):
-        if self._remote_site != "":
-            write_memcached_cluster_settings("/etc/clearwater/remote_cluster_settings",
-                                             cluster_view)
-            run_command("/usr/share/clearwater/bin/reload_memcached_users")
+        self.write_cluster_settings(cluster_view)
 
     def on_joining_cluster(self, cluster_view):
         # We should never join the remote cluster, because it's the *remote*
@@ -73,12 +70,18 @@ class RemoteMemcachedPlugin(SynchroniserPluginBase):
         pass
 
     def on_stable_cluster(self, cluster_view):
-        self.on_cluster_changing(cluster_view)
+        self.write_cluster_settings(cluster_view)
 
     def on_leaving_cluster(self, cluster_view):
         # We should never leave the remote cluster, because it's the *remote*
         # cluster
         pass
+
+    def write_cluster_settings(self, cluster_view):
+        if self._remote_site != "":
+            write_memcached_cluster_settings("/etc/clearwater/remote_cluster_settings",
+                                             cluster_view)
+            run_command("/usr/share/clearwater/bin/reload_memcached_users")
 
 
 def load_as_plugin(params):
