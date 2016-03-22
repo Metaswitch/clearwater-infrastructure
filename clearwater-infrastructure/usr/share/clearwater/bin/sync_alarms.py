@@ -49,13 +49,6 @@ import alarms
 
 if len(sys.argv) == 1:
   alarms.sendrequest(["sync-alarms"])
-
-elif len(sys.argv) == 2:
-  if sys.argv[1] == "--noclear":
-    alarms.sendrequest(["sync-alarms-no-clear"])
-  else:
-    syslog.syslog(syslog.LOG_ERR, "unexpected option: %s", sys.argv[1])
-
 else:
   syslog.syslog(syslog.LOG_ERR, "unexpected parameter count: %d, cmd: %s" % (len(sys.argv), " ".join(sys.argv[:])))
 
