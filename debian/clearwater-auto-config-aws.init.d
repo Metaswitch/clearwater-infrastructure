@@ -70,6 +70,11 @@ do_auto_config()
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm /etc/clearwater/cluster_settings
+
+  # Set up DNS for the S-CSCF
+  grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
+  echo $local_ip scscf.$public_hostname '#+scscf.aio'>> /tmp/hosts.$$
+  mv /tmp/hosts.$$ /etc/hosts
 }
 
 case "$1" in
