@@ -308,12 +308,6 @@ get_process_info()
   ps -eaf > $CURRENT_DUMP_DIR/ps-eaf.txt
 }
 
-# Get information about currently open files.
-get_open_file_info()
-{
-  lsof > $CURRENT_DUMP_DIR/lsof.txt
-}
-
 
 # Get information about the virtual hardware the system is running on.
 get_hardware_info()
@@ -591,10 +585,9 @@ do
   get_hardware_info
   get_usage_stats
 
-  # OS, process and file info.
+  # OS and process info.
   get_os_info
   get_process_info
-  get_open_file_info
 
   # Database statuses.
   if cw_component_installed homer homestead memento
