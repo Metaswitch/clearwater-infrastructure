@@ -128,6 +128,8 @@ do_auto_config()
   grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
   echo $ip scscf.$sprout_hostname '#+scscf.aio'>> /tmp/hosts.$$
   mv /tmp/hosts.$$ /etc/hosts
+
+  service dnsmasq restart
 }
 
 case "$1" in
