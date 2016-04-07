@@ -33,8 +33,8 @@
 from metaswitch.clearwater.cluster_manager.plugin_base import SynchroniserPluginBase
 from metaswitch.clearwater.etcd_shared.plugin_utils import run_command
 from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER
-from metaswitch.clearwater.cluster_manager.alarms import issue_alarm
 from metaswitch.clearwater.cluster_manager import pdlogs, alarm_constants, constants
+from metaswitch.common.alarms import alarm_manager
 import logging
 
 
@@ -74,8 +74,10 @@ def write_memcached_cluster_settings(filename, cluster_view):
 
 class MemcachedPlugin(SynchroniserPluginBase):
     def __init__(self, params):
-        issue_alarm(alarm_constants.MEMCACHED_NOT_YET_CLUSTERED_MAJOR)
         pdlogs.NOT_YET_CLUSTERED_ALARM.log(cluster_desc=self.cluster_description())
+        self._alarm = alarm_manager.get_alarm(
+            'cluster-manager',
+            alarm_constants.MEMCACHED_NOT_YET_CLUSTERED)
         self._key = "/{}/{}/{}/clustering/memcached".format(params.etcd_key, params.local_site, params.etcd_cluster_key)
 
     def key(self):
@@ -88,23 +90,29 @@ class MemcachedPlugin(SynchroniserPluginBase):
         return "local Memcached cluster"
 
     def on_cluster_changing(self, cluster_view):
-        write_memcached_cluster_settings("/etc/clearwater/cluster_settings",
-                                         cluster_view)
-        run_command("/usr/share/clearwater/bin/reload_memcached_users")
+        self._alarm.set()
+        self.write_cluster_settings(cluster_view)
 
     def on_joining_cluster(self, cluster_view):
-        self.on_cluster_changing(cluster_view)
+        self._alarm.set()
+        self.write_cluster_settings(cluster_view)
 
     def on_new_cluster_config_ready(self, cluster_view):
+        self._alarm.set()
         run_command("service astaire reload")
         run_command("service astaire wait-sync")
 
     def on_stable_cluster(self, cluster_view):
-        self.on_cluster_changing(cluster_view)
-        issue_alarm(alarm_constants.MEMCACHED_NOT_YET_CLUSTERED_CLEARED)
+        self.write_cluster_settings(cluster_view)
+        self._alarm.clear()
 
     def on_leaving_cluster(self, cluster_view):
         pass
+
+    def write_cluster_settings(self, cluster_view):
+        write_memcached_cluster_settings("/etc/clearwater/cluster_settings",
+                                         cluster_view)
+        run_command("/usr/share/clearwater/bin/reload_memcached_users")
 
 def load_as_plugin(params):
     _log.info("Loading the Memcached plugin")

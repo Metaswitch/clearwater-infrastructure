@@ -95,7 +95,7 @@ PDLogs = {
 
 if len(sys.argv) >= 3:
   if sys.argv[2] in PDLogs:
-    syslog.openlog(sys.argv[1], 1, syslog.LOG_LOCAL6)
+    syslog.openlog(sys.argv[1], 1, syslog.LOG_LOCAL7)
 
     log = PDLogs[sys.argv[2]]
 

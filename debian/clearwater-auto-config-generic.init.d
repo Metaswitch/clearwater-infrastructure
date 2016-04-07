@@ -63,6 +63,7 @@ do_auto_config()
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
+          s/^etcd_cluster=.*$/etcd_cluster='$ip'/g
           s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
 
   # Add square brackets around the address iff it is an IPv6 address
@@ -76,6 +77,13 @@ do_auto_config()
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
+
+  # Set up DNS for the S-CSCF
+  grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
+  echo $ip scscf.$ip '#+scscf.aio'>> /tmp/hosts.$$
+  mv /tmp/hosts.$$ /etc/hosts
+
+  service dnsmasq restart
 }
 
 case "$1" in

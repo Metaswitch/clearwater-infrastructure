@@ -1,7 +1,7 @@
-# @file monit-alarm-clear-all.conf
+# @file monit.monit
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,17 +32,8 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-
-# This helper is triggerd on a Monit process start. It will clear all
-# alarms previously issued by monit (to handle the case where an alarmed
-# process may have recovered while monit was down).
-
-
-start on starting clearwater-monit
-
-task
-
-script
-  /usr/share/clearwater/bin/clear_alarms.py "monit"
-end script
-
+# Clear the Monit alarm once Monit is up.
+check program monit_uptime with path /usr/share/clearwater/infrastructure/scripts/confirm-monit-liveness
+  group monit
+  every 3 cycles
+  if status != 0 then alert
