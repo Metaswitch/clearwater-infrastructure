@@ -19,7 +19,7 @@
                     "description": "Memcached: Process failure.",
                     "cause": "The system has detected that the Memcached process has failed.",
                     "effect": "Redundancy of short lived data is compromised. If multiple Memcached processes have failed you may have lost data.",
-                    "action": "Monitor for the alarm to clear and confirm the system is operating normally. If the failed Memcached process does not return to service, contact your support represetntative.."
+                    "action": "Monitor for the alarm to clear and confirm the system is operating normally. If the failed Memcached process does not return to service, contact your support representative."
                 }
             ]
         }
