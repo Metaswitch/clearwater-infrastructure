@@ -21,3 +21,4 @@ turn_workaround=secret
 ellis_api_key=secret
 ellis_cookie_key=secret
 
+reduce_cassandra_mem_usage=Y
