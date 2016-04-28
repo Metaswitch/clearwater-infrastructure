@@ -127,6 +127,13 @@ do_auto_config()
       echo "signaling_dns_server=$nameserver" >> $shared_config
     fi
   fi
+
+  # Set up DNS for the S-CSCF
+  grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
+  echo $ip scscf.$sprout_hostname '#+scscf.aio'>> /tmp/hosts.$$
+  mv /tmp/hosts.$$ /etc/hosts
+
+  service dnsmasq restart
 }
 
 case "$1" in

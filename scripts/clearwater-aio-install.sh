@@ -65,13 +65,7 @@ apt-get update
 
 # Install the initial clearwater packages
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y --force-yes $auto_package clearwater-cassandra < /dev/null
-
-# Patch Cassandra's configuration to reduce its memory usage, and stop it to
-# make monit restart it
-sed -e 's/#MAX_HEAP_SIZE=".*"/MAX_HEAP_SIZE="512M"/g' -i /etc/cassandra/cassandra-env.sh
-sed -e 's/#HEAP_NEWSIZE=".*"/HEAP_NEWSIZE="128M"/g' -i /etc/cassandra/cassandra-env.sh
-service cassandra stop
+apt-get install -y --force-yes $auto_package clearwater-management clearwater-cassandra < /dev/null
 
 # Install the remaining clearwater packages
 apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov clearwater-prov-tools < /dev/null

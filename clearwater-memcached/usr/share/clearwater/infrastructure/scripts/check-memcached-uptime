@@ -1,7 +1,9 @@
-# @file monit-alarm-clear.conf
+#!/bin/sh
+
+# @file check-memcached-uptime
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,21 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-
-# This helper is triggerd on Monit process started. It will confirm recovery
-# for 60 seconds. Once recovery is confirmed, it will clear the monit
-# failure alarm in case it is active. If monit dies (or is stopped) during
-# the recovery period, the stop trigger will terminate this task before it
-# clears the moint failure.
-
-
-start on started clearwater-monit
-stop on stopping clearwater-monit
-
-task
-
-script
-  /bin/sleep 60
-  /usr/share/clearwater/bin/issue_alarm.py "upstart" "4500.1"
-end script
-
+# Monit 5.8.1 does not support passing arguments to check program scripts.
+# check-uptime provides common uptime-checking code. This wrapper script
+# uses it, and can be called with no arguments.
+/usr/share/clearwater/bin/check-uptime /var/run/memcached_11211.pid monit 3500.1

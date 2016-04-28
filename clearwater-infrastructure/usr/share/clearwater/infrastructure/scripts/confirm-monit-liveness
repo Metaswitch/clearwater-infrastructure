@@ -1,7 +1,9 @@
-# @file monit-alarm-clear-all.conf
+#!/bin/sh
+
+# @file check-monit-uptime
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,17 +34,9 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-
-# This helper is triggerd on a Monit process start. It will clear all
-# alarms previously issued by monit (to handle the case where an alarmed
-# process may have recovered while monit was down).
-
-
-start on starting clearwater-monit
-
-task
-
-script
-  /usr/share/clearwater/bin/clear_alarms.py "monit"
-end script
-
+# Monit 5.8.1 does not support passing arguments to check program scripts.
+# This wrapper script can be called with no arguments to clear the Monit alarm.
+#
+# By Monit calling this script, we can determine that Monit is alive,
+# and so it is safe to clear the Monit alarm raised by upstart.
+/usr/share/clearwater/bin/issue_alarm.py upstart 4500.1

@@ -2,3 +2,7 @@
 local_ip=
 public_ip=
 public_hostname=
+etcd_cluster=
+
+# Only keep 50MB of logs
+max_log_directory_size=52428800
