@@ -95,7 +95,6 @@ do_auto_config()
       hs_hostname=homestead:8888
       hs_provisioning_hostname=homestead:8889
       xdms_hostname=homer:7888
-      upstream_hostname=sprout
       ralf_hostname=ralf:10888
       home_domain="example.com"
     else
@@ -104,7 +103,6 @@ do_auto_config()
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
-      upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
       home_domain=$ZONE
     fi
@@ -127,13 +125,6 @@ do_auto_config()
       echo "signaling_dns_server=$nameserver" >> $shared_config
     fi
   fi
-
-  # Set up DNS for the S-CSCF
-  grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
-  echo $ip scscf.$sprout_hostname '#+scscf.aio'>> /tmp/hosts.$$
-  mv /tmp/hosts.$$ /etc/hosts
-
-  service dnsmasq restart
 }
 
 case "$1" in
