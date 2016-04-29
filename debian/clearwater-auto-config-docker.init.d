@@ -95,6 +95,7 @@ do_auto_config()
       hs_hostname=homestead:8888
       hs_provisioning_hostname=homestead:8889
       xdms_hostname=homer:7888
+      upstream_hostname=scscf.sprout
       ralf_hostname=ralf:10888
       home_domain="example.com"
     else
@@ -103,6 +104,7 @@ do_auto_config()
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
+      upstream_hostname=scscf.sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
       home_domain=$ZONE
     fi
