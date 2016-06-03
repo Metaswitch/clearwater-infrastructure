@@ -51,19 +51,9 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-add_section() {
-  file=$1
-  tag=$2
-  delta=$3
-  { echo "#+$tag"
-    cat $delta
-    echo "#-$tag" ; } >> $file
-}
-
 case "$1" in
     configure)
-        add_section /etc/sysctl.conf clearwater-tcp-scalability /etc/sysctl.conf.clearwater
-        sysctl -p /etc/sysctl.conf >/dev/null
+        /usr/share/clearwater/infrastructure/install/clearwater-tcp-scalability.postinst
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

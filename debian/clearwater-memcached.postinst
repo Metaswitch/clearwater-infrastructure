@@ -53,17 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        install /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
-        /usr/share/clearwater/infrastructure/scripts/memcached
-        [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-        reload clearwater-monit || /bin/true
-
-        # Stop the cluster manager, so that it is restarted by Monit and picks
-        # up the new Memcached scaling plugins. We check whether the process is
-        # installed to avoid warning logs when etcd isn't being used
-        if [ -x "/etc/init.d/clearwater-cluster-manager" ]; then
-          service clearwater-cluster-manager stop || /bin/true
-        fi
+        /usr/share/clearwater/infrastructure/install/clearwater-memcached.postinst
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -1,15 +1,15 @@
 # Makefile for Clearwater infrastructure packages
 
 # this should come first so make does the right thing by default
+.PHONY: all
 all: build
 
 PYZMQ_DIR := ${PWD}/clearwater-infrastructure/PyZMQ
 CW_SOCK_FACT_DIR := ${PWD}/clearwater-socket-factory
 
-DEB_COMPONENT := clearwater-infrastructure
-DEB_MAJOR_VERSION := 1.0${DEB_VERSION_QUALIFIER}
-DEB_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-diags-monitor clearwater-auto-config-aws clearwater-auto-config-docker clearwater-auto-config-generic clearwater-log-cleanup clearwater-auto-upgrade clearwater-socket-factory clearwater-radius-auth
-DEB_ARCH := all
+PKG_COMPONENT := clearwater-infrastructure
+PKG_MAJOR_VERSION ?= 1.0
+PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-diags-monitor clearwater-auto-config-aws clearwater-auto-config-docker clearwater-auto-config-generic clearwater-log-cleanup clearwater-auto-upgrade clearwater-socket-factory clearwater-radius-auth
 
 .PHONY: build
 build: pyzmq_build clearwater_socket_factory_build
@@ -34,8 +34,9 @@ clearwater_socket_factory_clean:
 	make -C ${CW_SOCK_FACT_DIR} clean
 
 include build-infra/cw-deb.mk
-
 .PHONY: deb
 deb: build deb-only
 
-.PHONY: all build clean deb deb-only
+include build-infra/cw-rpm.mk
+.PHONY: rpm
+rpm: build rpm-only

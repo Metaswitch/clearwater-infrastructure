@@ -53,27 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        # Save off the current core file pattern so we can restore it on uninstallation.
-        cat /proc/sys/kernel/core_pattern > /etc/clearwater/diags-monitor/core_pattern.old
-
-        # Also save off systat config and turn sysstat on.
-        cp -p /etc/default/sysstat /etc/clearwater/diags-monitor/sysstat.old
-        sed -i 's/ENABLED=.*/ENABLED="true"/g' /etc/default/sysstat
-
-        # Create the temporary diagnostics directory and give it appropriate permissions.
-        mkdir -p /var/clearwater-diags-monitor/tmp
-        chmod a+rwx /var/clearwater-diags-monitor/tmp
-
-        # Do the same for the dumps directory.
-        mkdir -p /var/clearwater-diags-monitor/dumps
-        chmod a+rwx /var/clearwater-diags-monitor/dumps
-
-        chmod a+x /usr/share/clearwater/bin/gather_diags
-
-        # Make sure the monit configuration directory exists, copy our file in and restart monit.
-        mkdir -p /etc/monit/conf.d/
-        cp /usr/share/clearwater/clearwater-diags-monitor/conf/clearwater-diags-monitor.monit /etc/monit/conf.d/
-        reload clearwater-monit || true
+        /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.postinst
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
