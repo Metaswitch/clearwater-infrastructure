@@ -1,4 +1,9 @@
 #!/bin/bash
-apt-get update -o Dir::Etc::sourcelist="sources.list.d/clearwater.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" &&
-apt-get install "$@" -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew\
-                     --only-upgrade $(dpkg-query -W -f='${Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1)
+if which yum > /dev/null ; then
+  sudo yum makecache --disablerepo=* --enablerepo=clearwater &&
+  sudo yum update --disablerepo=* --enablerepo=clearwater "$@"
+else
+  apt-get update -o Dir::Etc::sourcelist="sources.list.d/clearwater.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" &&
+  apt-get install "$@" -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew\
+                       --only-upgrade $(dpkg-query -W -f='${Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1)
+fi

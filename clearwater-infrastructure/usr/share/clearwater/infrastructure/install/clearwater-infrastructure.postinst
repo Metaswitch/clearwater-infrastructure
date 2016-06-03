@@ -36,6 +36,8 @@
 
 . /usr/share/clearwater/infrastructure/install/common
 
+EGGS_DIR=/usr/share/clearwater/infrastructure/eggs
+
 add_config_shim() {
   if [ ! -e /etc/clearwater/config ]
   then
