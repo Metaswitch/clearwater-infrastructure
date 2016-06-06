@@ -39,7 +39,7 @@
 install /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
 /usr/share/clearwater/infrastructure/scripts/memcached
 [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
-reload clearwater-monit || /bin/true
+pkill -HUP monit || /bin/true
 
 # Stop the cluster manager, so that it is restarted by Monit and picks
 # up the new Memcached scaling plugins. We check whether the process is

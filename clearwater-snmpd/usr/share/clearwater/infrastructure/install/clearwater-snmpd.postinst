@@ -58,6 +58,6 @@ fi
 
 # Set up Monit configuration for snmpd
 install -D --mode=0644 /usr/share/clearwater/conf/snmpd.monit /etc/monit/conf.d/
-reload clearwater-monit || true
+pkill -HUP monit || true
 
 service snmpd stop || true

@@ -77,7 +77,7 @@ do_start()
         done
 
         # Reload monit to pick up any changes to its config files
-        reload clearwater-monit
+        pkill -HUP monit
 
         return 0
 }

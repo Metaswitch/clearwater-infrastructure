@@ -1,8 +1,8 @@
 Name:           clearwater-infrastructure
 Summary:        Common infrastructure for all Clearwater servers
 BuildArch:      noarch
-BuildRequires:  python2-devel python-virtualenv
-Requires:       redhat-lsb-core python
+BuildRequires:  python2-devel python-virtualenv zeromq-devel
+Requires:       redhat-lsb-core python zeromq
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 

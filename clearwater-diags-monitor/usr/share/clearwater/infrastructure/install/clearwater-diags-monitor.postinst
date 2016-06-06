@@ -56,4 +56,4 @@ chmod a+x /usr/share/clearwater/bin/gather_diags
 # Make sure the monit configuration directory exists, copy our file in and restart monit.
 mkdir -p /etc/monit/conf.d/
 cp /usr/share/clearwater/clearwater-diags-monitor/conf/clearwater-diags-monitor.monit /etc/monit/conf.d/
-reload clearwater-monit || true
+pkill -HUP monit || true

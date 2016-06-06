@@ -41,7 +41,7 @@
 
 # Clean up Monit configuration for snmpd
 rm -f /etc/monit/conf.d/snmpd.monit
-reload clearwater-monit &> /dev/null || true
+pkill -HUP monit &> /dev/null || true
 
 # Use restart here instead of the normal stop, as we've just taken away
 # monit's control of snmpd
