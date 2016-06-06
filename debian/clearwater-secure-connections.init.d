@@ -58,11 +58,13 @@ SCRIPTNAME=/etc/init.d/$NAME
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 # Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
+[ -r /lib/init/vars.sh ] && . /lib/init/vars.sh
 
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
+[ "$(type -t log_daemon_msg)" = "function" ] || function log_daemon_msg { log_success_msg $@ ; }
+[ "$(type -t log_end_msg)" = "function" ] || function log_end_msg { true ; }
 
 #
 # Function that starts the daemon/service

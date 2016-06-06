@@ -12,7 +12,7 @@ Package enabling automatic upgrade of Clearwater software
 %install
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-upgrade %{rootdir} %{buildroot}
 setup_buildroot
-copy_to_buildroot debian/clearwater-auto-upgrade.init.d /etc/init.d/clearwater-auto-upgrade
+copy_to_buildroot debian/clearwater-auto-upgrade.init.d /etc/init.d clearwater-auto-upgrade
 build_files_list > clearwater-auto-upgrade.files
 
 %post

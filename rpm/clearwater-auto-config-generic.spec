@@ -13,7 +13,7 @@ Package containing the generic Clearwater auto-configuration tool
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-config-generic %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-auto-config-generic.install
-copy_to_buildroot debian/clearwater-auto-config-generic.init.d /etc/init.d/clearwater-auto-config-generic
+copy_to_buildroot debian/clearwater-auto-config-generic.init.d /etc/init.d clearwater-auto-config-generic
 build_files_list > clearwater-auto-config-generic.files
 
 %post

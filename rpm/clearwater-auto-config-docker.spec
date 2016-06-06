@@ -13,7 +13,7 @@ Package containing the Clearwater auto-configuration tool for Docker
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-config-docker %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-auto-config-docker.install
-copy_to_buildroot debian/clearwater-auto-config-docker.init.d /etc/init.d/clearwater-auto-config-docker
+copy_to_buildroot debian/clearwater-auto-config-docker.init.d /etc/init.d clearwater-auto-config-docker
 build_files_list > clearwater-auto-config-docker.files
 
 %post

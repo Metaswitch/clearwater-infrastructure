@@ -53,7 +53,7 @@ NAME=clearwater-auto-upgrade             # Introduce the short server's name her
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 # Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
+[ -r /lib/init/vars.sh ] && . /lib/init/vars.sh
 
 do_upgrade()
 {

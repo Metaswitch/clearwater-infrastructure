@@ -34,7 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.postinst
+. /usr/share/clearwater/infrastructure/install/common
 
 # Reinstate the original core file pattern.
 [ ! -f /etc/clearwater/diags-monitor/core_pattern.old ] || cat /etc/clearwater/diags-monitor/core_pattern.old > /proc/sys/kernel/core_pattern
@@ -44,7 +44,7 @@ rm -f /etc/clearwater/diags-monitor/core_pattern.old
 [ ! -f /etc/clearwater/diags-monitor/sysstat.old ] || cp -p /etc/clearwater/diags-monitor/sysstat.old /etc/default/sysstat
 rm -f /etc/clearwater/diags-monitor/sysstat.old
 
-if [ $1 != "upgrade" ]; then
+if [ "$1" != "upgrade" ]; then
   # Remove the temporary diagnostics directory.  Do not remove the dumps
   # directory, we don't want to delete diags.
   rm -rf /var/clearwater-diags-monitor/tmp

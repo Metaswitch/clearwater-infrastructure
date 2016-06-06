@@ -14,7 +14,7 @@ memcached configured for Clearwater
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-memcached %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-memcached.install
-copy_to_buildroot debian/clearwater-memcached.init.d /etc/init.d/clearwater-memcached
+copy_to_buildroot debian/clearwater-memcached.init.d /etc/init.d clearwater-memcached
 build_files_list > clearwater-memcached.files
 
 %post

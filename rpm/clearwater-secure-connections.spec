@@ -13,7 +13,7 @@ Secure connections between regions for Clearwater
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-secure-connections %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-secure-connections.install
-copy_to_buildroot debian/clearwater-secure-connections.init.d /etc/init.d/clearwater-secure-connections
+copy_to_buildroot debian/clearwater-secure-connections.init.d /etc/init.d clearwater-secure-connections
 build_files_list > clearwater-secure-connections.files
 
 %post

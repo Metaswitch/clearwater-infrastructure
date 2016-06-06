@@ -13,7 +13,7 @@ Package containing the Clearwater auto-configuration tool for AWS
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-config-aws %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-auto-config-aws.install
-copy_to_buildroot debian/clearwater-auto-config-aws.init.d /etc/init.d/clearwater-auto-config-aws
+copy_to_buildroot debian/clearwater-auto-config-aws.init.d /etc/init.d clearwater-auto-config-aws
 build_files_list > clearwater-auto-config-aws.files
 
 %post

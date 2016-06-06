@@ -34,7 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.postinst
+. /usr/share/clearwater/infrastructure/install/common
 
 # Save off the current core file pattern so we can restore it on uninstallation.
 cat /proc/sys/kernel/core_pattern > /etc/clearwater/diags-monitor/core_pattern.old
