@@ -2,7 +2,7 @@ Name:           clearwater-auto-upgrade
 Summary:        Package enabling automatic upgrade of Clearwater software
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       clearwater-infrastructure
+Requires:       redhat-lsb-core clearwater-infrastructure
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -10,7 +10,7 @@ Requires:       clearwater-infrastructure
 Package enabling automatic upgrade of Clearwater software
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-upgrade %{rootdir} %{buildroot}
 setup_buildroot
 copy_to_buildroot debian/clearwater-auto-upgrade.init.d /etc/init.d/clearwater-auto-upgrade
 build_files_list > clearwater-auto-upgrade.files

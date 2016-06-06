@@ -2,7 +2,7 @@ Name:           clearwater-memcached
 Summary:        memcached configured for Clearwater
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       clearwater-infrastructure memcached=1.6.00-0clearwater0.5
+Requires:       redhat-lsb-core clearwater-infrastructure memcached=1.6.00-0clearwater0.5
 #Suggests:       clearwater-secure-connections
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
@@ -11,7 +11,7 @@ Requires:       clearwater-infrastructure memcached=1.6.00-0clearwater0.5
 memcached configured for Clearwater
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-memcached %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-memcached.install
 copy_to_buildroot debian/clearwater-memcached.init.d /etc/init.d/clearwater-memcached

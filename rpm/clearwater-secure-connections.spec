@@ -2,7 +2,7 @@ Name:           clearwater-secure-connections
 Summary:        Secure connections between regions for Clearwater
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       racoon ipsec-tools
+Requires:       redhat-lsb-core racoon ipsec-tools
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -10,7 +10,7 @@ Requires:       racoon ipsec-tools
 Secure connections between regions for Clearwater
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-secure-connections %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-secure-connections.install
 copy_to_buildroot debian/clearwater-secure-connections.init.d /etc/init.d/clearwater-secure-connections

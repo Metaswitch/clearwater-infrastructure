@@ -2,7 +2,7 @@ Name:           clearwater-radius-auth
 Summary:        Package enabling RADIUS authentication on Clearwater nodes
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       libpam-radius-auth libnss-ato
+Requires:       redhat-lsb-core libpam-radius-auth libnss-ato
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -10,7 +10,7 @@ Requires:       libpam-radius-auth libnss-ato
 Package enabling RADIUS authentication on Clearwater nodes
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-radius-auth %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-radius-auth.install
 build_files_list > clearwater-radius-auth.files

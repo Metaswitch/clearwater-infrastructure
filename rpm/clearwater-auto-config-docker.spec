@@ -2,6 +2,7 @@ Name:           clearwater-auto-config-docker
 Summary:        Package containing the Clearwater auto-configuration tool for Docker
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
+Requires:       redhat-lsb-core
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -9,7 +10,7 @@ BuildRequires:  python2-devel python-virtualenv
 Package containing the Clearwater auto-configuration tool for Docker
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-config-docker %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-auto-config-docker.install
 copy_to_buildroot debian/clearwater-auto-config-docker.init.d /etc/init.d/clearwater-auto-config-docker

@@ -2,7 +2,7 @@ Name:           clearwater-infrastructure
 Summary:        Common infrastructure for all Clearwater servers
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       python
+Requires:       redhat-lsb-core python
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -10,7 +10,7 @@ Requires:       python
 Common infrastructure for all Clearwater servers
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-infrastructure %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-infrastructure.install
 dirs_to_buildroot < %{rootdir}/debian/clearwater-infrastructure.dirs

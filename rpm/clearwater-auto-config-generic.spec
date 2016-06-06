@@ -2,6 +2,7 @@ Name:           clearwater-auto-config-generic
 Summary:        Package containing the generic Clearwater auto-configuration tool
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
+Requires:       redhat-lsb-core
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -9,7 +10,7 @@ BuildRequires:  python2-devel python-virtualenv
 Package containing the generic Clearwater auto-configuration tool
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-auto-config-generic %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-auto-config-generic.install
 copy_to_buildroot debian/clearwater-auto-config-generic.init.d /etc/init.d/clearwater-auto-config-generic

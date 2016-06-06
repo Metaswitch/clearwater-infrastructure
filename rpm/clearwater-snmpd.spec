@@ -2,7 +2,7 @@ Name:           clearwater-snmpd
 Summary:        SNMP service for Clearwater CPU, RAM and I/O statistics
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       snmpd=5.7.2~dfsg-clearwater4 libsnmp-base>=5.7.2~dfsg-clearwater4 libsnmp30>=5.7.2~dfsg-clearwater4 clearwater-infrastructure
+Requires:       redhat-lsb-core snmpd=5.7.2~dfsg-clearwater4 libsnmp-base>=5.7.2~dfsg-clearwater4 libsnmp30>=5.7.2~dfsg-clearwater4 clearwater-infrastructure
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -10,7 +10,7 @@ Requires:       snmpd=5.7.2~dfsg-clearwater4 libsnmp-base>=5.7.2~dfsg-clearwater
 SNMP service for Clearwater CPU, RAM and I/O statistics
 
 %install
-. %{rootdir}/build-infra/cw-rpm-utils %{rootdir} %{buildroot}
+. %{rootdir}/build-infra/cw-rpm-utils clearwater-snmpd %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-snmpd.install
 build_files_list > clearwater-snmpd.files
