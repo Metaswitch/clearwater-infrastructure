@@ -58,10 +58,17 @@ NAME=clearwater-auto-upgrade             # Introduce the short server's name her
 do_upgrade()
 {
         # Upgrade any installed Metaswitch-maintained packages
-        if ! fuser -s /var/lib/dpkg/lock
-        then
-            export DEBIAN_FRONTEND=noninteractive
-            clearwater-upgrade -y --force-yes
+        if which yum > /dev/null ; then
+                if ! ps $(cat /var/run/yum.pid) > /dev/null
+                then
+                    clearwater-upgrade -y
+                fi
+        else
+                if ! fuser -s /var/lib/dpkg/lock
+                then
+                    export DEBIAN_FRONTEND=noninteractive
+                    clearwater-upgrade -y --force-yes
+                fi
         fi
 
         return 0

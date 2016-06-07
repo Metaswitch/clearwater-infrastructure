@@ -2,7 +2,7 @@ Name:           clearwater-auto-config-aws
 Summary:        Package containing the Clearwater auto-configuration tool for AWS
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       redhat-lsb-core
+Requires:       redhat-lsb-core wget
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 

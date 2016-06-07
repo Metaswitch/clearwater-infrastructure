@@ -1,0 +1,10 @@
+[Unit]
+Description=Enables processes to establish connections using a different network namespace
+
+[Service]
+ExecStart=/usr/share/clearwater/bin/clearwater-socket-factory-wrapper
+Restart=on-failure
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target

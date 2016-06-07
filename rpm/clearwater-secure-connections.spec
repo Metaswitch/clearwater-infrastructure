@@ -2,7 +2,7 @@ Name:           clearwater-secure-connections
 Summary:        Secure connections between regions for Clearwater
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       redhat-lsb-core racoon ipsec-tools
+Requires:       redhat-lsb-core ipsec-tools
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
