@@ -22,7 +22,10 @@ build_files_list > clearwater-secure-connections.files
 /sbin/service clearwater-secure-connections start
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-secure-connections.prerm
-/sbin/chkconfig clearwater-secure-connections off
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-secure-connections.prerm
+  /sbin/chkconfig clearwater-secure-connections off
+fi
 
 %files -f clearwater-secure-connections.files

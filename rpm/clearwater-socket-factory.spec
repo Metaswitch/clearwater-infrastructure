@@ -22,9 +22,12 @@ systemctl enable clearwater-socket-factory
 systemctl start clearwater-socket-factory
 
 %preun
-systemctl stop clearwater-socket-factory
-systemctl disable clearwater-socket-factory
-# Remove the old management socket
-rm -f /tmp/clearwater_mgmt_namespace_socket
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  systemctl stop clearwater-socket-factory
+  systemctl disable clearwater-socket-factory
+  # Remove the old management socket
+  rm -f /tmp/clearwater_mgmt_namespace_socket
+fi
 
 %files -f clearwater-socket-factory.files

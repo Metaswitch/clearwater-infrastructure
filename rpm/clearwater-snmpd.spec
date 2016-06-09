@@ -20,6 +20,9 @@ build_files_list > clearwater-snmpd.files
 /usr/share/clearwater/infrastructure/install/clearwater-snmpd.postinst
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-snmpd.prerm
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-snmpd.prerm
+fi
 
 %files -f clearwater-snmpd.files

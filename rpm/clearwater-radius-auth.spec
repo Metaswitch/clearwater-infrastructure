@@ -19,6 +19,9 @@ build_files_list > clearwater-radius-auth.files
 /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-radius-auth.prerm
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.prerm
+fi
 
 %files -f clearwater-radius-auth.files

@@ -39,6 +39,7 @@
 set -e
 
 add_section() {
+  remove_section $1 $2
   file=$1
   tag=$2
   delta=$3

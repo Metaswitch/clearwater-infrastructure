@@ -19,6 +19,9 @@ build_files_list > clearwater-tcp-scalability.files
 /usr/share/clearwater/infrastructure/install/clearwater-tcp-scalability.postinst
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-tcp-scalability.prerm
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-tcp-scalability.prerm
+fi
 
 %files -f clearwater-tcp-scalability.files

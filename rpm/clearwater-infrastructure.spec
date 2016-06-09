@@ -23,7 +23,10 @@ build_files_list > clearwater-infrastructure.files
 /sbin/service clearwater-infrastructure start
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-infrastructure.prerm
-/sbin/chkconfig clearwater-infrastructure off
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-infrastructure.prerm
+  /sbin/chkconfig clearwater-infrastructure off
+fi
 
 %files -f clearwater-infrastructure.files

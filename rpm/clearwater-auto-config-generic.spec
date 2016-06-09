@@ -21,6 +21,9 @@ build_files_list > clearwater-auto-config-generic.files
 /sbin/service clearwater-auto-config-generic start
 
 %preun
-/sbin/chkconfig clearwater-auto-config-generic off
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /sbin/chkconfig clearwater-auto-config-generic off
+fi
 
 %files -f clearwater-auto-config-generic.files

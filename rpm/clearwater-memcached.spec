@@ -24,7 +24,10 @@ build_files_list > clearwater-memcached.files
 /sbin/service clearwater-memcached start
 
 %preun
-/usr/share/clearwater/infrastructure/install/clearwater-memcached.prerm
-/sbin/chkconfig clearwater-memcached off
+# Uninstall, not upgrade
+if [ "$1" == 0 ] ; then
+  /usr/share/clearwater/infrastructure/install/clearwater-memcached.prerm
+  /sbin/chkconfig clearwater-memcached off
+fi
 
 %files -f clearwater-memcached.files
