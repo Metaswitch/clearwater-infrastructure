@@ -1,6 +1,6 @@
 type=$(. /etc/clearwater/config
        {
-         if which yum > /dev/null ; then
+         if which yum > /dev/null 2>&1 ; then
            rpm -qa --qf '%{NAME}\n'
          else
            dpkg-query -W -f='${Package}\n'

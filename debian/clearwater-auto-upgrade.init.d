@@ -58,7 +58,7 @@ NAME=clearwater-auto-upgrade             # Introduce the short server's name her
 do_upgrade()
 {
         # Upgrade any installed Metaswitch-maintained packages
-        if which yum > /dev/null ; then
+        if which yum > /dev/null 2>&1 ; then
                 if ! ps $(cat /var/run/yum.pid) > /dev/null
                 then
                     clearwater-upgrade -y

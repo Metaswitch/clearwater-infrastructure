@@ -1,5 +1,5 @@
 #!/bin/bash
-if which yum > /dev/null ; then
+if which yum > /dev/null 2>&1 ; then
   sudo yum makecache --disablerepo=* --enablerepo=clearwater &&
   sudo yum update --disablerepo=* --enablerepo=clearwater "$@"
 else
