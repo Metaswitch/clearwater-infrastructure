@@ -18,7 +18,7 @@ build_files_list > clearwater-auto-config-docker.files
 
 %post
 /sbin/chkconfig clearwater-auto-config-docker on
-/sbin/service clearwater-auto-config-docker start
+/sbin/service clearwater-auto-config-docker restart
 
 %preun
 # Uninstall, not upgrade

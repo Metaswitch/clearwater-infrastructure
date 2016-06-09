@@ -17,7 +17,7 @@ build_files_list > clearwater-auto-upgrade.files
 
 %post
 /sbin/chkconfig clearwater-auto-upgrade on
-/sbin/service clearwater-auto-upgrade start
+/sbin/service clearwater-auto-upgrade restart
 
 %preun
 # Uninstall, not upgrade

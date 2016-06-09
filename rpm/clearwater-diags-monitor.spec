@@ -2,7 +2,7 @@ Name:           clearwater-diags-monitor
 Summary:        Diagnostics monitor and bundler for all Clearwater servers
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       redhat-lsb-core inotify-tools sysstat lshw clearwater-infrastructure
+Requires:       redhat-lsb-core daemonize inotify-tools sysstat lshw clearwater-infrastructure
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -19,7 +19,7 @@ build_files_list > clearwater-diags-monitor.files
 %post
 /sbin/chkconfig clearwater-diags-monitor on
 /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.postinst
-/sbin/service clearwater-diags-monitor start
+/sbin/service clearwater-diags-monitor restart
 
 %preun
 # Uninstall, not upgrade

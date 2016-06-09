@@ -21,7 +21,7 @@ build_files_list > clearwater-memcached.files
 %post
 /sbin/chkconfig clearwater-memcached on
 /usr/share/clearwater/infrastructure/install/clearwater-memcached.postinst
-/sbin/service clearwater-memcached start
+/sbin/service clearwater-memcached restart
 
 %preun
 # Uninstall, not upgrade

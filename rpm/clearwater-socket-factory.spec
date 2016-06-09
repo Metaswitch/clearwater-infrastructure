@@ -19,7 +19,7 @@ build_files_list > clearwater-socket-factory.files
 
 %post
 systemctl enable clearwater-socket-factory
-systemctl start clearwater-socket-factory
+systemctl restart clearwater-socket-factory
 
 %preun
 # Uninstall, not upgrade

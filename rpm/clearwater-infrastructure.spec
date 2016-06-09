@@ -20,7 +20,7 @@ build_files_list > clearwater-infrastructure.files
 %post
 /sbin/chkconfig clearwater-infrastructure on
 /usr/share/clearwater/infrastructure/install/clearwater-infrastructure.postinst
-/sbin/service clearwater-infrastructure start
+/sbin/service clearwater-infrastructure restart
 
 %preun
 # Uninstall, not upgrade

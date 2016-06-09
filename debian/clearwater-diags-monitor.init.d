@@ -68,6 +68,9 @@ DAEMON=/usr/share/clearwater/bin/clearwater_diags_monitor
 [ "$(type -t log_daemon_msg)" = "function" ] || function log_daemon_msg { log_success_msg $@ ; }
 [ "$(type -t log_end_msg)" = "function" ] || function log_end_msg { true ; }
 
+# Include /etc/init.d/functions if available.
+[ -r /etc/init.d/functions ] && . /etc/init.d/functions
+
 #
 # Function that starts the daemon/service
 #
@@ -84,10 +87,15 @@ do_start()
         #   0 if daemon has been started
         #   1 if daemon was already running
         #   2 if daemon could not be started
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
-                || return 1
-        start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --nicelevel 19 --iosched idle --exec $DAEMON \
-                || return 2
+        if which start-stop-daemon > /dev/null 2>&1 ; then
+                start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+                        || return 1
+                start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --nicelevel 19 --iosched idle --exec $DAEMON \
+                        || return 2
+        else
+                [ ! -f $PIDFILE ] || checkpid $(cat $PIDFILE) || return 1
+                ionice -n 3 nice -n 19 daemonize -p $PIDFILE $DAEMON || return 2
+        fi
 
         return 0
 }
@@ -103,7 +111,13 @@ do_stop()
         #   1 if daemon was already stopped
         #   2 if daemon could not be stopped
         #   other if a failure occurred
-        start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+        if which start-stop-daemon > /dev/null 2>&1 ; then
+                start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+        else
+                [ ! -f $PIDFILE ] || killproc -p $(cat $PIDFILE)
+                rm -f $PIDFILE
+                pkill -f $DAEMON
+        fi
         return $?
 }
 

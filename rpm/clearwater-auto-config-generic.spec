@@ -18,7 +18,7 @@ build_files_list > clearwater-auto-config-generic.files
 
 %post
 /sbin/chkconfig clearwater-auto-config-generic on
-/sbin/service clearwater-auto-config-generic start
+/sbin/service clearwater-auto-config-generic restart
 
 %preun
 # Uninstall, not upgrade

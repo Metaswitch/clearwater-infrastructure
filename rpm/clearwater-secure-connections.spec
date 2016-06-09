@@ -19,7 +19,7 @@ build_files_list > clearwater-secure-connections.files
 %post
 /sbin/chkconfig clearwater-secure-connections on
 /usr/share/clearwater/infrastructure/install/clearwater-secure-connections.postinst
-/sbin/service clearwater-secure-connections start
+/sbin/service clearwater-secure-connections restart
 
 %preun
 # Uninstall, not upgrade

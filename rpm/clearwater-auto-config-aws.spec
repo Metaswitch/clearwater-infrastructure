@@ -18,7 +18,7 @@ build_files_list > clearwater-auto-config-aws.files
 
 %post
 /sbin/chkconfig clearwater-auto-config-aws on
-/sbin/service clearwater-auto-config-aws start
+/sbin/service clearwater-auto-config-aws restart
 
 %preun
 # Uninstall, not upgrade
