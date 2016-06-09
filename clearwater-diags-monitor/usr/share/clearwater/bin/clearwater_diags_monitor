@@ -289,13 +289,15 @@ get_network_info()
 {
   copy_to_dump "/etc/hosts"
 
-  ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
+  # For some reason, redirecting ifconfig to file doesn't work on CentOS, so we
+  # pipe through tee instead.  We do the same below.
+  ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig.txt > /dev/null
   netstat -rn > $CURRENT_DUMP_DIR/routes.txt
   netstat -anp > $CURRENT_DUMP_DIR/netstat.txt
 
   for ns in `ip netns list`
   do
-    ip netns exec $ns ifconfig -a > $CURRENT_DUMP_DIR/ifconfig_$ns.txt
+    ip netns exec $ns ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig.txt > /dev/null
     ip netns exec $ns netstat -rn > $CURRENT_DUMP_DIR/routes_$ns.txt
     ip netns exec $ns netstat -anp > $CURRENT_DUMP_DIR/netstat_$ns.txt
   done
