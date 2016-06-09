@@ -53,6 +53,11 @@ set -e
 
 case "$1" in
     configure)
+        # Also save off systat config and turn sysstat on.
+        cp -p /etc/default/sysstat /etc/clearwater/diags-monitor/sysstat.old
+        sed -i 's/ENABLED=.*/ENABLED="true"/g' /etc/default/sysstat
+
+        # Call into the common postinst script.
         /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.postinst
     ;;
 

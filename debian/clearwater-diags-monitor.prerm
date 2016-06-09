@@ -51,11 +51,16 @@ set -e
 # the debian-policy package
 
 case "$1" in
-    remove|upgrade|deconfigure)
+    remove|deconfigure)
+        # Reinstate original systat config.
+        [ ! -f /etc/clearwater/diags-monitor/sysstat.old ] || cp -p /etc/clearwater/diags-monitor/sysstat.old /etc/default/sysstat
+        rm -f /etc/clearwater/diags-monitor/sysstat.old
+
+        # Call into the common prerm script.
         /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.prerm
     ;;
 
-    failed-upgrade)
+    upgrade|failed-upgrade)
     ;;
 
     *)
