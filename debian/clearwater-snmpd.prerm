@@ -52,16 +52,7 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        # Restore original snmpd.conf 
-        [ ! -f /etc/snmp/snmpd.conf.pre-clearwater-snmp ] || mv /etc/snmp/snmpd.conf.pre-clearwater-snmp /etc/snmp/snmpd.conf
-
-        # Clean up Monit configuration for snmpd
-        rm -f /etc/monit/conf.d/snmpd.monit
-        reload clearwater-monit &> /dev/null || true
-
-        # Use restart here instead of the normal stop, as we've just taken away
-        # monit's control of snmpd
-        service snmpd restart || true
+        /usr/share/clearwater/infrastructure/install/clearwater-snmpd.prerm
     ;;
 
     failed-upgrade)

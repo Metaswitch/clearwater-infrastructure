@@ -53,31 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        # Save off original snmpd.conf and replace with Clearwater version
-        cp /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.pre-clearwater-snmpd
-        cp /etc/snmp/snmpd.conf.clearwater-snmpd /etc/snmp/snmpd.conf
-
-        # Create the folder to store the statistics UNIX domain sockets.
-        rm -rf /var/run/clearwater/alarms 
-        mkdir -p /var/run/clearwater/stats
-        chmod -R o+wr /var/run/clearwater/stats
-
-        if [ -e /var/agentx ]
-        then
-          # SNMPd doesn't reset the /var/agentx directory permissions automatically after a config
-          # change (http://net-snmp-coders.narkive.com/bCaMJSZF/user-permissions-and-agentx#post4)
-          # so do that manually
-          chmod 777 /var/agentx
-        fi
-
-        # Update snmpd.conf based upon the content of Clearwater config
-        /usr/share/clearwater/infrastructure/scripts/snmpd 
-
-        # Set up Monit configuration for snmpd
-        install -D --mode=0644 /usr/share/clearwater/conf/snmpd.monit /etc/monit/conf.d/
-        reload clearwater-monit || true
-
-        service snmpd stop || true
+        /usr/share/clearwater/infrastructure/install/clearwater-snmpd.postinst
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

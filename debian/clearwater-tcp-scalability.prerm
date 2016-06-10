@@ -50,17 +50,9 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-remove_section() {
-  file=$1
-  tag=$2
-  awk '/^#\+'$tag'$/,/^#-'$tag'$/ {next} {print}' $file >/tmp/$(basename $file).$$
-  mv /tmp/$(basename $file).$$ $file
-}
-
 case "$1" in
     remove|upgrade|deconfigure)
-        remove_section /etc/sysctl.conf clearwater-tcp-scalability
-        sysctl -p /etc/sysctl.conf >/dev/null
+        /usr/share/clearwater/infrastructure/install/clearwater-tcp-scalability.prerm
     ;;
 
     failed-upgrade)

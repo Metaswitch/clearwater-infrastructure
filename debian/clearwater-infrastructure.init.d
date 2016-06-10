@@ -55,11 +55,13 @@ SCRIPTNAME=/etc/init.d/$NAME
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 # Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
+[ -r /lib/init/vars.sh ] && . /lib/init/vars.sh
 
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
+type log_daemon_msg >/dev/null 2>&1 || log_daemon_msg() { log_success_msg $@ ; }
+type log_end_msg >/dev/null 2>&1 || log_end_msg() { true ; }
 
 #
 # Function that starts the daemon/service
@@ -75,7 +77,7 @@ do_start()
         done
 
         # Reload monit to pick up any changes to its config files
-        reload clearwater-monit
+        pkill -HUP monit
 
         return 0
 }
