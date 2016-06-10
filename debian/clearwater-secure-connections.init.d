@@ -63,8 +63,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
-[ "$(type -t log_daemon_msg)" = "function" ] || function log_daemon_msg { log_success_msg $@ ; }
-[ "$(type -t log_end_msg)" = "function" ] || function log_end_msg { true ; }
+type log_daemon_msg >/dev/null 2>&1 || log_daemon_msg() { log_success_msg $@ ; }
+type log_end_msg >/dev/null 2>&1 || log_end_msg() { true ; }
 
 #
 # Function that starts the daemon/service
