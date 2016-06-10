@@ -114,7 +114,7 @@ do_stop()
         if which start-stop-daemon > /dev/null 2>&1 ; then
                 start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
         else
-                [ ! -f $PIDFILE ] || killproc -p $(cat $PIDFILE)
+                [ ! -f $PIDFILE ] || killproc -p $(cat $PIDFILE) -d 30
                 rm -f $PIDFILE
                 pkill -f $DAEMON
         fi

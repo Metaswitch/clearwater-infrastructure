@@ -4,6 +4,7 @@ Description=Enables processes to establish connections using a different network
 [Service]
 ExecStart=/usr/share/clearwater/bin/clearwater-socket-factory-wrapper
 Restart=on-failure
+RestartSec=5s
 LimitCORE=infinity
 
 [Install]

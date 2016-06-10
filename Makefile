@@ -12,7 +12,7 @@ PKG_MAJOR_VERSION ?= 1.0
 PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-diags-monitor clearwater-auto-config-aws clearwater-auto-config-docker clearwater-auto-config-generic clearwater-log-cleanup clearwater-auto-upgrade clearwater-socket-factory clearwater-radius-auth
 # Override the list of PKG_NAMES for RPM to exclude clearwater-memcached.
 # We don't yet have a build of that.
-RPM_NAMES := $(shell echo $(PKG_NAMES) | sed -e 's/clearwater-memcached//g')
+RPM_NAMES := $(subst clearwater-memcached,,$(PKG_NAMES))
 
 .PHONY: build
 build: pyzmq_build clearwater_socket_factory_build
