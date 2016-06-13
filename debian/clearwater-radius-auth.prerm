@@ -52,8 +52,7 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        sed -i "s/ ato//" /etc/nsswitch.conf
-        sed -i "/+clearwater-radius-auth/,/-clearwater-radius-auth/d" /etc/pam.d/sshd
+        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
     ;;
 
     failed-upgrade)

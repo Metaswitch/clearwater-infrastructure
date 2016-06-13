@@ -1,5 +1,11 @@
 type=$(. /etc/clearwater/config
-       dpkg-query -W -f='${Package}\n' |
+       {
+         if which yum > /dev/null 2>&1 ; then
+           rpm -qa --qf '%{NAME}\n'
+         else
+           dpkg-query -W -f='${Package}\n'
+         fi
+       } |
        egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|ralf)$' |
        sed -e 's/clearwater-sip-stress/sipp/g' |
        tr "\\n" "-" |
