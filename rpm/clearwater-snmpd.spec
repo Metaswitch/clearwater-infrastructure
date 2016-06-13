@@ -2,7 +2,7 @@ Name:           clearwater-snmpd
 Summary:        SNMP service for Clearwater CPU, RAM and I/O statistics
 BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
-Requires:       redhat-lsb-core  net-snmp = 1:5.7.2-24.el7.centos.1.clearwater1 clearwater-infrastructure
+Requires:       redhat-lsb-core net-snmp = 1:5.7.2-24.el7.centos.1.clearwater1 clearwater-infrastructure
 
 %include %{rootdir}/build-infra/cw-rpm.spec.inc
 
@@ -25,5 +25,7 @@ systemctl start snmpd
 if [ "$1" == 0 ] ; then
   /usr/share/clearwater/infrastructure/install/clearwater-snmpd.prerm
 fi
+systemctl stop snmpd
+systemctl disable snmpd
 
 %files -f clearwater-snmpd.files
