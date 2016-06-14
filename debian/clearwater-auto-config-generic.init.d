@@ -68,7 +68,7 @@ do_auto_config()
           s/^public_hostname=.*$/public_hostname='$aio_hostname'/g' -i $local_config
 
   # Add square brackets around the address iff it is an IPv6 address
-  bracketed_ip=$(python /usr/share/clearwater/clearwater-auto-config-generic/bin/bracket_ipv6_address.py $ip)
+  bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-generic/bin/bracket-ipv6-address $ip)
 
   sed -e 's/^sprout_hostname=.*$/sprout_hostname='$aio_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g

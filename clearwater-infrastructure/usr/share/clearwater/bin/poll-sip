@@ -48,7 +48,7 @@ port=$1
 id=$(cut -d. -f1 /proc/uptime)
 
 # For SIP, we need to wrap IPv6 addresses in square brackets.
-sip_ip=$(/usr/share/clearwater/bin/bracket_ipv6_address.py $local_ip)
+sip_ip=$(/usr/share/clearwater/bin/bracket-ipv6-address $local_ip)
 
 # Send the SIP message.  The nc line also includes checking the first line of the response says
 # "SIP/2.0 200 OK".
