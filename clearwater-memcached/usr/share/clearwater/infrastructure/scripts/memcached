@@ -40,9 +40,9 @@
 # that maps to the local IP address.
 listen_address=$local_ip
 
-if /usr/share/clearwater/bin/is_address_ipv6.py $local_ip
+if /usr/share/clearwater/bin/is-address-ipv6 $local_ip
 then
-  listen_address=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $local_ip)
+  listen_address=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
 fi
 
 sed -e 's/^-l .*$/-l '$listen_address'/g'\

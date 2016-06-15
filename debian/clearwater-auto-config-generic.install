@@ -1,3 +1,3 @@
 clearwater-auto-config/* /
-clearwater-infrastructure/usr/share/clearwater/bin/bracket_ipv6_address.py /usr/share/clearwater/clearwater-auto-config-generic/bin/
-clearwater-infrastructure/usr/share/clearwater/bin/is_address_ipv6.py /usr/share/clearwater/clearwater-auto-config-generic/bin/
+build/bin/bracket-ipv6-address /usr/share/clearwater/clearwater-auto-config-generic/bin/
+build/bin/is-address-ipv6 /usr/share/clearwater/clearwater-auto-config-generic/bin/
