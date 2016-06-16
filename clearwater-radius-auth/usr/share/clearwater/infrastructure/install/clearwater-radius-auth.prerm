@@ -34,7 +34,5 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /usr/share/clearwater/infrastructure/install/common
-
 sed -i "s/ ato//" /etc/nsswitch.conf
 sed -i "/+clearwater-radius-auth/,/-clearwater-radius-auth/d" /etc/pam.d/sshd
