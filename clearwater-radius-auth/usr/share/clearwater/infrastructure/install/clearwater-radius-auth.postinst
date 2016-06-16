@@ -34,11 +34,8 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /usr/share/clearwater/infrastructure/install/common
-
 # Adds 'ato' after the password and shadow entries in nsswitch.conf.
 # This sets NSS to check the libnss_ato component for the user if they are not found locally.
 sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
 # Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
-sed -i "s/\(\#\sStandard\sUn\*x\sauthentication\..*\)/# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n\1/" /etc/pam.d/sshd
-sed -i "s/\(\#\sStandard\sUn\*x\sauthentication\..*\)/# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n\1/" /etc/pam.d/login
+sed -i "3i# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n" /etc/pam.d/sshd
