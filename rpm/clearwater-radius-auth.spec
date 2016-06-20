@@ -17,7 +17,7 @@ build_files_list > clearwater-radius-auth.files
 
 %post
 # Initial install, not upgrade
-if [ "$1" == 0 ] ; then
+if [ "$1" == 1 ] ; then
   /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
 fi
 
