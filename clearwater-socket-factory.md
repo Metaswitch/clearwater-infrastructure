@@ -1,14 +1,14 @@
 # Clearwater Socket Factory
 
-The `clearwater-socket-factory` is a service that runs as root in the system's default network namespace. It allows processes running in any namespace to establish TCP connections from any other namespace.
+The Clearwater Socket Factory` comprises two services, `clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` that run as root in the management and signaling network namespaces respectively (both run in the default namespace if traffic separation is not enabled). They allow processes running in one namespace to establish TCP connections from the other namespace.
 
-For example, when traffic separation is enabled on a Clearwater node the default namespace is used for management traffic. This service is used by processes in the signalling namespace (such as Sprout) to obtain connections to the Metaswitch Service Assurance Server (which lives in the management network).
+For example, when traffic separation is enabled on a Clearwater node the default namespace is used for management traffic. `clearwater-socket-factory-mgmt` is used by processes in the signalling namespace (such as Sprout) to obtain connections to the Metaswitch Service Assurance Server (which lives in the management network).
 
 For security reasons, the socket factory is only allowed to connect to a restricted set of hosts in each namespace. This is to prevent an unprivileged process (such as Sprout) from requesting connections to arbitrary hosts in other namespaces.
 
 ## Interface
 
-`clearwater-socket-factory` runs as a daemon process. Clients communicate with it over named UNIX sockets. There is a different named UNIX socket for each of the namespaces a process might try to connect into. Currently these are just management and signaling.
+`clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` run as daemon processes. Clients communicate with it over named UNIX sockets. There is a different named UNIX socket for each of the namespaces a process might try to connect into. Currently these are just management and signaling.
 
 To request a new TCP connection from the factory a client should do the following:
 
@@ -31,13 +31,12 @@ If the daemon encounters any other errors it will indicate this to the client by
 
 ### Configuration
 
-`clearwater-socket-factory` has 3 configuration options:
+`clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` run a common executable `clearwater_socket_factory` (`clearwater-socket-factory-sig` runs its instance in the signaling namespace) which has 2 configuration options:
 
-* `signaling-namespace` - this is the name of the signaling namespace.
-* `management-allowed-hosts` - this is a comma separated lists of hosts in the management network that `clearwater-socket-factory` is allowed to provide sockets for.
-* `signaling-allowed-hosts` - this is a comma separated lists of hosts in the signaling network that `clearwater-socket-factory` is allowed to provide sockets for.
+* `namespace` - either `signaling` or `management`.
+* `allowed-hosts` - this is a comma separated lists of hosts in that network namespace that that instance of `clearwater_socket_factory` is allowed to provide sockets for.
 
-`clearwater-socket-factory` has an upstart script which is built into its Debian package. When deployed with this upstart script, the process will continually respawn when it exits. The upstart script reads `signaling_namespace` in `/etc/clearwater/config` to use as the `signaling-namespace` option, and it builds up lists of allowed hosts by reading each line of each file in `/etc/clearwater-socket-factory/signaling.d` and `/etc/clearwater-socket-factory/management.d` to use as the `signaling-allowed-hosts` and `management-allowed-hosts` options. If either of these directories don't exist, or are empty, the corresponding whitelist is empty.
+`clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` have upstart scripts which are constructed when the Debian package is installed. When deployed with these upstart script, the processes will continually respawn when they exit.
 
 ## Limitations
 
