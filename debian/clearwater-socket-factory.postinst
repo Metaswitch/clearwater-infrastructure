@@ -1,0 +1,162 @@
+#!/bin/sh
+
+# @file clearwater-socket-factory.postinst
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2016  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+case "$1" in
+    configure)
+        # Stop the upstart jobs, if they are already running.  Note that stop
+        # will fail the script if they aren't runninh - hence the careful check
+        # below
+        if ( status clearwater-socket-factory-mgmt 2>&1 | grep start ); then
+          stop clearwater-socket-factory-mgmt
+        fi
+        if ( status clearwater-socket-factory-sig 2>&1 | grep start ); then
+          stop clearwater-socket-factory-sig
+        fi
+
+        # Stop any instances of the old socket factory (that attempted to do
+        # both namespaces) and delete the conf file if present.
+        if ( status clearwater-socket-factory 2>&1 | grep start ); then
+          stop clearwater-socket-factory
+        fi
+        rm -f /etc/init/clearwater-socket-factory.conf
+
+        # Create the config files for the management and signaling socket
+        # factories
+        cat <<EOF > /etc/init/clearwater-socket-factory-mgmt.conf
+# clearwater-socket-factory-mgmt
+#
+# This process runs as root in the management namespace, and enables processes
+# running in other namespaces to obtain sockets in this namespace.
+
+description "Clearwater management socket factory server"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+
+script
+  WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
+  NAMESPACE=management
+EOF
+        cat <<EOF > /etc/init/clearwater-socket-factory-sig.conf
+# clearwater-socket-factory-sig
+#
+# This process runs as root in the signaling namespace, and enables processes
+# running in other namespaces to obtain sockets in this namespace.
+
+description "Clearwater signaling socket factory server"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+
+script
+  WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d
+  NAMESPACE=signaling
+EOF
+        # The main part of the two upstart scripts is common
+        cat <<EOF > /tmp/clearwater-socket-factory.conf
+  get_daemon_args()
+  {
+    . /etc/clearwater/config
+
+    # The whitelist is a comma separated list of hosts. It's built up from
+    # each line of each file in the whitelist directory. We also remove duplicates.
+    if [ -d "\$WHITELIST_DIR" ] && [ "\$(ls -A \$WHITELIST_DIR)" ]; then
+      allowed_hosts="--allowed-hosts=\$(echo \$(cat \$WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
+    fi
+
+    DAEMON_ARGS="\$allowed_hosts --namespace \$NAMESPACE"
+  }
+
+  # Sleep for 5 seconds, to avoid upstart respawning socket-factory too quickly
+  sleep 5
+
+  . /etc/clearwater/config
+  get_daemon_args
+EOF
+        cat /tmp/clearwater-socket-factory.conf >> /etc/init/clearwater-socket-factory-mgmt.conf
+        cat /tmp/clearwater-socket-factory.conf >> /etc/init/clearwater-socket-factory-sig.conf
+
+        # Put the different tails on the end of the scripts.  Note that the signaling
+        # socket factory runs in the signaling namespace.
+        cat <<EOF >> /etc/init/clearwater-socket-factory-mgmt.conf
+  /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
+end script
+EOF
+        cat <<EOF >> /etc/init/clearwater-socket-factory-sig.conf
+  /usr/share/clearwater/bin/run-in-signaling-namespace /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
+end script
+EOF
+        # Having configured the two upstart jobs, start them
+        start clearwater-socket-factory-mgmt
+        start clearwater-socket-factory-sig
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

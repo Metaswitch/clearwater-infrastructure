@@ -39,11 +39,19 @@
 # namespace whitelist. This allows Clearwater processes to connect to SAS.
 
 mkdir -p /etc/clearwater-socket-factory/management.d
+mkdir -p /etc/clearwater-socket-factory/signaling.d
 
 . /etc/clearwater/config
 
 if [ ! -z $sas_server ]; then
-  echo "$sas_server" > /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
+  if [ "$sas_use_signaling_interface" == "Y" ]; then
+    echo "$sas_server" > /etc/clearwater-socket-factory/signaling.d/clearwater-infrastructure
+    rm -f /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
+  else
+    echo "$sas_server" > /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
+    rm -f /etc/clearwater-socket-factory/signaling.d/clearwater-infrastructure
+  fi
 else
   rm -f /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
+  rm -f /etc/clearwater-socket-factory/signaling.d/clearwater-infrastructure
 fi
