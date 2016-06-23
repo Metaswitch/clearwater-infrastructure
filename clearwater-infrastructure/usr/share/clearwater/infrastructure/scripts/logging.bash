@@ -1,7 +1,7 @@
 # @file logging.bash
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,97 +32,118 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# This is a logging module.
-# As it is intended to be 'sourced' by other programs, we want to keep the
-# global namespace to the smallest set possible, hence a lot of the code could
-# be made more readable, but should not be, to avoid subtle bugs.
+# This module is designed to provide a common logging facility which may be
+# used by all Bash scripts in Clearwater. It is intended to be sourced by other
+# scripts, passing in the following arguments:
+#   $1 - The name of the log file to create.
+#   $2 - The logging level. Defaults to WARNING
+#   $3 - The total number of log files to keep. Defaults to 1.
+# backup files to keep (defaults to WARNING and 1 respectively).
 
-# Declare the logging functions as no-ops for now. Some of them will be
-# overwritten in logging_init based on the logging level given. The others will
-# still need to be defined as no-ops to avoid run-time errors.
-#
-# All these methods will log on a single line all arguments given separated by
-# spaces.
-function log_debug() {
-  :
-}
-function log_info() {
-  :
-}
-function log_warning() {
-  :
-}
-function log_error() {
-  :
-}
-
-# Initialises the logger.
-#
-# This function creates a new log file, and manages any file backups. It also
-# re-defines the necessary logging functions based on the log level so that
-# they do something.
-#
-# Args:
-#   filename - The name of the log file to write to.
-#   log_level - The level below which logs will be discarded. In increasing
-#               severity, these are DEBUG, INFO, WARNING, ERROR.
-#               Defaults to WARNING
-#   number_of_files - The number of log files keep.
-#                     Defaults to 1. E.g. Only the current file.
-function logging_init()
+function _logging_init()
 {
   local filename="$1"
-  local log_level="${2:-WARNING}"
-  local number_of_files="${3:-1}"
+  local log_level="$2"
+  local num_files="$3"
 
-  # Rotate the log files. The newest will be called filename.0
-  if [[ "$number_of_files" > 1 ]]
+  if ! [[ "$num_files" =~ ^[0-9]+$ ]]
   then
-    savelog -nlc "$number_of_files" "$filename" >/dev/null
+    echo "Number of log backups is not a valid integer:" $num_files
+    exit 1
   fi
 
+  if (( "$num_files" > 1 ))
+  then
+    savelog -nlc "$num_files" "$filename" >/dev/null
+  fi
+
+  # Prevent namespace pollution
+  local file=""
+  local index=1
+
   # savelog doesn't look for log files with numbers greater than the value of
-  # the -c parameter ($number_of_files) so we should clean these up manually
+  # the -c parameter ($num_files) so we should clean these up manually
   for file in $filename.*
   do
     # Strip the filename base to get the index.
-    index=${file##$filename\.}
+    index="${file##$filename\.}"
 
-    if [[ "$index" == '*' ]]
+    if  ! [[ "$index" =~ ^[0-9]+$ ]]
     then
-      break
+      continue
     fi
 
-    if (( $index >= $number_of_files - 1 ))
+    if (( $index >= $num_files - 1 ))
     then
-      rm $file
+      rm "$file"
     fi
   done
 
   truncate --size 0 "$filename"
 
-  # Define the log function, using the given filename. Escaped '$' will not be
-  # expanded until the function is called.
-  eval "function log() { echo \$(date +\"%Y-%m-%d %T\") \"\$1 -\" \${@:2} >> $filename;}"
-
-  # Overwrite the function templates depending on the given log level. The 'finer'
-  # log levels cascade into the 'higher' log levels.
+  # Convert the log_level into an integer for convenience. Also check that the
+  # log level is valid. Note that these integers must match those used in the
+  # log_* functions below.
   case "$log_level" in
-    'DEBUG')
-      eval 'function log_debug() { log "DEBUG" $@; }'
-      ;&
-    'INFO')
-      eval 'function log_info() { log "INFO" $@; }'
-      ;&
-    'WARNING')
-      eval 'function log_warning() { log "WARNING" $@; }'
-      ;&
-    'ERROR')
-      eval 'function log_error() { log "ERROR" $@; }'
-      # Don't cascade any further
+    DEBUG)
+      _logging_log_level=0
+      ;;
+    INFO)
+      _logging_log_level=1
+      ;;
+    WARNING)
+      _logging_log_level=2
+      ;;
+    ERROR)
+      _logging_log_level=3
       ;;
     *)
-      echo "ERROR: Invalid logging level: '$log_level'"
+      echo "Invalid logging level given:" $log_level
       exit 1
   esac
 }
+
+function log() {
+  echo $(date +"%Y-%m-%d %T") "$1 -" ${@:2} >> $_logging_filename
+}
+
+function log_debug() {
+  if (( "$_logging_log_level" <= 0 ))
+  then
+    log "DEBUG" $@
+  fi
+}
+
+function log_info() {
+  if (( "$_logging_log_level" <= 1 ))
+  then
+    log "INFO" $@
+  fi
+}
+
+function log_warning() {
+  if (( "$_logging_log_level" <= 2 ))
+  then
+    log "WARNING" $@
+  fi
+}
+
+function log_error() {
+  if (( "$_logging_log_level" <= 3 ))
+  then
+    log "ERROR" $@
+  fi
+}
+
+
+# MAIN script starts here
+_logging_filename="$1"
+_logging_log_level="${2:-WARNING}"
+
+if [[ -z $_logging_filename ]]
+then
+  echo "ERROR: No filename given to logging.bash"
+  exit 1
+fi
+
+_logging_init "$_logging_filename" "$_logging_log_level" "${3:-1}"
