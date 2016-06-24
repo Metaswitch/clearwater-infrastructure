@@ -158,7 +158,8 @@ int main(int argc, char **argv)
 EXIT:
 
   // Close the socket.
-  if (zmq_close(sck) != 0)
+  if ((sck != NULL) &&
+      (zmq_close(sck) != 0))
   {
     perror("zmq_close");
     syslog(LOG_ERR, "zmq_close: %m");
@@ -166,7 +167,8 @@ EXIT:
   sck = NULL;
 
   // Destroy the context.
-  if (zmq_ctx_destroy(ctx) != 0)
+  if ((ctx != NULL) &&
+      (zmq_ctx_destroy(ctx) != 0))
   {
     perror("zmq_ctx_destroy");
     syslog(LOG_ERR, "zmq_ctx_destroy: %m");
