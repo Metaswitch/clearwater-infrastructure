@@ -39,4 +39,4 @@
 #
 # By Monit calling this script, we can determine that Monit is alive,
 # and so it is safe to clear the Monit alarm raised by upstart.
-/usr/share/clearwater/bin/issue_alarm.py upstart 4500.1
+/usr/share/clearwater/bin/issue-alarm upstart 4500.1
