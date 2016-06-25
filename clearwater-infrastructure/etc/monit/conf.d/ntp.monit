@@ -34,9 +34,8 @@
 
 # Check the NTP process.
 
-check process ntp_process with pidfile /var/run/ntpd.pid
+check process ntp_process
+   matching "ntp" 
    group ntp
-
-   start program = "/etc/init.d/ntp start"
-   stop  program = "/etc/init.d/ntp stop"
-   restart program = "/etc/init.d/ntp restart"
+   start program = "/bin/bash -c '[ -x /etc/init.d/ntp ] && /etc/init.d/ntp start || systemctl enable ntpd && systemctl start ntpd'"
+   stop program = "/bin/bash -c '[ -x /etc/init.d/ntp ] && /etc/init.d/ntp stop || systemctl stop ntpd && systemctl disable ntpd'"
