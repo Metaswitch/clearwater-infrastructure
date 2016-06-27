@@ -36,7 +36,9 @@
 
 . /usr/share/clearwater/infrastructure/install/common
 
-remove_section /etc/bash.bashrc clearwater-infrastructure
+if [ -f /etc/bash.bashrc ]; then
+  remove_section /etc/bash.bashrc clearwater-infrastructure
+fi
 
 for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
   if [ -e $HOME_DIR/.bashrc ]; then
