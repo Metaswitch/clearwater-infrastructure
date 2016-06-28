@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# @file clearwater-socket-factory-wrapper
+# @file clearwater-socket-factory-mgmt-service
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2016  Metaswitch Networks Ltd
@@ -34,33 +34,9 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-MGMT_WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
-SIGNALING_WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d
+WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
+NAMESPACE=management
 
-get_daemon_args()
-{
-  . /etc/clearwater/config
+. /usr/share/clearwater/bin/clearwater-socket-factory-common
 
-  if [ ! -z $signaling_namespace ]
-  then
-    signaling_namespace="--signaling-namespace=$signaling_namespace"
-  fi
-
-  # The whitelists are comma separated lists of hosts. They're built up from
-  # each line of each file in the correct directory. We also remove duplicates.
-  if [ -d "$MGMT_WHITELIST_DIR" ] && [ "$(ls -A $MGMT_WHITELIST_DIR)" ]; then
-    mgmt_allowed_hosts="--management-allowed-hosts=$(echo $(cat $MGMT_WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
-  fi
-
-  if [ -d "$SIGNALING_WHITELIST_DIR" ] && [ "$(ls -A $SIGNALING_WHITELIST_DIR)" ]; then
-    signaling_allowed_hosts="--signaling-allowed-hosts=$(echo $(cat $SIGNALING_WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
-  fi
-
-  DAEMON_ARGS="$signaling_namespace
-               $mgmt_allowed_hosts
-               $signaling_allowed_hosts"
-}
-
-. /etc/clearwater/config
-get_daemon_args
 /usr/share/clearwater/bin/clearwater_socket_factory $DAEMON_ARGS

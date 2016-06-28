@@ -88,6 +88,14 @@ respawn
 script
   WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
   NAMESPACE=management
+
+  . /usr/share/clearwater/bin/clearwater-socket-factory-common
+
+  # Sleep for 5 seconds, to avoid upstart respawning socket-factory too quickly
+  sleep 5
+
+  /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
+end script
 EOF
         cat <<EOF > /etc/init/clearwater-socket-factory-sig.conf
 # clearwater-socket-factory-sig
@@ -105,41 +113,16 @@ respawn
 script
   WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d
   NAMESPACE=signaling
-EOF
-        # The main part of the two upstart scripts is common
-        cat <<EOF > /tmp/clearwater-socket-factory.conf
-  get_daemon_args()
-  {
-    . /etc/clearwater/config
 
-    # The whitelist is a comma separated list of hosts. It's built up from
-    # each line of each file in the whitelist directory. We also remove duplicates.
-    if [ -d "\$WHITELIST_DIR" ] && [ "\$(ls -A \$WHITELIST_DIR)" ]; then
-      allowed_hosts="--allowed-hosts=\$(echo \$(cat \$WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
-    fi
-
-    DAEMON_ARGS="\$allowed_hosts --namespace \$NAMESPACE"
-  }
+  . /usr/share/clearwater/bin/clearwater-socket-factory-common
 
   # Sleep for 5 seconds, to avoid upstart respawning socket-factory too quickly
   sleep 5
 
-  . /etc/clearwater/config
-  get_daemon_args
-EOF
-        cat /tmp/clearwater-socket-factory.conf >> /etc/init/clearwater-socket-factory-mgmt.conf
-        cat /tmp/clearwater-socket-factory.conf >> /etc/init/clearwater-socket-factory-sig.conf
-
-        # Put the different tails on the end of the scripts.  Note that the signaling
-        # socket factory runs in the signaling namespace.
-        cat <<EOF >> /etc/init/clearwater-socket-factory-mgmt.conf
-  /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
-end script
-EOF
-        cat <<EOF >> /etc/init/clearwater-socket-factory-sig.conf
   /usr/share/clearwater/bin/run-in-signaling-namespace /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
 end script
 EOF
+
         # Having configured the two upstart jobs, start them
         start clearwater-socket-factory-mgmt
         start clearwater-socket-factory-sig

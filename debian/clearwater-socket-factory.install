@@ -1,2 +1,4 @@
 clearwater-socket-factory/clearwater_socket_factory /usr/share/clearwater/bin/
-clearwater-socket-factory/clearwater-socket-factory-wrapper /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-common /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-mgmt-service /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-sig-service /usr/share/clearwater/bin/
