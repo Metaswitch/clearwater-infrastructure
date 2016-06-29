@@ -1,9 +1,9 @@
-#! /usr/bin/python
+#!/bin/sh
 
-# @file is_address_ipv6.py
+# @file clearwater-memcached.postinst
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2013  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,35 +33,17 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
-#
 
-import sys
-import socket
+. /usr/share/clearwater/infrastructure/install/common
 
-# This script takes an input string and attempts to parse it as an IPv6 address.
-# Return 0 if the string is a valid IPv6 address, 2 if it has the
-# wrong number of arguments, and 1 otherwise.
+install /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
+/usr/share/clearwater/infrastructure/scripts/memcached
+[ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
+pkill -HUP monit || /bin/true
 
-# Note that per RFC 2373, an IPv6 address does not contain square
-# brackets, and this script will return 1 if such an IPv6 address is given.
-
-def main (ip_address):
-
-    # Attempt to convert the IP address into a 128 bit binary representation.
-    # If the string parses successfully return True.  If the string passed in
-    # is not a valid IPv6 address inet_pton will throw an exception.  Handle
-    # the exception and return False.
-    try:
-        binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
-        return True
-    except socket.error:
-        return False
-
-if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        rc = main(sys.argv[1])
-        # Convert the True or False into the appropriate shell return code
-        sys.exit(0 if rc else 1)
-    else:
-        sys.exit(2)
-
+# Stop the cluster manager, so that it is restarted by Monit and picks
+# up the new Memcached scaling plugins. We check whether the process is
+# installed to avoid warning logs when etcd isn't being used
+if [ -x "/etc/init.d/clearwater-cluster-manager" ]; then
+  service clearwater-cluster-manager stop || /bin/true
+fi

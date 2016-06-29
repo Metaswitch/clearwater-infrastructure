@@ -50,6 +50,7 @@ do_auto_config()
 {
   local_config=/etc/clearwater/local_config
   shared_config=/etc/clearwater/shared_config
+  aio_hostname=cwaio
 
   if [ -f /etc/clearwater/force_ipv6 ]
   then
@@ -64,23 +65,24 @@ do_auto_config()
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$ip'/g
           s/^etcd_cluster=.*$/etcd_cluster='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+          s/^public_hostname=.*$/public_hostname='$aio_hostname'/g' -i $local_config
 
   # Add square brackets around the address iff it is an IPv6 address
-  bracketed_ip=$(python /usr/share/clearwater/clearwater-auto-config-generic/bin/bracket_ipv6_address.py $ip)
+  bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-generic/bin/bracket-ipv6-address $ip)
 
-  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$ip'/g
+  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$aio_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
           s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g
-          s/^upstream_hostname=.*$/upstream_hostname='$ip'/g' -i $shared_config
+          s/^upstream_hostname=.*$/upstream_hostname=scscf.'$aio_hostname'/g' -i $shared_config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
 
   # Set up DNS for the S-CSCF
-  grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
-  echo $ip scscf.$ip '#+scscf.aio'>> /tmp/hosts.$$
+  grep -v ' #+clearwater-aio$' /etc/hosts > /tmp/hosts.$$
+  echo $ip $aio_hostname '#+clearwater-aio'>> /tmp/hosts.$$
+  echo $ip scscf.$aio_hostname '#+clearwater-aio'>> /tmp/hosts.$$
   mv /tmp/hosts.$$ /etc/hosts
 
   service dnsmasq restart

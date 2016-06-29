@@ -69,7 +69,7 @@ do_auto_config()
           s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' -i $shared_config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm /etc/clearwater/cluster_settings
+  rm -f /etc/clearwater/cluster_settings
 
   # Set up DNS for the S-CSCF
   grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$

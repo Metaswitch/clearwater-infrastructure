@@ -47,7 +47,7 @@ IP=$2
 [ -n "$IP" ] || IP=$local_ip
 
 # Do the poll - connect and check for success
-nc -v -w 2 $IP $PORT 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
+nc -z -v -w 2 $IP $PORT 2> /tmp/poll-tcp.sh.nc.stderr.$$ > /tmp/poll-tcp.sh.nc.stdout.$$
 cat /tmp/poll-tcp.sh.nc.stderr.$$ | head -1 | egrep -q "succeeded"
 rc=$?
 

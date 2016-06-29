@@ -1,0 +1,73 @@
+#!/bin/sh
+
+# @file clearwater-infrastructure.postinst
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2013  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+EGGS_DIR=/usr/share/clearwater/infrastructure/eggs
+
+add_config_shim() {
+  if [ ! -e /etc/clearwater/config ]
+  then
+    cat <<EOF > /etc/clearwater/config
+if [ -f /etc/clearwater/shared_config ]
+then
+  . /etc/clearwater/shared_config
+fi
+
+. /etc/clearwater/local_config
+
+if [ -f /etc/clearwater/user_settings ]
+then
+  . /etc/clearwater/user_settings
+fi
+EOF
+  fi
+}
+
+add_config_shim
+
+if [ -f /etc/bash.bashrc ]; then
+  add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+fi
+
+for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
+  if [ -e $HOME_DIR/.bashrc ]; then
+    add_section $HOME_DIR/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+  fi
+done
+
+[ ! -d /etc/skel ] || add_section /etc/skel/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+/usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg

@@ -53,11 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        # Adds 'ato' after the password and shadow entries in nsswitch.conf.
-        # This sets NSS to check the libnss_ato component for the user if they are not found locally.
-        sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
-        # Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
-        sed -i "s/\(\#\sStandard\sUn\*x\sauthentication\..*\)/# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n\1/" /etc/pam.d/sshd
+        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

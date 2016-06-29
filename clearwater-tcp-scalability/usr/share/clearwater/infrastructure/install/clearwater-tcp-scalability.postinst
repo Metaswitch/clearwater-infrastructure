@@ -1,9 +1,9 @@
-#! /usr/bin/python
+#!/bin/sh
 
-# @file ipv6_to_hostname.py
+# @file clearwater-tcp-scalability.postinst
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2013  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,41 +34,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-import socket
-import binascii
-import sys
-import os
+. /usr/share/clearwater/infrastructure/install/common
 
-# The scripts takes an IPv6 address as string and converts it to an ip6.arpa
-# hostname.
-if len(sys.argv) == 2:
-    ip_address = sys.argv[1]
-else:
-    # Print out a usage string to stderr as otherwise the calling script may
-    # try to use this as a hostname.
-    print >> sys.stderr, "Usage : ipv6_to_homstname.py <IP address>"
-    sys.exit(1)
-
-# Convert the IP address into a 128 bit binary representation.  This does not
-# include the colons, but does include all of the zero padding.  If the string
-# passed in is not a valid IPv6 address inet_pton will throw an exception.
-try:
-    binary_address = socket.inet_pton(socket.AF_INET6, ip_address)
-except socket.error:
-    print >> sys.stderr, "Invalid IP address %s" % ip_address
-    sys.exit(1)
-
-# Generate an ASCII representation of the binary IP address.
-ascii_address = binascii.b2a_hex(binary_address)
-
-# Step backwards through the ASCII representation, building up a hostname made
-# up of the individual nibbles separated by dots.
-hostname_string = ".".join(reversed(ascii_address))
-#for nibble in reversed(ascii_address):
- #   hostname_string += nibble + "."
-
-# Append the standard  reversed IPv6 address domain name.
-hostname_string += ".ip6.arpa"
-
-# Print out the hostname for use by the calling script.
-print (hostname_string)
+add_section /etc/sysctl.conf clearwater-tcp-scalability /etc/sysctl.conf.clearwater
+sysctl -p /etc/sysctl.conf >/dev/null

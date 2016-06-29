@@ -51,29 +51,16 @@ set -e
 # the debian-policy package
 
 case "$1" in
-    remove|upgrade|deconfigure)
-        # Reinstate the original core file pattern.
-        [ ! -f /etc/clearwater/diags-monitor/core_pattern.old ] || cat /etc/clearwater/diags-monitor/core_pattern.old > /proc/sys/kernel/core_pattern
-        rm -f /etc/clearwater/diags-monitor/core_pattern.old
-
+    remove|deconfigure)
         # Reinstate original systat config.
         [ ! -f /etc/clearwater/diags-monitor/sysstat.old ] || cp -p /etc/clearwater/diags-monitor/sysstat.old /etc/default/sysstat
         rm -f /etc/clearwater/diags-monitor/sysstat.old
 
-        if [ $1 != "upgrade" ]; then
-          # Remove the temporary diagnostics directory.  Do not remove the dumps
-          # directory, we don't want to delete diags.
-          rm -rf /var/clearwater-diags-monitor/tmp
-        fi
-
-        # Stop clearwater-diags-monitor by deleting it from monit and then stopping it.
-        # Use || true to ignore a failure, because set -e is in effect.
-        rm -f /etc/monit/conf.d/clearwater-diags-monitor.monit
-        reload clearwater-monit &> /dev/null || true
-        service clearwater-diags-monitor stop || true
+        # Call into the common prerm script.
+        /usr/share/clearwater/infrastructure/install/clearwater-diags-monitor.prerm
     ;;
 
-    failed-upgrade)
+    upgrade|failed-upgrade)
     ;;
 
     *)

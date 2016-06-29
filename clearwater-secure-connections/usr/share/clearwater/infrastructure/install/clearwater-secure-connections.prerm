@@ -1,9 +1,9 @@
-#! /usr/bin/python
+#!/bin/sh
 
-# @file bracket_ipv6_address.py
+# @file clearwater-secure-connections.prerm
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2014  Metaswitch Networks Ltd
+# Copyright (C) 2013  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -33,30 +33,9 @@
 # "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
-#
 
-# This script takes an IP address as a string.  If the IP address is IPv4 it
-# returns it unchanged.  If it is IPv6 it returns it with square brackets
+. /usr/share/clearwater/infrastructure/install/common
 
-import os
-import sys
-import is_address_ipv6
-
-if len(sys.argv) == 2:
-    ip_address = sys.argv[1]
-else:
-    # Print out a usage string to stderr as otherwise the calling script may
-    # try to use this as an IP address parameter.
-    print >> sys.stderr, "Usage : bracket_ipv6_address.py <IP address>"
-    sys.exit(1)
-
-ipv6 = is_address_ipv6.main(ip_address)
-
-if ipv6:
-    bracketed_address = '[' + ip_address + ']'
-else:
-    bracketed_address = ip_address
-
-# Print out the hostnamebracketed address for use by the calling script.
-print (bracketed_address)
-
+rm -f /etc/racoon/racoon.conf
+[ ! -f /etc/racoon/racoon.conf.pre-clearwater-secure-connections ] || mv /etc/racoon/racoon.conf.pre-clearwater-secure-connections /etc/racoon/racoon.conf
+service racoon restart
