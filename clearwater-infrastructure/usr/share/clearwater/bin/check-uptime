@@ -54,7 +54,7 @@ pid=$( cat $pidfile 2>/dev/null)
 
 value=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid" >&2 ; exit 1 ; }
 if [ "$value" -ge "$REQUIRED_UPTIME" ]; then
-  /usr/share/clearwater/bin/issue_alarm.py "$issuer" "$alarm"
+  /usr/share/clearwater/bin/issue-alarm "$issuer" "$alarm"
   exit 0
 else
   exit 1

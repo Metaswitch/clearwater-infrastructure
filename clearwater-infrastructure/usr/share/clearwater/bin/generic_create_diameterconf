@@ -58,14 +58,14 @@ key_dir=/var/lib/$name
 cfg_dir=/var/lib/$name
 fd_dir=/usr/share/clearwater/$name/lib/freeDiameter/
 
-if /usr/share/clearwater/bin/is_address_ipv6.py $identity
+if /usr/share/clearwater/bin/is-address-ipv6 $identity
 then
-  identity=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $identity)
+  identity=$(/usr/share/clearwater/bin/ipv6-to-hostname $identity)
 fi
 
-if /usr/share/clearwater/bin/is_address_ipv6.py $realm
+if /usr/share/clearwater/bin/is-address-ipv6 $realm
 then
-  realm=$(/usr/share/clearwater/bin/ipv6_to_hostname.py $realm)
+  realm=$(/usr/share/clearwater/bin/ipv6-to-hostname $realm)
 fi
 
 if [ -f $key_dir/privkey.pem ]

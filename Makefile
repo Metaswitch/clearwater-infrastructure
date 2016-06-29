@@ -5,6 +5,7 @@
 all: build
 
 PYZMQ_DIR := ${PWD}/clearwater-infrastructure/PyZMQ
+SRC_DIR := ${PWD}/src
 CW_SOCK_FACT_DIR := ${PWD}/clearwater-socket-factory
 
 PKG_COMPONENT := clearwater-infrastructure
@@ -15,10 +16,10 @@ PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-co
 RPM_NAMES := $(subst clearwater-memcached,,$(PKG_NAMES))
 
 .PHONY: build
-build: pyzmq_build clearwater_socket_factory_build
+build: pyzmq_build clearwater_infrastructure_build clearwater_socket_factory_build
 
 .PHONY: clean
-clean: pyzmq_clean clearwater_socket_factory_clean
+clean: pyzmq_clean clearwater_infrastructure_clean clearwater_socket_factory_clean
 
 .PHONY: pyzmq_build
 pyzmq_build:
@@ -27,6 +28,14 @@ pyzmq_build:
 .PHONY: pyzmq_clean
 pyzmq_clean:
 	make -C ${PYZMQ_DIR} clean
+
+.PHONY: clearwater_infrastructure_build
+clearwater_infrastructure_build:
+	make -C ${SRC_DIR}
+
+.PHONY: clearwater_infrastructure_clean
+clearwater_infrastructure_clean:
+	make -C ${SRC_DIR} clean
 
 .PHONY: clearwater_socket_factory_build
 clearwater_socket_factory_build:
