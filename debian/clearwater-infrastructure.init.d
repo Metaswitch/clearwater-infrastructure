@@ -77,9 +77,6 @@ do_start()
           fi
         done
 
-        # Reload monit to pick up any changes to its config files
-        pkill -HUP monit
-
         return 0
 }
 

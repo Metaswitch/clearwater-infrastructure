@@ -11,14 +11,14 @@ Homepage: http://projectclearwater.org/
 
 Package: clearwater-infrastructure
 Architecture: any
-Depends: dnsmasq, clearwater-monit, ntp, python2.7, python-setuptools, gnutls-bin, libzmq3
+Depends: dnsmasq, ntp, python2.7, python-setuptools, gnutls-bin, libzmq3
 Suggests: clearwater-auto-config, clearwater-auto-upgrade
 Recommends: clearwater-diags-monitor
 Description: Common infrastructure for all Clearwater servers
 
 Package: clearwater-memcached
 Architecture: all
-Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.5)
+Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.5), clearwater-monit
 Conflicts: clearwater-infinispan
 Suggests: clearwater-secure-connections
 Description: memcached configured for Clearwater
@@ -34,12 +34,12 @@ Description: Secure connections between regions for Clearwater
 
 Package: clearwater-snmpd
 Architecture: all
-Depends: snmpd (= 5.7.2~dfsg-clearwater4), libsnmp-base (>= 5.7.2~dfsg-clearwater4), libsnmp30 (>= 5.7.2~dfsg-clearwater4), clearwater-infrastructure
+Depends: snmpd (= 5.7.2~dfsg-clearwater4), libsnmp-base (>= 5.7.2~dfsg-clearwater4), libsnmp30 (>= 5.7.2~dfsg-clearwater4), clearwater-infrastructure, clearwater-monit
 Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
 Package: clearwater-diags-monitor
 Architecture: all
-Depends: inotify-tools, realpath, sysstat, clearwater-infrastructure
+Depends: inotify-tools, realpath, sysstat, clearwater-infrastructure, clearwater-monit
 Description: Diagnostics monitor and bundler for all Clearwater servers
 
 Package: clearwater-socket-factory
