@@ -38,7 +38,6 @@
 #   $1 - The name of the log file to create.
 #   $2 - The logging level. Defaults to WARNING
 #   $3 - The total number of log files to keep. Defaults to 1.
-# backup files to keep (defaults to WARNING and 1 respectively).
 
 function _logging_init()
 {
@@ -48,21 +47,36 @@ function _logging_init()
 
   if ! [[ "$num_files" =~ ^[0-9]+$ ]]
   then
-    echo "Number of log backups is not a valid integer:" $num_files
-    exit 1
+    echo "ERROR: Number of log backups is not a valid integer:" $num_files
+    return 1
   fi
 
   if (( "$num_files" > 1 ))
   then
-    savelog -nlc "$num_files" "$filename" >/dev/null
+    # Create a temporary logrotate config file to rotate old log files.
+    local full_filename=$(readlink -f "$filename")
+    local config_filename=$full_filename.logging.cfg
+    cat <<EOF > $config_filename
+$full_filename {
+  rotate $num_files
+  nocompress
+  missingok
+}
+EOF
+
+    # The default state file isn't writable by all users, so create a temp one
+    # here and delete it when we're done.
+    logrotate -f $config_filename -s $full_filename.logging.state
+    rm $config_filename
+    rm $full_filename.logging.state
   fi
 
   # Prevent namespace pollution
   local file=""
   local index=1
 
-  # savelog doesn't look for log files with numbers greater than the value of
-  # the -c parameter ($num_files) so we should clean these up manually
+  # logrotate doesn't look for log files with numbers greater than the value of
+  # the -c parameter + 1 ($num_files) so we should clean these up manually
   for file in $filename.*
   do
     # Strip the filename base to get the index.
@@ -73,7 +87,9 @@ function _logging_init()
       continue
     fi
 
-    if (( $index >= $num_files - 1 ))
+    # >= here as we want to leave exactly $num_files, including $filename, and
+    # our indexing of backup files starts at 1.
+    if (( $index >= $num_files ))
     then
       rm "$file"
     fi
@@ -84,55 +100,64 @@ function _logging_init()
   # Convert the log_level into an integer for convenience. Also check that the
   # log level is valid. Note that these integers must match those used in the
   # log_* functions below.
-  case "$log_level" in
+  _logging_log_level=$(_logging_get_lvl_int "$log_level")
+
+  if [[ $? -ne 0 ]]
+  then
+    echo "ERROR: Invalid logging level given:" $log_level
+    return 1
+  fi
+}
+
+function _logging_get_lvl_int() {
+  # Convert the log_level into an integer for convenience. Also check that the
+  # log level is valid. Note that more severe log levels must have higher
+  # integers. This must be run in a sub-shell.
+  case "$1" in
     DEBUG)
-      _logging_log_level=0
+      echo 0
       ;;
     INFO)
-      _logging_log_level=1
+      echo 1
       ;;
     WARNING)
-      _logging_log_level=2
+      echo 2
       ;;
     ERROR)
-      _logging_log_level=3
+      echo 3
       ;;
     *)
       echo "Invalid logging level given:" $log_level
+
+      # Exit is what we want here as this must be run in a sub-shell to get the
+      # output.
       exit 1
   esac
 }
 
-function log() {
-  echo $(date +"%Y-%m-%d %T") "$1 -" ${@:2} >> $_logging_filename
+function _logging_log() {
+  local log_lvl_int=$(_logging_get_lvl_int "$1")
+
+  if (( "$log_lvl_int" >= "$_logging_log_level" ))
+  then
+    echo 'ERROR:' $(date +"%Y-%m-%d %T") "$1 -" ${@:2} >> $_logging_filename
+  fi
 }
 
 function log_debug() {
-  if (( "$_logging_log_level" <= 0 ))
-  then
-    log "DEBUG" $@
-  fi
+  _logging_log "DEBUG" $@
 }
 
 function log_info() {
-  if (( "$_logging_log_level" <= 1 ))
-  then
-    log "INFO" $@
-  fi
+  _logging_log "INFO" $@
 }
 
 function log_warning() {
-  if (( "$_logging_log_level" <= 2 ))
-  then
-    log "WARNING" $@
-  fi
+  _logging_log "WARNING" $@
 }
 
 function log_error() {
-  if (( "$_logging_log_level" <= 3 ))
-  then
-    log "ERROR" $@
-  fi
+  _logging_log "ERROR" $@
 }
 
 
@@ -143,7 +168,7 @@ _logging_log_level="${2:-WARNING}"
 if [[ -z $_logging_filename ]]
 then
   echo "ERROR: No filename given to logging.bash"
-  exit 1
+  return 1
 fi
 
 _logging_init "$_logging_filename" "$_logging_log_level" "${3:-1}"
