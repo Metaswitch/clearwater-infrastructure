@@ -79,15 +79,6 @@ do_start()
         # Reload monit to pick up any changes to its config files
         pkill -HUP monit
 
-        # Restart the socket factories if they're running to pick up any changes
-        # in namespace configuration
-        if ( status clearwater-socket-factory-mgmt 2>&1 | grep start ); then
-          restart clearwater-socket-factory-mgmt
-        fi
-        if ( status clearwater-socket-factory-sig 2>&1 | grep start ); then
-          restart clearwater-socket-factory-sig
-        fi
-
         return 0
 }
 

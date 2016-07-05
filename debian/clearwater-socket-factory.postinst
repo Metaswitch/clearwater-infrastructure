@@ -53,77 +53,19 @@ set -e
 
 case "$1" in
     configure)
-        # Stop the upstart jobs, if they are already running.  Note that stop
-        # will fail the script if they aren't runninh - hence the careful check
-        # below
-        if ( status clearwater-socket-factory-mgmt 2>&1 | grep start ); then
-          stop clearwater-socket-factory-mgmt
-        fi
-        if ( status clearwater-socket-factory-sig 2>&1 | grep start ); then
-          stop clearwater-socket-factory-sig
-        fi
+        # Stop the upstart jobs, if they are already running (e.g. if a
+        # previous uninstall failed to stop them).  Note that stop
+        # will fail the script if they aren't running - hence the "or true"
+        # below.
+        stop clearwater-socket-factory-mgmt > /dev/null 2>&1 || true
+        stop clearwater-socket-factory-sig > /dev/null 2>&1 || true
 
         # Stop any instances of the old socket factory (that attempted to do
         # both namespaces) and delete the conf file if present.
-        if ( status clearwater-socket-factory 2>&1 | grep start ); then
-          stop clearwater-socket-factory
-        fi
+        stop clearwater-socket-factory > /dev/null 2>&1 || true
         rm -f /etc/init/clearwater-socket-factory.conf
 
-        # Create the config files for the management and signaling socket
-        # factories
-        cat <<EOF > /etc/init/clearwater-socket-factory-mgmt.conf
-# clearwater-socket-factory-mgmt
-#
-# This process runs as root in the management namespace, and enables processes
-# running in other namespaces to obtain sockets in this namespace.
-
-description "Clearwater management socket factory server"
-
-start on runlevel [2345]
-stop on runlevel [!2345]
-
-respawn
-
-script
-  WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
-  NAMESPACE=management
-
-  . /usr/share/clearwater/bin/clearwater-socket-factory-common
-
-  # Sleep for 5 seconds, to avoid upstart respawning socket-factory too quickly
-  sleep 5
-
-  /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
-end script
-EOF
-        cat <<EOF > /etc/init/clearwater-socket-factory-sig.conf
-# clearwater-socket-factory-sig
-#
-# This process runs as root in the signaling namespace, and enables processes
-# running in other namespaces to obtain sockets in this namespace.
-
-description "Clearwater signaling socket factory server"
-
-start on runlevel [2345]
-stop on runlevel [!2345]
-
-respawn
-
-script
-  WHITELIST_DIR=/etc/clearwater-socket-factory/signaling.d
-  NAMESPACE=signaling
-
-  . /usr/share/clearwater/bin/clearwater-socket-factory-common
-
-  # Sleep for 5 seconds, to avoid upstart respawning socket-factory too quickly
-  sleep 5
-
-  /usr/share/clearwater/bin/run-in-signaling-namespace /usr/share/clearwater/bin/clearwater_socket_factory \$DAEMON_ARGS
-end script
-EOF
-
-        # Having configured the two upstart jobs, start them
+        # Start the upstart jobs
         start clearwater-socket-factory-mgmt
         start clearwater-socket-factory-sig
     ;;

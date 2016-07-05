@@ -16,6 +16,8 @@ install_to_buildroot < %{rootdir}/debian/clearwater-socket-factory.install
 copy_to_buildroot debian/clearwater-socket-factory-mgmt.service /etc/systemd/system
 copy_to_buildroot debian/clearwater-socket-factory-sig.service /etc/systemd/system
 copy_to_buildroot debian/clearwater-socket-factory.logrotate /etc/logrotate.d clearwater-socket-factory
+rm -f /etc/init/clearwater-socket-factory-mgmt.conf
+rm -f /etc/init/clearwater-socket-factory-sig.conf
 build_files_list > clearwater-socket-factory.files
 
 %post

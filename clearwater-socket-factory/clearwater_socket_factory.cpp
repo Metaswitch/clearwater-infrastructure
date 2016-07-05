@@ -24,7 +24,7 @@ const char* LOG_FILENAME = "/var/log/clearwater-socket-factory.log";
 FILE* LOG_FILE = NULL;
 const char *nsstring = NULL;
 
-void write_timestamp(FILE* stream)
+void write_timestamp_namespace(FILE* stream)
 {
   time_t t;
   time(&t);
@@ -42,7 +42,7 @@ void write_timestamp(FILE* stream)
 
 void logmsg(const char* format, ...)
 {
-  write_timestamp(LOG_FILE);
+  write_timestamp_namespace(LOG_FILE);
 
   va_list args;
   va_start(args, format);
@@ -56,7 +56,7 @@ void logmsg(const char* format, ...)
 
 void logerrno(const char* format, ...)
 {
-  write_timestamp(LOG_FILE);
+  write_timestamp_namespace(LOG_FILE);
 
   va_list args;
   va_start(args, format);

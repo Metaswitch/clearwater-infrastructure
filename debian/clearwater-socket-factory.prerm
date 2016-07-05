@@ -53,12 +53,8 @@ set -e
 case "$1" in
     remove|upgrade|deconfigure)
         # Stop and deconfigure the management and signaling upstart jobs
-        if ( status clearwater-socket-factory-mgmt 2>&1 | grep start ); then
-          stop clearwater-socket-factory-mgmt
-        fi
-        if ( status clearwater-socket-factory-sig 2>&1 | grep start ); then
-          stop clearwater-socket-factory-sig
-        fi
+        stop clearwater-socket-factory-mgmt > /dev/null 2>&1 || true
+        stop clearwater-socket-factory-sig > /dev/null 2>&1 || true
         rm -f /etc/init/clearwater-socket-factory-mgmt.conf
         rm -f /etc/init/clearwater-socket-factory-sig.conf
 
