@@ -94,7 +94,7 @@ do_start()
                 start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE --nicelevel 19 --iosched idle --exec $DAEMON \
                         || return 2
         else
-                [ ! -f $PIDFILE ] || checkpid $(cat $PIDFILE) || return 1
+                [ ! -f $PIDFILE ] || ! checkpid $(cat $PIDFILE) || return 1
                 ionice -n 3 nice -n 19 daemonize -p $PIDFILE $DAEMON || return 2
         fi
 
