@@ -60,8 +60,9 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
-type log_daemon_msg >/dev/null 2>&1 || log_daemon_msg() { log_success_msg $@ ; }
-type log_end_msg >/dev/null 2>&1 || log_end_msg() { true ; }
+
+# Include the clearwater init helpers.
+. /usr/share/clearwater/utils/init-utils.bash
 
 #
 # Function that starts the daemon/service
@@ -75,9 +76,6 @@ do_start()
             $SCRIPT
           fi
         done
-
-        # Reload monit to pick up any changes to its config files
-        pkill -HUP monit
 
         return 0
 }

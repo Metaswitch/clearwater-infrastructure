@@ -35,11 +35,12 @@
 # Check the snmpd process.
 
 # Monitor the service's PID file and memory use.
-check process snmpd_process with pidfile "/var/run/snmpd.pid"
+check process snmpd_process
+  matching "snmpd"
   group snmpd
-  start program = "/etc/init.d/snmpd start"
-  stop program = "/etc/init.d/snmpd stop"
-  restart program = "/etc/init.d/snmpd restart"
+
+  start program = "/bin/bash -c '[ -x /etc/init.d/snmpd ] && /etc/init.d/snmpd start || systemctl enable snmpd && systemctl start snmpd'"
+  stop program = "/bin/bash -c '[ -x /etc/init.d/snmpd ] && /etc/init.d/snmpd stop || systemctl stop snmpd && systemctl disable snmpd'"
 
   # Check the service's resource usage, and restart snmpd if it's too high.
   if memory > 80% for 6 cycles then restart

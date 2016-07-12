@@ -4,3 +4,4 @@ clearwater-infrastructure/PyZMQ/eggs/pyzmq* usr/share/clearwater/infrastructure/
 build/bin/bracket-ipv6-address /usr/share/clearwater/bin
 build/bin/ipv6-to-hostname /usr/share/clearwater/bin
 build/bin/is-address-ipv6 /usr/share/clearwater/bin
+build/bin/issue-alarm /usr/share/clearwater/bin

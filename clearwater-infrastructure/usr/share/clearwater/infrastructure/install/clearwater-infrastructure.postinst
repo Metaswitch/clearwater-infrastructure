@@ -57,8 +57,11 @@ EOF
   fi
 }
 
-add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
 add_config_shim
+
+if [ -f /etc/bash.bashrc ]; then
+  add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+fi
 
 for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
   if [ -e $HOME_DIR/.bashrc ]; then
