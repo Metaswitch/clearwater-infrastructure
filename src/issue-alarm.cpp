@@ -51,7 +51,6 @@
 
 int main(int argc, char **argv)
 {
-  int rc = 1; // Assume failure
   void* ctx = NULL;
   void* sck = NULL;
 
@@ -61,8 +60,6 @@ int main(int argc, char **argv)
     fprintf(stderr, "Usage : issue-alarm <alarm issuer name> <alarm identifier>\n");
     syslog(LOG_ERR, "unexpected parameter count: %d", argc);
 
-    // Return 0 (success) for backwards-compatibility.
-    rc = 0;
     goto EXIT;
   }
 
@@ -149,10 +146,8 @@ int main(int argc, char **argv)
       syslog(LOG_ERR, "zmq_msg_recv: %m");
       goto EXIT;
     }
+
     zmq_msg_close(&msg);
-  
-    // Success!
-    rc = 0;
   }
 
 EXIT:
@@ -175,5 +170,8 @@ EXIT:
   }
   ctx = NULL;
 
-  return rc;
+  // We always return success. This is because we don't mandate that the alarms
+  // agent is installed, and we don't want the monit uptime scripts to fail
+  // when they can't issue alarms.
+  return 0;
 }
