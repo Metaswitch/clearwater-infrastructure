@@ -1,7 +1,8 @@
 #!/bin/bash
 if which yum > /dev/null 2>&1 ; then
-  sudo yum makecache --disablerepo=* --enablerepo=clearwater &&
-  sudo yum update --disablerepo=* --enablerepo=clearwater "$@"
+  # Upgrade any repos that start with the word clearwater.
+  sudo yum makecache --disablerepo=* --enablerepo=clearwater* &&
+  sudo yum update --disablerepo=* --enablerepo=clearwater* "$@"
 else
   apt-get update -o Dir::Etc::sourcelist="sources.list.d/clearwater.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" &&
   apt-get install "$@" -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew\
