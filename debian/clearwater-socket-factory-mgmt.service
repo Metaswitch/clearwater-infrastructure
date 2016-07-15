@@ -1,0 +1,11 @@
+[Unit]
+Description=Enables processes to establish connections using the management network namespace
+
+[Service]
+ExecStart=/usr/share/clearwater/bin/clearwater-socket-factory-mgmt-wrapper
+Restart=always
+RestartSec=5s
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target

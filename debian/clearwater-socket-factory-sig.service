@@ -1,0 +1,11 @@
+[Unit]
+Description=Enables processes to establish connections using the signaling network namespace
+
+[Service]
+ExecStart=/usr/share/clearwater/bin/clearwater-socket-factory-sig-wrapper
+Restart=always
+RestartSec=5s
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target

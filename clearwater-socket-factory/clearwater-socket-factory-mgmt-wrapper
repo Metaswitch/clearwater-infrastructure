@@ -1,9 +1,9 @@
 #!/bin/bash
-
-# @file sas_socket_factory
+#
+# @file clearwater-socket-factory-mgmt-wrapper
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,27 +34,9 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Create /etc/clearwater-socket-factory/management.d/clearwater-infrastructure
-# containing the node's SAS address for clearwater-socket-factory's management
-# namespace whitelist. This allows Clearwater processes to connect to SAS.
-
-signaling_cfg_dir=/etc/clearwater-socket-factory/signaling.d
-management_cfg_dir=/etc/clearwater-socket-factory/management.d
-
-mkdir -p $signaling_cfg_dir
-mkdir -p $management_cfg_dir
+# Pull in get_daemon_args function
+. /usr/share/clearwater/bin/clearwater-socket-factory-common
 
 . /etc/clearwater/config
 
-if [ ! -z $sas_server ]; then
-  if [ "$sas_use_signaling_interface" == "Y" ]; then
-    echo "$sas_server" > $signaling_cfg_dir/clearwater-infrastructure
-    rm -f $management_cfg_dir/clearwater-infrastructure
-  else
-    echo "$sas_server" > $management_cfg_dir/clearwater-infrastructure
-    rm -f $signaling_cfg_dir/clearwater-infrastructure
-  fi
-else
-  rm -f $management_cfg_dir/clearwater-infrastructure
-  rm -f $signaling_cfg_dir/clearwater-infrastructure
-fi
+/usr/share/clearwater/bin/clearwater_socket_factory $(get_daemon_args "/etc/clearwater-socket-factory/management.d" "management")
