@@ -53,18 +53,6 @@ set -e
 
 case "$1" in
     configure)
-        # Stop the upstart jobs, if they are already running (e.g. if a
-        # previous uninstall failed to stop them).  Note that stop
-        # will fail the script if they aren't running - hence the "or true"
-        # below.
-        stop clearwater-socket-factory-mgmt > /dev/null 2>&1 || true
-        stop clearwater-socket-factory-sig > /dev/null 2>&1 || true
-
-        # Stop any instances of the old socket factory (that attempted to do
-        # both namespaces) and delete the conf file if present.
-        stop clearwater-socket-factory > /dev/null 2>&1 || true
-        rm -f /etc/init/clearwater-socket-factory.conf
-
         # Start the upstart jobs
         start clearwater-socket-factory-mgmt
         start clearwater-socket-factory-sig

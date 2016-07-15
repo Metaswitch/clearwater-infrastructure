@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# @file clearwater-socket-factory-mgmt-service
+# @file clearwater-socket-factory-sig-wrapper
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2016  Metaswitch Networks Ltd
@@ -34,9 +34,9 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-WHITELIST_DIR=/etc/clearwater-socket-factory/management.d
-NAMESPACE=management
-
+# Pull in get_daemon_args function
 . /usr/share/clearwater/bin/clearwater-socket-factory-common
 
-/usr/share/clearwater/bin/clearwater_socket_factory $DAEMON_ARGS
+. /etc/clearwater/config
+
+/usr/share/clearwater/bin/run-in-signaling-namespace /usr/share/clearwater/bin/clearwater_socket_factory $(get_daemon_args "/etc/clearwater-socket-factory/signaling.d" "signaling")

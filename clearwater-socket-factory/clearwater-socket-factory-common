@@ -34,12 +34,20 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-. /etc/clearwater/config
+# This function takes as parameters a whitelist directory and a namespace
+# ("signaling"/"management") and returns the argument list to supply to an
+# instance of the socket factory.
+#
+get_daemon_args()
+{
+  WHITELIST_DIR=$1
+  NAMESPACE=$2
 
-# The whitelist is a comma separated list of hosts. It's built up from
-# each line of each file in the whitelist directory. We also remove duplicates.
-if [ -d "$WHITELIST_DIR" ] && [ "$(ls -A $WHITELIST_DIR)" ]; then
-  allowed_hosts="--allowed-hosts=$(echo $(cat $WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
-fi
+  # The whitelist is a comma separated list of hosts. It's built up from
+  # each line of each file in the whitelist directory. We also remove duplicates.
+  if [ -d "$WHITELIST_DIR" ] && [ "$(ls -A $WHITELIST_DIR)" ]; then
+    allowed_hosts="--allowed-hosts=$(echo $(cat $WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
+  fi
 
-DAEMON_ARGS="$allowed_hosts --namespace $NAMESPACE"
+  echo "$allowed_hosts --namespace $NAMESPACE"
+}
