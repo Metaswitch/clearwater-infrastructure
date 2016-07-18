@@ -48,6 +48,19 @@ function _logging_init()
   if ! [[ "$num_files" =~ ^[0-9]+$ ]]
   then
     echo "ERROR: Number of log backups is not a valid integer:" $num_files
+    _logging_log_level=4
+    return 1
+  fi
+
+  # Convert the log_level into an integer for convenience. Also check that the
+  # log level is valid. Note that these integers must match those used in the
+  # log_* functions below.
+  _logging_get_lvl_int "$log_level"
+  _logging_log_level=$?
+
+  if [[ $_logging_log_level -eq 4 ]]
+  then
+    echo "ERROR: Invalid logging level given:" $log_level
     return 1
   fi
 
@@ -75,8 +88,8 @@ EOF
   local file=""
   local index=1
 
-  # logrotate doesn't look for log files with numbers greater than the value of
-  # the -c parameter + 1 ($num_files) so we should clean these up manually
+  # logrotate doesn't look for log files with numbers greater than the value
+  # configured for 'rotate' so we must delete these manually.
   for file in $filename.*
   do
     # Strip the filename base to get the index.
@@ -96,51 +109,37 @@ EOF
   done
 
   truncate --size 0 "$filename"
-
-  # Convert the log_level into an integer for convenience. Also check that the
-  # log level is valid. Note that these integers must match those used in the
-  # log_* functions below.
-  _logging_log_level=$(_logging_get_lvl_int "$log_level")
-
-  if [[ $? -ne 0 ]]
-  then
-    echo "ERROR: Invalid logging level given:" $log_level
-    return 1
-  fi
 }
 
 function _logging_get_lvl_int() {
   # Convert the log_level into an integer for convenience. Also check that the
   # log level is valid. Note that more severe log levels must have higher
-  # integers. This must be run in a sub-shell.
+  # integers.
   case "$1" in
     DEBUG)
-      echo 0
+      return 0
       ;;
     INFO)
-      echo 1
+      return 1
       ;;
     WARNING)
-      echo 2
+      return 2
       ;;
     ERROR)
-      echo 3
+      return 3
       ;;
     *)
-      echo "Invalid logging level given:" $log_level
-
-      # Exit is what we want here as this must be run in a sub-shell to get the
-      # output.
-      exit 1
+      return 4
   esac
 }
 
 function _logging_log() {
-  local log_lvl_int=$(_logging_get_lvl_int "$1")
+  _logging_get_lvl_int "$1"
+  local log_lvl_int=$?
 
   if (( "$log_lvl_int" >= "$_logging_log_level" ))
   then
-    echo 'ERROR:' $(date +"%Y-%m-%d %T") "$1 -" ${@:2} >> $_logging_filename
+    echo $(date +"%Y-%m-%d %T") "$1 -" ${@:2} >> $_logging_filename
   fi
 }
 
