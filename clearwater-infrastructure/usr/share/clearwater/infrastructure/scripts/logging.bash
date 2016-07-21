@@ -55,8 +55,7 @@ function _logging_init()
   # Convert the log_level into an integer for convenience. Also check that the
   # log level is valid. Note that these integers must match those used in the
   # log_* functions below.
-  _logging_get_lvl_int "$log_level"
-  _logging_log_level=$?
+  _logging_log_level=$(_logging_get_lvl_int "$log_level")
 
   if [[ $_logging_log_level -eq 4 ]]
   then
@@ -117,16 +116,16 @@ function _logging_get_lvl_int() {
   # integers.
   case "$1" in
     DEBUG)
-      return 0
+      echo 0
       ;;
     INFO)
-      return 1
+      echo 1
       ;;
     WARNING)
-      return 2
+      echo 2
       ;;
     ERROR)
-      return 3
+      echo 3
       ;;
     *)
       return 4
@@ -134,8 +133,7 @@ function _logging_get_lvl_int() {
 }
 
 function _logging_log() {
-  _logging_get_lvl_int "$1"
-  local log_lvl_int=$?
+  local log_lvl_int=$(_logging_get_lvl_int "$1")
 
   if (( "$log_lvl_int" >= "$_logging_log_level" ))
   then
