@@ -43,7 +43,7 @@ then
   exit 1
 fi
 
-if [[ $# -lt 1 || $# -gt 4 ]]
+if [[ $# -lt 1 || $# -gt 5 ]]
 then
   echo "Usage: clearwater-aio-install [auto_config_package] <install_repo> <updates_repo> <number_start> <number_count>"
   exit 1
