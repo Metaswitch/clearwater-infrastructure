@@ -53,7 +53,8 @@ set -e
 
 case "$1" in
     configure)
-        # Start the upstart jobs
+        # Start the upstart jobs, and ignore any error as the services may
+        # already be running.
         start clearwater-socket-factory-mgmt || true
         start clearwater-socket-factory-sig || true
     ;;
