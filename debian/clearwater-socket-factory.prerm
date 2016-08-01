@@ -52,6 +52,10 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
+        # Stop and deconfigure the management and signaling upstart jobs
+        stop clearwater-socket-factory-mgmt > /dev/null 2>&1 || true
+        stop clearwater-socket-factory-sig > /dev/null 2>&1 || true
+
         # Remove the old management socket
         rm -f /tmp/clearwater_mgmt_namespace_socket
     ;;

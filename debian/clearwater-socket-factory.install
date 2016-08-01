@@ -1,2 +1,6 @@
 clearwater-socket-factory/clearwater_socket_factory /usr/share/clearwater/bin/
-clearwater-socket-factory/clearwater-socket-factory-wrapper /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-common /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-mgmt-wrapper /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-sig-wrapper /usr/share/clearwater/bin/
+clearwater-socket-factory/clearwater-socket-factory-mgmt.conf /etc/init
+clearwater-socket-factory/clearwater-socket-factory-sig.conf /etc/init
