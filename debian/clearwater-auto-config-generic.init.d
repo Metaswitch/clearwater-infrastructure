@@ -50,7 +50,7 @@ do_auto_config()
 {
   local_config=/etc/clearwater/local_config
   shared_config=/etc/clearwater/shared_config
-  aio_hostname=cwaio
+  aio_hostname=cw-aio
 
   if [ -f /etc/clearwater/force_ipv6 ]
   then
