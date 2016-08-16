@@ -39,7 +39,7 @@ Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
 Package: clearwater-diags-monitor
 Architecture: all
-Depends: inotify-tools, realpath, sysstat, clearwater-infrastructure, clearwater-monit
+Depends: inotify-tools, realpath, sysstat, clearwater-infrastructure, clearwater-monit, gzip
 Description: Diagnostics monitor and bundler for all Clearwater servers
 
 Package: clearwater-socket-factory
