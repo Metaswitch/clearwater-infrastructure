@@ -1,3 +1,6 @@
 [submodule "build-infra"]
 	path = build-infra
 	url = git@github.com:Metaswitch/clearwater-build-infra.git
+[submodule "clearwater-etcd-plugins"]
+	path = clearwater-etcd-plugins
+	url = git@github.com:Metaswitch/clearwater-etcd-plugins.git
