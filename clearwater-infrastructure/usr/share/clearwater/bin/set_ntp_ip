@@ -1,0 +1,46 @@
+#Copyright (C) 2016 Metaswitch Networks Ltd
+
+import os, pipes, sys, subprocess
+from datetime import datetime
+
+NTP_CONFIG="/etc/ntp.conf"
+KEY="server"
+SCRIPT="/usr/share/clearwater/bin/set_ntp_ip"
+
+def set_ntp_ip(ntp_ip_address):
+
+    lines = []
+
+    with open(NTP_CONFIG, 'r') as f:
+        for line in f:
+            if line.startswith(KEY):
+                # Comment line out
+                lines.append('#' + line)
+            else:
+                lines.append(line)
+
+    with open(NTP_CONFIG, 'w') as f:
+        for line in lines:
+            f.write(line)
+        f.write("\n")
+        now = datetime.now()
+        f.write("# NTP IP Configuration added by {0} on {1}\n".format(SCRIPT, now))
+        f.write("{0}={1}\n".format(KEY, pipes.quote(ntp_ip_address)))
+
+if __name__ == "__main__":
+
+    if os.geteuid() != 0:
+        print "This script requires root privileges"
+        sys.exit(1)
+
+    if len(sys.argv) != 2:
+        print "Usage: {0} NTP_IP_ADDRESS".format(SCRIPT)
+        sys.exit(2)
+
+    ntp_ip_address = sys.argv[1]
+
+    set_ntp_ip(ntp_ip_address)
+
+    print "Updated NTP IP Address to: " + ntp_ip_address
+
+    sys.exit()
