@@ -1,6 +1,6 @@
 #Copyright (C) 2016 Metaswitch Networks Ltd
 
-import os, pipes, sys, subprocess
+import os, pipes, platform, subprocess, sys
 from datetime import datetime
 
 NTP_CONFIG="/etc/ntp.conf"
@@ -27,6 +27,25 @@ def set_ntp_ip(ntp_ip_address):
         f.write("# NTP IP Configuration added by {0} on {1}\n".format(SCRIPT, now))
         f.write("{0}={1}\n".format(KEY, pipes.quote(ntp_ip_address)))
 
+def restart_ntp():
+
+    # Hide output
+    with open("/dev/null", 'w') as null:
+        if "CentOS" in platform.linux_distribution()[0]:
+            ret_code = subprocess.call("service ntpd restart",
+                                       shell=True,
+                                       stdout=null,
+                                       stderr=null)
+        else:
+            ret_code = subprocess.call("service ntp restart",
+                                       shell=True,
+                                       stdout=null,
+                                       stderr=null)
+
+        if ret_code != 0:
+            print "Failed to restart ntp"
+            sys.exit(3)
+
 if __name__ == "__main__":
 
     if os.geteuid() != 0:
@@ -40,6 +59,8 @@ if __name__ == "__main__":
     ntp_ip_address = sys.argv[1]
 
     set_ntp_ip(ntp_ip_address)
+
+    restart_ntp()
 
     print "Updated NTP IP Address to: " + ntp_ip_address
 
