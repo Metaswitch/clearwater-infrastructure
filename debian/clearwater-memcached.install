@@ -1,1 +1,6 @@
 clearwater-memcached/* /
+
+# Install etcd plugins
+modules/clearwater-etcd-plugins/clearwater-memcached/memcached_plugin.py /usr/share/clearwater/clearwater-cluster-manager/plugins/
+modules/clearwater-etcd-plugins/clearwater-memcached/memcached_remote_plugin.py /usr/share/clearwater/clearwater-cluster-manager/plugins/
+modules/clearwater-etcd-plugins/clearwater-memcached/memcached_utils.py /usr/share/clearwater/clearwater-cluster-manager/plugins/
