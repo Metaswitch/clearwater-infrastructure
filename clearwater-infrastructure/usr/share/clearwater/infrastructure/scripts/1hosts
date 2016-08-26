@@ -41,8 +41,9 @@
 # If the local IP address is an IPv6 address then the system needs a dummy
 # hostname that maps to the address.
 
-# Remove any previous dummy hostname from the hosts file.
-grep -v ' # maps to local IPv6 address' /etc/hosts > /tmp/hosts.$$
+# Remove any previous dummy hostname from the hosts file.  Also delete any
+# previous IPv6 localhost entries.
+grep -v ' # maps to local IPv6 address' /etc/hosts | grep -v '::1 localhost' > /tmp/hosts.$$
 
 # Determine whether the local IP address is an IPv6 address.
 if /usr/share/clearwater/bin/is-address-ipv6 $local_ip
@@ -51,6 +52,9 @@ then
   hostname=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
   echo $local_ip $hostname '# maps to local IPv6 address' >> /tmp/hosts.$$
 fi
+
+# Append the IPv6 localhost
+echo '::1 localhost' >> /tmp/hosts.$$
 
 # Compare the new hosts file with the existing one.  If it has changed overwrite
 # the existing file and restart dnsmasq to pick up the changes, otherwise just
