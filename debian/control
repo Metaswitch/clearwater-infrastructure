@@ -11,7 +11,7 @@ Homepage: http://projectclearwater.org/
 
 Package: clearwater-infrastructure
 Architecture: any
-Depends: dnsmasq, ntp, python2.7, python-setuptools, gnutls-bin, libzmq3
+Depends: dnsmasq, ntp, python2.7, python-setuptools, gnutls-bin, libzmq3, python3.4.3
 Suggests: clearwater-auto-config, clearwater-auto-upgrade
 Recommends: clearwater-diags-monitor
 Description: Common infrastructure for all Clearwater servers
