@@ -42,7 +42,7 @@
 # hostname that maps to the address.
 
 # Remove any entries that have been previously added by this script.
-grep -v ' # added by clearwater-infrastructure 1hosts script' /etc/hosts > /tmp/hosts.$$
+grep -v ' # added by clearwater-infrastructure 1hosts script' /etc/hosts | grep -v ' # maps to local IPv6 address' > /tmp/hosts.$$
 
 # Determine whether the local IP address is an IPv6 address.
 if /usr/share/clearwater/bin/is-address-ipv6 $local_ip
