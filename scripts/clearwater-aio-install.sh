@@ -70,7 +70,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get install -y --force-yes $auto_package clearwater-management clearwater-cassandra < /dev/null
 
 # Install the remaining clearwater packages
-apt-get install -y --force-yes ellis bono restund sprout homer homestead homestead-prov clearwater-prov-tools < /dev/null
+apt-get install -y --force-yes ellis-node bono-node restund sprout-node homer-node homestead-node clearwater-prov-tools < /dev/null
 
 # Create numbers on Ellis
 export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
