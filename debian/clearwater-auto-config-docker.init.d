@@ -84,14 +84,16 @@ do_auto_config()
     # would happen on a non-Docker Clearwater cluster.
     # We still want to auto-configure shared config on each node, though,
     # rather than rely on it being uploaded.
-    
+
     echo "etcd_proxy=etcd0=http://etcd:2380" >> $local_config
-    
+
     if [ -z "$ZONE" ]
     then
       # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
       # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
       sprout_hostname=sprout
+      chronos_hostname=chronos
+      cassandra_hostname=cassandra
       hs_hostname=homestead:8888
       hs_provisioning_hostname=homestead:8889
       xdms_hostname=homer:7888
@@ -101,6 +103,8 @@ do_auto_config()
     else
       # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
+      chronos_hostname=chronos.$ZONE
+      cassandra_hostname=cassandra.$ZONE
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
@@ -116,6 +120,8 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
+            s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
     # Extract DNS servers from resolv.conf and comma-separate them.
