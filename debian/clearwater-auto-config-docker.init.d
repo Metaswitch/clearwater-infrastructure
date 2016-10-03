@@ -61,12 +61,21 @@ do_auto_config()
     ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
   fi
 
+  # If a PUBLIC_IP variable is set use this, otherwise go with the local IP
+  # here too.
+  if [ -n "$PUBLIC_IP" ]
+  then
+    public_ip=$PUBLIC_IP
+  else
+    public_ip=$ip
+  fi
+
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-docker/bin/bracket-ipv6-address $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+          s/^public_ip=.*$/public_ip='$public_ip'/g
+          s/^public_hostname=.*$/public_hostname='$public_ip'/g' -i $local_config
     sed -e '/^etcd_cluster=.*/d
             /^etcd_proxy=.*/d' -i $local_config
 
