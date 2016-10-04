@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# @file clearwater-version
+
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2015  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+if [ $# -gt 1 ]
+then
+  echo "Usage: clearwater-version [package name]"
+  exit 1
+fi
+
+package_name=$1
+
+# Gets all the installed packages, pulls out only those packages installed
+# by clearwater (where the maintainer is 'Project Clearwater Maintainers' or
+# it's the cassandra package), pulls out the name of the packages, then
+# discards any that are the debug/libs version of the package
+pkgs="$(dpkg-query -W -f="\${binary:Package} \${Maintainer}\n" \
+     | egrep -e "(Project Clearwater Maintainers |cassandra)" \
+     | cut -d ' ' -f 1|sort -u \
+     | egrep -v "*-dbg$|-libs")"
+
+# Prints out the name and version of the packages.
+for pkg in $pkgs; do
+    if [[ -z $package_name ]] || [[ ! -z "`echo $pkg|grep $package_name`" ]]
+    then
+        version=`dpkg-query -f='${Version}\n' -W $pkg`
+        printf "%-40s %s\n" "$pkg" "$version"
+    fi
+done
