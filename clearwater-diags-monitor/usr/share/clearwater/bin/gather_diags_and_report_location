@@ -55,7 +55,7 @@ echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clear
 latest_diags_time=0
 while [ $latest_diags_time -lt $current_time ]
 do
-  echo -n "..."
+  echo -n "."
   sleep 5
 
   latest_diags_file=$(ls -t $DIAGS_LOCATION | grep -v temp | grep -e tar.gz | tr '\n' ' ' | cut -d ' ' -f 1)
