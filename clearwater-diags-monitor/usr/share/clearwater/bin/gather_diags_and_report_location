@@ -1,0 +1,69 @@
+#!/bin/sh
+
+# @file gather_diags_and_report_location
+#
+# Project Clearwater - IMS in the Cloud
+# Copyright (C) 2016  Metaswitch Networks Ltd
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version, along with the "Special Exception" for use of
+# the program along with SSL, set forth below. This program is distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public
+# License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# The author can be reached by email at clearwater@metaswitch.com or by
+# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
+#
+# Special Exception
+# Metaswitch Networks Ltd  grants you permission to copy, modify,
+# propagate, and distribute a work formed by combining OpenSSL with The
+# Software, or a work derivative of such a combination, even if such
+# copying, modification, propagation, or distribution would otherwise
+# violate the terms of the GPL. You must comply with the GPL in all
+# respects for all of the code used other than OpenSSL.
+# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
+# Project and licensed under the OpenSSL Licenses, or a work based on such
+# software and licensed under the OpenSSL Licenses.
+# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
+# under which the OpenSSL Project distributes the OpenSSL toolkit software,
+# as those licenses appear in the file LICENSE-OPENSSL.
+
+DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
+
+if [ $# -ne 0 ]
+then
+  echo "Usage: gather_diags_and_report_location"
+  echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
+  exit 1
+fi
+
+# Store the current time
+current_time=$(date --utc "+%Y%m%d%H%M%S")
+
+# Write a file to trigger a diagnostic dump.
+echo "Starting diagnostics collection."
+echo -n "Collecting diagnostics"
+echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
+
+# Now wait for the diagnostics collection to complete
+latest_diags_time=0
+while [ $latest_diags_time -lt $current_time ]
+do
+  echo -n "..."
+  sleep 5
+
+  latest_diags_file=$(ls -t $DIAGS_LOCATION | grep -v temp | grep -e tar.gz | tr '\n' ' ' | cut -d ' ' -f 1)
+  if [ ! -z $latest_diags_file ]
+  then
+    # Format of the dumps is /var/clearwater-diags-monitor/dumps/<datestamp>.<hostname>.<cause>.tar.gz
+    latest_diags_time=$(echo $latest_diags_file | cut -d '.' -f 1 | cut -d 'Z' -f 1)
+  fi
+done
+
+echo "\nDiagnostics have been collected at $DIAGS_LOCATION$latest_diags_file"
