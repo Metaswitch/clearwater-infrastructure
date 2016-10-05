@@ -35,6 +35,7 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
+DIAGS_END_LOCATION=/home/clearwater/ftp/dumps/
 
 if [ $# -ne 0 ]
 then
@@ -47,8 +48,8 @@ fi
 current_time=$(date --utc "+%Y%m%d%H%M%S")
 
 # Write a file to trigger a diagnostic dump.
-echo "Starting diagnostics collection."
-echo -n "Collecting diagnostics"
+echo "Collecting diagnostics from the system.\n"
+echo "This operation can take a few minutes to run."
 echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
 
 # Now wait for the diagnostics collection to complete
@@ -56,7 +57,7 @@ latest_diags_time=0
 while [ $latest_diags_time -lt $current_time ]
 do
   echo -n "."
-  sleep 5
+  sleep 2
 
   latest_diags_file=$(ls -t $DIAGS_LOCATION | grep -v temp | grep -e tar.gz | tr '\n' ' ' | cut -d ' ' -f 1)
   if [ ! -z $latest_diags_file ]
@@ -66,4 +67,11 @@ do
   fi
 done
 
-echo "\nDiagnostics have been collected at $DIAGS_LOCATION$latest_diags_file"
+if [ -d $DIAGS_END_LOCATION ]
+then
+  cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
+else
+  DIAGS_END_LOCATION=$DIAGS_LOCATION
+fi
+
+echo "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"
