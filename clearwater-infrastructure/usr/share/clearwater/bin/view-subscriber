@@ -60,7 +60,7 @@ def main():
             reg_state = reg_data.find('RegistrationState').text
 
             if reg_state == 'NOT_REGISTERED':
-                sys.exit('Subscriber {} does not exist.'.format(impu))
+                sys.exit('Subscriber {} is not assigned to this S-CSCF.'.format(impu))
             else:
                 # The first public identity is the primary public identity. We
                 # save this off and also extract the IMS subscription XML, and

@@ -47,10 +47,7 @@ def main():
     if r.status_code == 200:
         sys.exit('Successfully unregistered {}'.format(impu))
     elif r.status_code == 400:
-        sys.exit('Operation failed - bad request sent to HSS cache.\nPlease '
-                 'contact your system administrator')
-    elif r.status_code == 404:
-        sys.exit('Operation failed - unable to find {}'.format(impu))
+        sys.exit('Operation failed - {} is not assigned to this S-CSCF.'.format(impu))
     elif r.status_code == 500:
         sys.exit('Operation failed - unable to expire registration bindings '
                  'for {}.\nPlease contact your system administrator.'.format(impu))
