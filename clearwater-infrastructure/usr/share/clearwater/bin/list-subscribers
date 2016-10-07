@@ -30,29 +30,32 @@ def main():
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError:
-        sys.exit('Unable to connect to the HTTP stack. Please contact your '
+        sys.exit('Unable to connect to the HTTP stack.\n\tPlease contact your '
                  'system administrator.')
 
     if r.status_code == 200:
         try:
             impus = r.json()['impus']
-        except ValueError:
-            sys.exit('Subscribers returned in unexpected format. Please '
+        except (ValueError, KeyError):
+            sys.exit('Subscribers returned in unexpected format.\n\tPlease '
                      'contact your system administrator.')
     elif r.status_code == 500:
-        sys.exit('Unable to query cache for subscriber information. Please '
+        sys.exit('Unable to query cache for subscriber information.\n\tPlease '
                  'contact your system administrator.')
     else:
-        sys.exit('Operation failed with unexpected {} error. Please contact '
+        sys.exit('Operation failed with unexpected {} error.\n\tPlease contact '
                  'your system administrator.'.format(r.status_code))
 
-    # The IMPUs can come back in any order. Allegedly it makes more sense to
-    # display them ordered.
-    impus.sort()
+    if impus:
+        # The IMPUs can come back in any order. Allegedly it makes more sense to
+        # display them ordered.
+        impus.sort()
 
-    print 'Subscribers with cached data:'
-    print
-    print '\n'.join(impus)
+        print 'Subscribers with cached data:'
+        print
+        print '\n'.join(impus)
+    else:
+        print 'There are currently no subscribers with cached data.'
 
     sys.exit(0)
 

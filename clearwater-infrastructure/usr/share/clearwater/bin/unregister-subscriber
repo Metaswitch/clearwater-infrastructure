@@ -41,24 +41,24 @@ def main():
     try:
         r = requests.delete(url)
     except requests.exceptions.ConnectionError:
-        sys.exit('Unable to connect to the HTTP stack. Please contact your '
+        sys.exit('Unable to connect to the HTTP stack.\nPlease contact your '
                  'system administrator.')
 
     if r.status_code == 200:
         sys.exit('Successfully unregistered {}'.format(impu))
     elif r.status_code == 400:
-        sys.exit('Operation failed - bad request sent to HSS cache. Please '
+        sys.exit('Operation failed - bad request sent to HSS cache.\nPlease '
                  'contact your system administrator')
     elif r.status_code == 404:
         sys.exit('Operation failed - unable to find {}'.format(impu))
     elif r.status_code == 500:
         sys.exit('Operation failed - unable to expire registration bindings '
-                 'for {}. Please contact your system administrator.'.format(impu))
+                 'for {}.\nPlease contact your system administrator.'.format(impu))
     elif r.status_code == 502:
-        sys.exit('Operation failed - unable to unregsiter subscriber. Please '
+        sys.exit('Operation failed - unable to unregsiter subscriber.\nPlease '
                  'contact your system administrator.')
     else:
-        sys.exit('Operation failed with unexpected {} error. Please contact '
+        sys.exit('Operation failed with unexpected {} error.\nPlease contact '
                  'your system administrator.'.format(r.status_code))
 
 

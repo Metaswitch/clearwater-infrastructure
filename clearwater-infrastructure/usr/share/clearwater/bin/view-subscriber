@@ -31,7 +31,7 @@ def main():
     sip_impu_regex = re.compile('sip:.+@.+$')
     tel_impu_regex = re.compile('tel:\+?[0-9]+$')
     if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
-        sys.exit("{} is not a valid public identity.".format(impu))
+        sys.exit('{} is not a valid public identity.'.format(impu))
 
     # Find the location of the APIs to query.
     config = ConfigObj(CONFIG_FILE)
@@ -41,77 +41,112 @@ def main():
         sys.exit('Unable to find value of both {} and {}. Are they set in {}?'
                  .format(SPROUT_API_KEY, HS_API_KEY, CONFIG_FILE))
 
-    # Build the URLs we need to query.
-    bindings_url = 'http://{}/impu/{}/bindings'.format(sprout_api_address, impu)
-    subscriptions_url = 'http://{}/impu/{}/subscriptions'.format(sprout_api_address, impu)
+    # We need to query Homestead for the registration data first because
+    # the bindings and subscriptions are keyed off the primary public identity
+    # in Sprout, and we don't know what this subscriber's primary public
+    # identity is yet. For the same reason, if the Homestead query fails for
+    # whatever reason, we immediately give up.
     reg_data_url = 'http://{}/impu/{}/reg-data'.format(hs_api_address, impu)
-
-    bindings_err=""
-    subscriptions_err=""
-    reg_data_err=""
-
-    try:
-        bindings_r = requests.get(bindings_url)
-        subscriptions_r = requests.get(subscriptions_url)
-    except requests.exceptions.ConnectionError:
-        bindings_err = 'Unable to connect to the Sprout HTTP stack. Please contact your system administrator.'
-        subscriptions_err = 'Unable to connect to the Sprout HTTP stack. Please contact your system administrator.'
 
     try:
         reg_data_r = requests.get(reg_data_url)
     except requests.exceptions.ConnectionError:
-        reg_data_err = 'Unable to connect to the Homestead HTTP stack. Please contact your system administrator.'
-
-    if bindings_r.status_code == 200:
-        try:
-            # Extract the URIs and expiry times for each binding.
-            bindings_json = bindings_r.json()
-            bindings = [(binding['uri'], binding['expires']) for (urn, binding) in bindings_json['bindings'].iteritems()]
-        except ValueError as e:
-            bindings_err = 'Bindings information is not valid JSON - {}.\n\tPlease contact your system administrator.'.format(e)
-        except KeyError as e:
-            bindings_err = 'Bindings information returned in unexpected format - {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
-    elif bindings_r.status_code == 404:
-        bindings_err = 'Subscriber does not exist in bindings cache.'
-    elif bindings_r.status_code == 500:
-        bindings_err = 'Unable to contact bindings cache.\n\tPlease contact your system administrator.'
-    else:
-        bindings_err = 'Unable to find bindings for subscriber due to unexpected {} error. Please contact your system administrator.'.format(bindings_r.status_code)
-
-    if subscriptions_r.status_code == 200:
-        try:
-            # Extract the URIs and expiry times for each subscription.
-            subscriptions_json = subscriptions_r.json()
-            subscriptions = [(subscription['req_uri'], subscription['expires']) for (subscription_id, subscription) in subscriptions_json['subscriptions'].iteritems()]
-        except ValueError as e:
-            subscriptions_err = 'Subscriptions information is not valid JSON - {}.\n\tPlease contact your system administrator.'.format(e)
-        except KeyError as e:
-            subscriptions_err = 'Subscriptions information returned in unexpected format - {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
-    elif subscriptions_r.status_code == 404:
-        subscriptions_err = 'Subscriber does not exist in subscriptions cache.'
-    elif subscriptions_r.status_code == 500:
-        subscriptions_err = 'Unable to contact subscriptions cache.\n\tPlease contact your system administrator.'
-    else:
-        subscriptions_err = 'Unable to find subscriptions for subscriber due to unexpected {} error.\n\tPlease contact your system administrator.'.format(subscriptions_r.status_code)
+        sys.exit('Unable to connect to the Homestead HTTP stack.\nPlease '
+                 'contact your system administrator.')
 
     if reg_data_r.status_code == 200:
         try:
             reg_data = ET.fromstring(reg_data_r.content)
-            ims_subscription = ET.tostring(reg_data.find('IMSSubscription')).replace('\t','  ').replace('\n  ', '\n\t')
-            ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
-            ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
-        except ValueError as e:
-            reg_data_err = 'Registration information is not valid XML - {}.\n\tPlease contact your system administrator.'.format(e)
-        except KeyError as e:
-            reg_data_err = 'Registration information returned in unexpected format - {} attribute not found in XML.\n\tPlease contact your system administrator.'.format(e)
-    elif reg_data_r.status_code == 404:
-        reg_data_err = 'Subscriber does not exist.'
+            reg_state = reg_data.find('RegistrationState').text
+
+            if reg_state == 'NOT_REGISTERED':
+                sys.exit('Subscriber {} does not exist.'.format(impu))
+            else:
+                # The first public identity is the primary public identity. We
+                # save this off and also extract the IMS subscription XML, and
+                # all of the charging addresses.
+                primary_impu = reg_data.find('IMSSubscription/ServiceProfile/PublicIdentity/Identity').text
+
+                ims_subscription = ET.tostring(reg_data.find('IMSSubscription'))
+
+                ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
+                ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
+        except (ET.ParseError, AttributeError, KeyError):
+            sys.exit('Registration information XML returned in unexpected format.\n'
+                     'Please contact your system administrator.')
     elif reg_data_r.status_code == 502:
-        reg_data_err = 'Unable to contact HSS.\n\tPlease contact your system administrator.'
+        sys.exit('Unable to contact HSS.\nPlease contact your system administrator.')
     elif reg_data_r.status_code == 503:
-        reg_data_err = 'HSS gateway is currently overloaded. Please try again later.'
+        sys.exit('HSS gateway is currently overloaded.\nPlease try again later.')
     else:
-        reg_data_err = 'Unable to retrieve subscriber\'s subscription XML due to unexpected {} error.\n\tPlease contact your system administrator.'.format(reg_data_r.status_code)
+        sys.exit('Unable to retrieve subscriber\'s subscription XML due to unexpected '
+                 '{} error.\nPlease contact your system administrator.'.format(reg_data_r.status_code))
+
+    # Now we can build the Sprout API URLs (with the primary public identity).
+    bindings_url = 'http://{}/impu/{}/bindings'.format(sprout_api_address,
+                                                       primary_impu)
+    subscriptions_url = 'http://{}/impu/{}/subscriptions'.format(sprout_api_address,
+                                                                 primary_impu)
+
+    # If we fail to retrieve bindings or subscriptions we still display the
+    # information we've already retrieved. Therefore we build error strings.
+    bindings_err = ''
+    subscriptions_err = ''
+
+    try:
+        bindings_r = requests.get(bindings_url)
+
+        if bindings_r.status_code == 200:
+            try:
+                # Extract the URIs and expiry times for each binding.
+                bindings_json = bindings_r.json()
+                bindings = [(binding['uri'], binding['expires']) for (urn, binding) in bindings_json['bindings'].iteritems()]
+            except ValueError:
+                bindings_err = 'Bindings information is not valid JSON.\n' \
+                               '\tPlease contact your system administrator.'
+            except KeyError as e:
+                bindings_err = 'Bindings information returned in unexpected format ' \
+                               '- {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
+        elif bindings_r.status_code == 404:
+            # This is not an error - the subscriber may just not be registered.
+            bindings_err = '(none)'
+        elif bindings_r.status_code == 500:
+            bindings_err = 'Unable to contact bindings cache.\n' \
+                           '\tPlease contact your system administrator.'
+        else:
+            bindings_err = 'Unable to find bindings for subscriber due to unexpected ' \
+                       '{} error. Please contact your system administrator.'.format(bindings_r.status_code)
+    except requests.exceptions.ConnectionError:
+        bindings_err = 'Unable to connect to the Sprout HTTP stack.\n' \
+                       '\tPlease contact your system administrator.'
+
+    try:
+        subscriptions_r = requests.get(subscriptions_url)
+
+        if subscriptions_r.status_code == 200:
+            try:
+                # Extract the URIs and expiry times for each subscription.
+                subscriptions_json = subscriptions_r.json()
+                subscriptions = [(subscription['req_uri'], subscription['expires']) for (subscription_id, subscription) in subscriptions_json['subscriptions'].iteritems()]
+            except ValueError:
+                subscriptions_err = 'Subscriptions information is not valid JSON.\n' \
+                                    '\tPlease contact your system administrator.'
+            except KeyError as e:
+                subscriptions_err = 'Subscriptions information returned in unexpected format ' \
+                                     '- {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
+        elif subscriptions_r.status_code == 404:
+            # This is not an error - the subscriber may just not have any
+            # subscriptions.
+            subscriptions_err = '(none)'
+        elif subscriptions_r.status_code == 500:
+            subscriptions_err = 'Unable to contact subscriptions cache.\n' \
+                                '\tPlease contact your system administrator.'
+        else:
+            subscriptions_err = 'Unable to find subscriptions for subscriber due to unexpected ' \
+                                '{} error.\n\tPlease contact your system administrator.'.format(subscriptions_r.status_code)
+    except requests.exceptions.ConnectionError:
+        subscriptions_err = 'Unable to connect to the Sprout HTTP stack.\n' \
+                            '\tPlease contact your system administrator.'
 
     print
     print 'Cached data for {}'.format(impu)
@@ -120,45 +155,46 @@ def main():
     if bindings_err:
         print '\t{}'.format(bindings_err)
     elif not bindings:
+        # We successfully parsed the JSON but there were no bindings.
         print '\t(none)'
     else:
         for binding, expires in bindings:
-            print '\t- {} (expires {})'.format(binding, datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
+            print '\t- {} (expires {})'.format(binding,
+                                               datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
 
     print
     print 'Reg-event subscriptions:'
     if subscriptions_err:
         print '\t{}'.format(subscriptions_err)
     elif not subscriptions:
+        # We successfully parsed the JSON but there were no subscriptions.
         print '\t(none)'
     else:
         for subscription, expires in subscriptions:
-            print '\t- {} (expires {})'.format(subscription, datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
+            print '\t- {} (expires {})'.format(subscription,
+                                               datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
 
     print
     print 'Subscription XML:'
-    if reg_data_err:
-        print '\t{}'.format(reg_data_err)
-        print
+    # Some nice hacky whitespace manipulation to display the XML nicely.
+    print '\t{}'.format(ims_subscription.replace('\t','  ').replace('\n  ', '\n\t'))
+
+    print
+    print 'CCF addresses:'
+    if not ccf_addresses:
+        print '\t(none)'
     else:
-        print '\t{}'.format(ims_subscription)
+        for address, priority in ccf_addresses:
+            print '\t- {} (priority {})'.format(address, priority)
 
-        print
-        print 'CCF addresses:'
-        if not ccf_addresses:
-            print '\t(none)'
-        else:
-            for address, priority in ccf_addresses:
-                print '\t- {} (priority {})'.format(address, priority)
-
-        print
-        print 'ECF addresses:'
-        if not ecf_addresses:
-            print '\t(none)'
-        else:
-            for address, priority in ecf_addresses:
-                print '\t- {} (priority {})'.format(address, priority)
-        print
+    print
+    print 'ECF addresses:'
+    if not ecf_addresses:
+        print '\t(none)'
+    else:
+        for address, priority in ecf_addresses:
+            print '\t- {} (priority {})'.format(address, priority)
+    print
 
     sys.exit(0)
 
