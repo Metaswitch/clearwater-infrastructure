@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+# Copyright (C) 2016 Metaswitch Networks Ltd. All rights reserved.
+
+import sys
+import requests
+import argparse
+import re
+from configobj import ConfigObj
+
+
+parser = argparse.ArgumentParser(description='Unregister a subscriber.')
+parser.add_argument('impu',
+                    help='The public identity of the subscriber to unregister, '
+                         'e.g. sip:1234@example.com.',
+                    type=str)
+args = parser.parse_args()
+
+
+CONFIG_FILE = '/etc/clearwater/shared_config'
+API_KEY = 'sprout_mgmt_hostname'
+
+
+def main():
+    # Check the input is a valid IMPU.
+    impu = args.impu
+    sip_impu_regex = re.compile('sip:.+@.+$')
+    tel_impu_regex = re.compile('tel:\+?[0-9]+$')
+    if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
+        sys.exit("{} is not a valid public identity.".format(impu))
+
+    # Find the location to query for all the IMPUs.
+    config = ConfigObj(CONFIG_FILE)
+    api_address = config.get(API_KEY)
+    if not api_address:
+        sys.exit('Unable to find value of {}. Is it set in {}?'
+                 .format(API_KEY, CONFIG_FILE))
+
+    # Build the URL for this request.
+    url = 'http://{}/impu/{}'.format(api_address, impu)
+
+    try:
+        r = requests.delete(url)
+    except requests.exceptions.ConnectionError:
+        sys.exit('Unable to connect to the HTTP stack. Please contact your '
+                 'system administrator.')
+
+    if r.status_code == 200:
+        sys.exit('Successfully unregistered {}'.format(impu))
+    elif r.status_code == 400:
+        sys.exit('Operation failed - bad request sent to HSS cache. Please '
+                 'contact your system administrator')
+    elif r.status_code == 404:
+        sys.exit('Operation failed - unable to find {}'.format(impu))
+    elif r.status_code == 500:
+        sys.exit('Operation failed - unable to expire registration bindings '
+                 'for {}. Please contact your system administrator.'.format(impu))
+    elif r.status_code == 502:
+        sys.exit('Operation failed - unable to unregsiter subscriber. Please '
+                 'contact your system administrator.')
+    else:
+        sys.exit('Operation failed with unexpected {} error. Please contact '
+                 'your system administrator.'.format(r.status_code))
+
+
+if __name__ == '__main__':
+    main()

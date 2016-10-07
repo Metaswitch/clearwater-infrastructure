@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+# Copyright (C) 2016 Metaswitch Networks Ltd. All rights reserved.
+
+import sys
+import requests
+import argparse
+import re
+from configobj import ConfigObj
+import datetime
+import xml.etree.ElementTree as ET
+
+
+parser = argparse.ArgumentParser(description='View information about a '
+                                             'subscriber assigned to this '
+                                             'S-CSCF.')
+parser.add_argument('impu',
+                    help='The public identity of the subscriber to query, e.g. '
+                         'sip:1234@example.com.',
+                    type=str)
+args = parser.parse_args()
+
+
+CONFIG_FILE = '/etc/clearwater/shared_config'
+SPROUT_API_KEY = 'sprout_mgmt_hostname'
+HS_API_KEY = 'hs_mgmt_hostname'
+
+
+def main():
+    # Check the input is a valid IMPU.
+    impu = args.impu
+    sip_impu_regex = re.compile('sip:.+@.+$')
+    tel_impu_regex = re.compile('tel:\+?[0-9]+$')
+    if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
+        sys.exit("{} is not a valid public identity.".format(impu))
+
+    # Find the location of the APIs to query.
+    config = ConfigObj(CONFIG_FILE)
+    sprout_api_address = config.get(SPROUT_API_KEY)
+    hs_api_address = config.get(HS_API_KEY)
+    if not sprout_api_address or not hs_api_address:
+        sys.exit('Unable to find value of both {} and {}. Are they set in {}?'
+                 .format(SPROUT_API_KEY, HS_API_KEY, CONFIG_FILE))
+
+    # Build the URLs we need to query.
+    bindings_url = 'http://{}/impu/{}/bindings'.format(sprout_api_address, impu)
+    subscriptions_url = 'http://{}/impu/{}/subscriptions'.format(sprout_api_address, impu)
+    reg_data_url = 'http://{}/impu/{}/reg-data'.format(hs_api_address, impu)
+
+    bindings_err=""
+    subscriptions_err=""
+    reg_data_err=""
+
+    try:
+        bindings_r = requests.get(bindings_url)
+        subscriptions_r = requests.get(subscriptions_url)
+    except requests.exceptions.ConnectionError:
+        bindings_err = 'Unable to connect to the Sprout HTTP stack. Please contact your system administrator.'
+        subscriptions_err = 'Unable to connect to the Sprout HTTP stack. Please contact your system administrator.'
+
+    try:
+        reg_data_r = requests.get(reg_data_url)
+    except requests.exceptions.ConnectionError:
+        reg_data_err = 'Unable to connect to the Homestead HTTP stack. Please contact your system administrator.'
+
+    if bindings_r.status_code == 200:
+        try:
+            # Extract the URIs and expiry times for each binding.
+            bindings_json = bindings_r.json()
+            bindings = [(binding['uri'], binding['expires']) for (urn, binding) in bindings_json['bindings'].iteritems()]
+        except ValueError as e:
+            bindings_err = 'Bindings information is not valid JSON - {}.\n\tPlease contact your system administrator.'.format(e)
+        except KeyError as e:
+            bindings_err = 'Bindings information returned in unexpected format - {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
+    elif bindings_r.status_code == 404:
+        bindings_err = 'Subscriber does not exist in bindings cache.'
+    elif bindings_r.status_code == 500:
+        bindings_err = 'Unable to contact bindings cache.\n\tPlease contact your system administrator.'
+    else:
+        bindings_err = 'Unable to find bindings for subscriber due to unexpected {} error. Please contact your system administrator.'.format(bindings_r.status_code)
+
+    if subscriptions_r.status_code == 200:
+        try:
+            # Extract the URIs and expiry times for each subscription.
+            subscriptions_json = subscriptions_r.json()
+            subscriptions = [(subscription['req_uri'], subscription['expires']) for (subscription_id, subscription) in subscriptions_json['subscriptions'].iteritems()]
+        except ValueError as e:
+            subscriptions_err = 'Subscriptions information is not valid JSON - {}.\n\tPlease contact your system administrator.'.format(e)
+        except KeyError as e:
+            subscriptions_err = 'Subscriptions information returned in unexpected format - {} key not found in JSON.\n\tPlease contact your system administrator.'.format(e)
+    elif subscriptions_r.status_code == 404:
+        subscriptions_err = 'Subscriber does not exist in subscriptions cache.'
+    elif subscriptions_r.status_code == 500:
+        subscriptions_err = 'Unable to contact subscriptions cache.\n\tPlease contact your system administrator.'
+    else:
+        subscriptions_err = 'Unable to find subscriptions for subscriber due to unexpected {} error.\n\tPlease contact your system administrator.'.format(subscriptions_r.status_code)
+
+    if reg_data_r.status_code == 200:
+        try:
+            reg_data = ET.fromstring(reg_data_r.content)
+            ims_subscription = ET.tostring(reg_data.find('IMSSubscription')).replace('\t','  ').replace('\n  ', '\n\t')
+            ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
+            ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
+        except ValueError as e:
+            reg_data_err = 'Registration information is not valid XML - {}.\n\tPlease contact your system administrator.'.format(e)
+        except KeyError as e:
+            reg_data_err = 'Registration information returned in unexpected format - {} attribute not found in XML.\n\tPlease contact your system administrator.'.format(e)
+    elif reg_data_r.status_code == 404:
+        reg_data_err = 'Subscriber does not exist.'
+    elif reg_data_r.status_code == 502:
+        reg_data_err = 'Unable to contact HSS.\n\tPlease contact your system administrator.'
+    elif reg_data_r.status_code == 503:
+        reg_data_err = 'HSS gateway is currently overloaded. Please try again later.'
+    else:
+        reg_data_err = 'Unable to retrieve subscriber\'s subscription XML due to unexpected {} error.\n\tPlease contact your system administrator.'.format(reg_data_r.status_code)
+
+    print
+    print 'Cached data for {}'.format(impu)
+    print
+    print 'Registered bindings:'
+    if bindings_err:
+        print '\t{}'.format(bindings_err)
+    elif not bindings:
+        print '\t(none)'
+    else:
+        for binding, expires in bindings:
+            print '\t- {} (expires {})'.format(binding, datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
+
+    print
+    print 'Reg-event subscriptions:'
+    if subscriptions_err:
+        print '\t{}'.format(subscriptions_err)
+    elif not subscriptions:
+        print '\t(none)'
+    else:
+        for subscription, expires in subscriptions:
+            print '\t- {} (expires {})'.format(subscription, datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
+
+    print
+    print 'Subscription XML:'
+    if reg_data_err:
+        print '\t{}'.format(reg_data_err)
+        print
+    else:
+        print '\t{}'.format(ims_subscription)
+
+        print
+        print 'CCF addresses:'
+        if not ccf_addresses:
+            print '\t(none)'
+        else:
+            for address, priority in ccf_addresses:
+                print '\t- {} (priority {})'.format(address, priority)
+
+        print
+        print 'ECF addresses:'
+        if not ecf_addresses:
+            print '\t(none)'
+        else:
+            for address, priority in ecf_addresses:
+                print '\t- {} (priority {})'.format(address, priority)
+        print
+
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
