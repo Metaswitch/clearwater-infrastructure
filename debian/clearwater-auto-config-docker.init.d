@@ -61,12 +61,21 @@ do_auto_config()
     ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
   fi
 
+  # If a PUBLIC_IP variable is set use this, otherwise go with the local IP
+  # here too.
+  if [ -n "$PUBLIC_IP" ]
+  then
+    public_ip=$PUBLIC_IP
+  else
+    public_ip=$ip
+  fi
+
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-docker/bin/bracket-ipv6-address $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+          s/^public_ip=.*$/public_ip='$public_ip'/g
+          s/^public_hostname=.*$/public_hostname='$public_ip'/g' -i $local_config
     sed -e '/^etcd_cluster=.*/d
             /^etcd_proxy=.*/d' -i $local_config
 
@@ -84,14 +93,16 @@ do_auto_config()
     # would happen on a non-Docker Clearwater cluster.
     # We still want to auto-configure shared config on each node, though,
     # rather than rely on it being uploaded.
-    
+
     echo "etcd_proxy=etcd0=http://etcd:2380" >> $local_config
-    
+
     if [ -z "$ZONE" ]
     then
       # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
       # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
       sprout_hostname=sprout
+      chronos_hostname=chronos
+      cassandra_hostname=cassandra
       hs_hostname=homestead:8888
       hs_provisioning_hostname=homestead:8889
       xdms_hostname=homer:7888
@@ -101,6 +112,8 @@ do_auto_config()
     else
       # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
+      chronos_hostname=chronos.$ZONE
+      cassandra_hostname=cassandra.$ZONE
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
@@ -116,6 +129,8 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
+            s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
     # Extract DNS servers from resolv.conf and comma-separate them.
