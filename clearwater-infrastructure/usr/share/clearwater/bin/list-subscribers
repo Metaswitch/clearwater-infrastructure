@@ -13,19 +13,19 @@ args = parser.parse_args()
 
 
 CONFIG_FILE = '/etc/clearwater/shared_config'
-API_KEY = 'hs_mgmt_hostname'
+MGMT_HOSTNAME_KEY = 'hs_mgmt_hostname'
 
 
 def main():
     # Find the location to query for all the IMPUs.
     config = ConfigObj(CONFIG_FILE)
-    api_address = config.get(API_KEY)
-    if not api_address:
+    mgmt_hostname = config.get(MGMT_HOSTNAME_KEY)
+    if not mgmt_hostname:
         sys.exit('Unable to find value of {}. Is it set in {}?'
-                 .format(API_KEY, CONFIG_FILE))
+                 .format(MGMT_HOSTNAME_KEY, CONFIG_FILE))
 
     # Build the URL for this request.
-    url = 'http://{}/impu'.format(api_address)
+    url = 'http://{}/impu'.format(mgmt_hostname)
 
     try:
         r = requests.get(url)
@@ -47,8 +47,8 @@ def main():
                  'your system administrator.'.format(r.status_code))
 
     if impus:
-        # The IMPUs can come back in any order. Allegedly it makes more sense to
-        # display them ordered.
+        # The IMPUs can come back in any order. It makes more sense to display
+        # them ordered.
         impus.sort()
 
         print 'Subscribers with cached data:'

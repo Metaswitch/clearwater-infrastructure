@@ -11,13 +11,13 @@ from configobj import ConfigObj
 parser = argparse.ArgumentParser(description='Unregister a subscriber.')
 parser.add_argument('impu',
                     help='The public identity of the subscriber to unregister, '
-                         'e.g. sip:1234@example.com.',
+                         'e.g. sip:1234@example.com or tel:+5678.',
                     type=str)
 args = parser.parse_args()
 
 
 CONFIG_FILE = '/etc/clearwater/shared_config'
-API_KEY = 'sprout_mgmt_hostname'
+MGMT_HOSTNAME_KEY = 'sprout_mgmt_hostname'
 
 
 def main():
@@ -30,13 +30,13 @@ def main():
 
     # Find the location to query for all the IMPUs.
     config = ConfigObj(CONFIG_FILE)
-    api_address = config.get(API_KEY)
-    if not api_address:
+    mgmt_hostname = config.get(MGMT_HOSTNAME_KEY)
+    if not mgmt_hostname:
         sys.exit('Unable to find value of {}. Is it set in {}?'
-                 .format(API_KEY, CONFIG_FILE))
+                 .format(MGMT_HOSTNAME_KEY, CONFIG_FILE))
 
     # Build the URL for this request.
-    url = 'http://{}/impu/{}'.format(api_address, impu)
+    url = 'http://{}/impu/{}'.format(mgmt_hostname, impu)
 
     try:
         r = requests.delete(url)
@@ -52,7 +52,7 @@ def main():
         sys.exit('Operation failed - unable to expire registration bindings '
                  'for {}.\nPlease contact your system administrator.'.format(impu))
     elif r.status_code == 502:
-        sys.exit('Operation failed - unable to unregsiter subscriber.\nPlease '
+        sys.exit('Operation failed - unable to unregister subscriber.\nPlease '
                  'contact your system administrator.')
     else:
         sys.exit('Operation failed with unexpected {} error.\nPlease contact '
