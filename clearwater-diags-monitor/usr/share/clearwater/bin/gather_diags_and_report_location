@@ -35,7 +35,7 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
-DIAGS_END_LOCATION=/home/clearwater/ftp/dumps/
+DIAGS_END_LOCATION=${HOME}/ftp/dumps/
 
 if [ $# -ne 0 ]
 then
