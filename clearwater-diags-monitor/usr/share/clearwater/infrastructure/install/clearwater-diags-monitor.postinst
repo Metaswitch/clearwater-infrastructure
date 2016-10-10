@@ -47,10 +47,6 @@ chmod a+rwx /var/clearwater-diags-monitor/tmp
 mkdir -p /var/clearwater-diags-monitor/dumps
 chmod a+rwx /var/clearwater-diags-monitor/dumps
 
-# Do the same for the dumps directory in /home/clearwater.
-mkdir -p /home/clearwater/ftp/dumps
-chmod a+rwx /home/clearwater/ftp/dumps
-
 chmod a+x /usr/share/clearwater/bin/gather_diags
 chmod a+x /usr/share/clearwater/bin/gather_diags_and_report_location
 

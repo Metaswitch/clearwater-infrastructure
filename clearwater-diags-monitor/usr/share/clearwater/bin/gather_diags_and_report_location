@@ -67,11 +67,8 @@ do
   fi
 done
 
-if [ -d $DIAGS_END_LOCATION ]
-then
-  cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
-else
-  DIAGS_END_LOCATION=$DIAGS_LOCATION
-fi
+mkdir -p $DIAGS_END_LOCATION
+
+cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
 
 echo "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"
