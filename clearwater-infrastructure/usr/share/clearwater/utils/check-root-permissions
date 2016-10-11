@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # @file check-root-permissions
 #
 # Project Clearwater - IMS in the Cloud
@@ -38,8 +40,8 @@
 #
 # . /usr/share/clearwater/utils/check-root-permissions [exit_code]
 #
-# where exit_code is the code to exit the script with it fails as it needs root
-# permissions.
+# where exit_code is the code to exit the script with if it detects the user
+# is not running as root
 
 if [ $EUID -ne 0 ]
 then
