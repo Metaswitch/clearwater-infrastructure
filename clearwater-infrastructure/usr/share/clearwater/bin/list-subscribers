@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+# Copyright (C) 2016 Metaswitch Networks Ltd. All rights reserved.
+
+import sys
+import requests
+import argparse
+from configobj import ConfigObj
+
+
+parser = argparse.ArgumentParser(description='Lists the subscribers currently '
+                                             'assigned to this S-CSCF.')
+args = parser.parse_args()
+
+
+CONFIG_FILE = '/etc/clearwater/shared_config'
+MGMT_HOSTNAME_KEY = 'hs_mgmt_hostname'
+
+
+def main():
+    # Find the location to query for all the IMPUs.
+    config = ConfigObj(CONFIG_FILE)
+    mgmt_hostname = config.get(MGMT_HOSTNAME_KEY)
+    if not mgmt_hostname:
+        sys.exit('Unable to find value of {}. Is it set in {}?'
+                 .format(MGMT_HOSTNAME_KEY, CONFIG_FILE))
+
+    # Build the URL for this request.
+    url = 'http://{}/impu'.format(mgmt_hostname)
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        sys.exit('Unable to connect to the HTTP stack.\n\tPlease contact your '
+                 'system administrator.')
+
+    if r.status_code == 200:
+        try:
+            impus = r.json()['impus']
+        except (ValueError, KeyError):
+            sys.exit('Subscribers returned in unexpected format.\n\tPlease '
+                     'contact your system administrator.')
+    elif r.status_code == 500:
+        sys.exit('Unable to query cache for subscriber information.\n\tPlease '
+                 'contact your system administrator.')
+    else:
+        sys.exit('Operation failed with unexpected {} error.\n\tPlease contact '
+                 'your system administrator.'.format(r.status_code))
+
+    if impus:
+        # The IMPUs can come back in any order. It makes more sense to display
+        # them ordered.
+        impus.sort()
+
+        print 'Subscribers with cached data:'
+        print
+        print '\n'.join(impus)
+    else:
+        print 'There are currently no subscribers with cached data.'
+
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
