@@ -3,7 +3,7 @@
 # @file check-root-permissions
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -36,7 +36,7 @@
 
 # Usage:
 #
-# To use this script, add the following a bash file:
+# To use this script, add the following to a bash file:
 #
 # . /usr/share/clearwater/utils/check-root-permissions [exit_code]
 #
