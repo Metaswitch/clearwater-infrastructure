@@ -1,4 +1,7 @@
 #!/bin/bash
+
+. /usr/share/clearwater/utils/check-root-permissions
+
 if which yum > /dev/null 2>&1 ; then
   # Upgrade any repos that start with the word clearwater.
   sudo yum makecache --disablerepo=* --enablerepo=clearwater* &&
