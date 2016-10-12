@@ -29,7 +29,7 @@ def main():
     # Check the input is a valid IMPU.
     impu = args.impu
     sip_impu_regex = re.compile('sip:.+@.+$')
-    tel_impu_regex = re.compile('tel:\+?[0-9]+$')
+    tel_impu_regex = re.compile('tel:\+?[0-9]+.*$')
     if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
         sys.exit('{} is not a valid public identity.'.format(impu))
 
