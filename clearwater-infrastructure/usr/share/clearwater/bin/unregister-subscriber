@@ -6,6 +6,7 @@ import requests
 import argparse
 import re
 from configobj import ConfigObj
+import xml.etree.ElementTree as ET
 
 
 parser = argparse.ArgumentParser(description='Unregister a subscriber.')
@@ -17,7 +18,8 @@ args = parser.parse_args()
 
 
 CONFIG_FILE = '/etc/clearwater/shared_config'
-MGMT_HOSTNAME_KEY = 'sprout_mgmt_hostname'
+SPROUT_MGMT_HOSTNAME = 'sprout_mgmt_hostname'
+HS_MGMT_HOSTNAME = 'hs_mgmt_hostname'
 
 
 def main():
@@ -28,21 +30,57 @@ def main():
     if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
         sys.exit("{} is not a valid public identity.".format(impu))
 
-    # Find the location to query for all the IMPUs.
+    # Find the location of the APIs to query.
     config = ConfigObj(CONFIG_FILE)
-    mgmt_hostname = config.get(MGMT_HOSTNAME_KEY)
-    if not mgmt_hostname:
-        sys.exit('Unable to find value of {}. Is it set in {}?'
-                 .format(MGMT_HOSTNAME_KEY, CONFIG_FILE))
+    sprout_mgmt_hostname = config.get(SPROUT_MGMT_HOSTNAME)
+    hs_mgmt_hostname = config.get(HS_MGMT_HOSTNAME)
+    if not sprout_mgmt_hostname or not hs_mgmt_hostname:
+        sys.exit('Unable to find value of both {} and {}. Are they set in {}?'
+                 .format(SPROUT_MGMT_HOSTNAME, HS_MGMT_HOSTNAME, CONFIG_FILE))
 
-    # Build the URL for this request.
-    url = 'http://{}/impu/{}'.format(mgmt_hostname, impu)
+    # We need to query Homestead for the registration data first because
+    # the bindings and subscriptions are keyed off the primary public identity
+    # in Sprout, and we don't know what this subscriber's primary public
+    # identity is yet. For the same reason, if the Homestead query fails for
+    # whatever reason, we immediately give up.
+    reg_data_url = 'http://{}/impu/{}/reg-data'.format(hs_mgmt_hostname, impu)
 
     try:
-        r = requests.delete(url)
+        reg_data_r = requests.get(reg_data_url)
     except requests.exceptions.ConnectionError:
-        sys.exit('Unable to connect to the HTTP stack.\nPlease contact your '
-                 'system administrator.')
+        sys.exit('Unable to connect to the Homestead HTTP stack.\nPlease '
+                 'contact your system administrator.')
+
+    if reg_data_r.status_code == 200:
+        try:
+            reg_data = ET.fromstring(reg_data_r.content)
+            reg_state = reg_data.find('RegistrationState').text
+
+            if reg_state == 'NOT_REGISTERED':
+                sys.exit('Subscriber {} is not assigned to this S-CSCF.'.format(impu))
+            else:
+                # The first public identity is the primary public identity. We
+                # save this off.
+                primary_impu = reg_data.find('IMSSubscription/ServiceProfile/PublicIdentity/Identity').text
+        except (ET.ParseError, AttributeError, KeyError):
+            sys.exit('Registration information XML returned in unexpected format.\n'
+                     'Please contact your system administrator.')
+    elif reg_data_r.status_code == 502:
+        sys.exit('Unable to contact HSS.\nPlease contact your system administrator.')
+    elif reg_data_r.status_code == 503:
+        sys.exit('HSS gateway is currently overloaded.\nPlease try again later.')
+    else:
+        sys.exit('Unable to retrieve subscriber\'s subscription XML due to unexpected '
+                 '{} error.\nPlease contact your system administrator.'.format(reg_data_r.status_code))
+
+    # Now we can build the URL for Sprout's unregister API.
+    unregister_url = 'http://{}/impu/{}'.format(sprout_mgmt_hostname, primary_impu)
+
+    try:
+        r = requests.delete(unregister_url)
+    except requests.exceptions.ConnectionError:
+        sys.exit('Unable to connect to the Sprout HTTP stack.\nPlease contact '
+                 'your system administrator.')
 
     if r.status_code == 200:
         sys.exit('Successfully unregistered {}'.format(impu))
