@@ -29,7 +29,7 @@ def main():
     # Check the input is a valid IMPU.
     impu = args.impu
     sip_impu_regex = re.compile('sip:.+@.+$')
-    tel_impu_regex = re.compile('tel:\+?[0-9]+$')
+    tel_impu_regex = re.compile('tel:\+?[0-9]+.*$')
     if sip_impu_regex.match(impu) is None and tel_impu_regex.match(impu) is None:
         sys.exit('{} is not a valid public identity.'.format(impu))
 
@@ -69,8 +69,12 @@ def main():
 
                 ims_subscription = ET.tostring(reg_data.find('IMSSubscription'))
 
-                ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
-                ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
+                if reg_data.find('ChargingAddresses'):
+                    ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
+                    ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
+                else:
+                    ccf_addresses = ecf_addresses = []
+
         except (ET.ParseError, AttributeError, KeyError):
             sys.exit('Registration information XML returned in unexpected format.\n'
                      'Please contact your system administrator.')
