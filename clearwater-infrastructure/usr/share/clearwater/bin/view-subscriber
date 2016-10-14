@@ -8,7 +8,111 @@ import re
 from configobj import ConfigObj
 import datetime
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 
+# Utility classes and functions to turn the XML into a human-readable summary
+
+def spt_factory(xml_elem):
+    if xml_elem.find("SIPHeader") is not None:
+        return HeaderSPT(xml_elem)
+    if xml_elem.find("Method") is not None:
+        return MethodSPT(xml_elem)
+    if xml_elem.find("SessionCase") is not None:
+        return SessCaseSPT(xml_elem)
+    if xml_elem.find("RequestURI") is not None:
+        return RURISPT(xml_elem)
+    return BaseSPT(xml_elem)
+
+class BaseSPT(object):
+    def __init__(self, xml_elem):
+        self.group = xml_elem.find("Group").text
+        self.negated = (xml_elem.find("ConditionNegated").text == "1")
+    
+    def __str__(self):
+        return "(unknown SPT)"
+
+class RURISPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.r = xml_elem.find("RequestURI").text
+
+    def __str__(self):
+        if self.negated:
+            return "(Request-URI is not \"{}\")".format(self.r)
+        else:
+            return "(Request-URI is \"{}\")".format(self.r)
+
+class MethodSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.m = xml_elem.find("Method").text
+
+    def __str__(self):
+        if self.negated:
+            return "(Method is not {})".format(self.m)
+        else:
+            return "(Method is {})".format(self.m)
+
+class SessCaseSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.group = xml_elem.find("Group").text
+        self.s = xml_elem.find("SessionCase").text
+
+    def __str__(self):
+        sesscase = {"0": "originating-registered",
+                    "1": "terminating-registered",
+                    "2": "terminating-unregistered",
+                    "3": "originating-unregistered",
+                    "4": "originating-cdiv"}[self.s]
+        if self.negated:
+            return "(Session case is not {})".format(sesscase)
+        else:
+            return "(Session case is {})".format(sesscase)
+
+class HeaderSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        h = xml_elem.find("SIPHeader")
+        self.header = h.find("Header").text
+        self.content = h.find("Content").text
+
+    def __str__(self):
+        if self.content == ".*":
+            if self.negated:
+                return "({} header is not present)".format(self.header)
+            else:
+                return "({} header is present)".format(self.header)
+        else:
+            if self.negated:
+                return "({} header does not match \"{}\")".format(self.header, self.content)
+            else:
+                return "({} header matches \"{}\")".format(self.header, self.content)
+
+class InitialFilterCriteria(object):
+    def __init__(self, xml_elem):
+        self.groups = defaultdict(list)
+        as_elem = xml_elem.find("ApplicationServer")
+        self.application_server_uri = as_elem.find("ServerName").text
+        self.default_handling = as_elem.find("DefaultHandling").text
+        self.priority = xml_elem.find("Priority").text
+        for spt_elem in xml_elem.iter("SPT"):
+            spt = spt_factory(spt_elem)
+            self.groups[spt.group].append(str(spt))
+
+    def __str__(self):
+        group_strs = []
+        for n, g in self.groups.iteritems():
+            group_strs.append(" AND ".join(g))
+
+        return "Priority {}:\nIf {}\n\tthen invoke {}".format(self.priority, " OR ".join(group_strs), self.application_server_uri)
+
+def explain_user_profile_xml(data):
+    for sp in data.iter("ServiceProfile"):
+        print "\tThis service profile applies to {}".format(" and ".join([id.text for id in sp.iter("Identity")]))
+        for ifc in sp.iter("InitialFilterCriteria"):
+	    print
+            print "\t" + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t")
 
 parser = argparse.ArgumentParser(description='View information about a '
                                              'subscriber assigned to this '
@@ -179,6 +283,10 @@ def main():
             print '\t- {} (expires {})'.format(subscription,
                                                datetime.datetime.fromtimestamp(expires).strftime('%c UTC'))
 
+    print
+    print 'User profile summary:'
+    print
+    explain_user_profile_xml(reg_data.find('IMSSubscription'))
     print
     print 'User profile XML:'
     # Some nice hacky whitespace manipulation to display the XML nicely.
