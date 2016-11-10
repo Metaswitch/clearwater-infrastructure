@@ -40,12 +40,13 @@
 # all existing diagnostic sets to be flushed out if the condition keeps
 # happening
 
-usage="Usage: stop_or_abort [service] [abort period in seconds]"
+usage="Usage: stop_or_abort [service] [reason] [abort period in seconds]"
 
 service=$1
-abortperiod=$2
+reason=$2
+abortperiod=$3
 
-if [[ $# != 2 ]]
+if [[ $# != 3 ]]
 then
     # Usage message to stderr
     echo $usage >&2
@@ -53,7 +54,7 @@ then
 fi
 
 # Check for the existence of the temporary marker file
-marker=/tmp/stop_or_abort.$service.abort
+marker=/tmp/stop_or_abort.$service.$reason.abort
 
 last_abort=0
 if [ -f $marker ]
@@ -76,5 +77,3 @@ else
   # Do a stop
   /etc/init.d/$service stop
 fi
-
-
