@@ -126,7 +126,7 @@ then
   acl_commenter=""
 fi
 
-# By default assume that the Destination-Host AVP should be checked on incoming requests, 
+# By default assume that the Destination-Host AVP should be checked on incoming requests,
 # so comment out the rt_change_dh.fdx Load Extension line. If ignoring the Destination-Host
 # is allowed, uncomment it.
 dh_commenter="#";
@@ -150,7 +150,8 @@ TLS_Cred = "$key_dir/cert.pem", "$key_dir/privkey.pem";
 TLS_CA = "$key_dir/ca.pem";
 
 # Limit the number of SCTP streams
-SCTP_streams = 3;
+# SCTP_streams = 3;
+No_SCTP;
 
 
 # -------- Extensions ---------
