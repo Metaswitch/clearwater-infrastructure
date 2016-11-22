@@ -35,7 +35,23 @@
 # as those licenses appear in the file LICENSE-OPENSSL.
 
 DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
-DIAGS_END_LOCATION=${HOME}/ftp/dumps/
+
+# In some scenarios we are run as root, and $HOME is not defined.
+# Instead, we should create a dump in the Clearwater user's directory.
+if [ ! -z $HOME ]
+then
+  CLEARWATER_USER_HOME=$HOME
+elif [ -d /home/clearwater ]
+then
+  CLEARWATER_USER_HOME=/home/clearwater
+elif [ -d /home/centos ]
+then
+  CLEARWATER_USER_HOME=/home/centos
+else
+  CLEARWATER_USER_HOME=/home/ubuntu
+fi
+
+DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
 
 if [ $# -ne 0 ]
 then
