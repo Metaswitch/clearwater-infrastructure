@@ -3,6 +3,7 @@
 
 import requests
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 
 
 class RegDataException(Exception):
@@ -37,3 +38,177 @@ def get_reg_data(hs_mgmt_hostname, impu):
                                ' your system administrator.'.format(reg_data_r.status_code))
 
     return reg_data
+
+# Utility classes and functions to turn IFC XML into a human-readable summary
+
+class XMLError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+def spt_factory(xml_elem):
+    if xml_elem.find("SIPHeader") is not None:
+        return HeaderSPT(xml_elem)
+    if xml_elem.find("Method") is not None:
+        return MethodSPT(xml_elem)
+    if xml_elem.find("SessionCase") is not None:
+        return SessCaseSPT(xml_elem)
+    if xml_elem.find("RequestURI") is not None:
+        return RURISPT(xml_elem)
+    return BaseSPT(xml_elem)
+
+class BaseSPT(object):
+    def __init__(self, xml_elem):
+        self.groups = [group.text for group in xml_elem.iter("Group")]
+        self.negated = (xml_elem.find("ConditionNegated").text == "1")
+
+    def __str__(self):
+        return "(unknown SPT)"
+
+class RURISPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.r = xml_elem.find("RequestURI").text
+
+    def __str__(self):
+        if self.negated:
+            return "(Request-URI is not \"{}\")".format(self.r)
+        else:
+            return "(Request-URI is \"{}\")".format(self.r)
+
+class MethodSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.m = xml_elem.find("Method").text
+
+    def __str__(self):
+        if self.negated:
+            return "(Method is not {})".format(self.m)
+        else:
+            return "(Method is {})".format(self.m)
+
+class SessCaseSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        self.group = xml_elem.find("Group").text
+        self.s = xml_elem.find("SessionCase").text
+
+    def __str__(self):
+        sesscase = {"0": "originating-registered",
+                    "1": "terminating-registered",
+                    "2": "terminating-unregistered",
+                    "3": "originating-unregistered",
+                    "4": "originating-cdiv"}[self.s]
+        if self.negated:
+            return "(Session case is not {})".format(sesscase)
+        else:
+            return "(Session case is {})".format(sesscase)
+
+class HeaderSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        h = xml_elem.find("SIPHeader")
+        self.header = h.find("Header").text
+        self.content = h.find("Content").text
+
+    def __str__(self):
+        if self.content == ".*":
+            if self.negated:
+                return "({} header is not present)".format(self.header)
+            else:
+                return "({} header is present)".format(self.header)
+        else:
+            if self.negated:
+                return "({} header does not match \"{}\")".format(self.header, self.content)
+            else:
+                return "({} header matches \"{}\")".format(self.header, self.content)
+
+class InitialFilterCriteria(object):
+
+    DEFAULT_HANDLING_TEXT = {"0": "Session Continued",
+                             "1": "Session Termainated"}
+
+    def __init__(self, ifc_elem):
+        self.groups = defaultdict(list)
+
+        as_elem = ifc_elem.find("ApplicationServer")
+        if as_elem is None:
+            raise XMLError("No ApplicationServer defined for IFC")
+
+        try:
+            self.application_server_uri = as_elem.find("ServerName").text
+        except:
+            raise XMLError("No ServerName defined for Application Server")
+
+        try:
+            self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT[as_elem.find("DefaultHandling").text]
+        except:
+            self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT["0"] # This is what Sprout does
+
+        try:
+            self.priority = ifc_elem.find("Priority").text
+        except:
+            self.priority = "[Not specified -- will be treated as zero]" # Match Sprout's behaviour
+
+        trigger_point_elem = ifc_elem.find("TriggerPoint")
+        if trigger_point_elem is None:
+            self.unconditional_match = True
+            return
+        else:
+            self.unconditional_match = False
+
+        try:
+            condition_type_text = trigger_point_elem.find("ConditionTypeCNF").text
+            if (condition_type_text == "1") or (condition_type_text == "true"):
+                self.condition_type_cnf = True
+            else:
+                self.condition_type_cnf = False
+        except:
+            raise XMLError("No ConditionTypeCNF attribute defined for Trigger Point")
+
+        for spt_elem in ifc_elem.iter("SPT"):
+            spt = spt_factory(spt_elem)
+            for group in spt.groups:
+              self.groups[group].append(str(spt))
+
+    def __str__(self):
+
+        result_string = "Priority {}:\n".format(self.priority)
+
+        if self.unconditional_match:
+            return result_string + "Unconditionally invoke {}".format(self.application_server_uri)
+
+        if self.condition_type_cnf:
+            inner_operator = " OR "
+            outer_operator = " ALL of the following are true"
+        else:
+            inner_operator = " AND "
+            outer_operator = " ANY of the following are true"
+
+        group_strs = []
+        for n, g in self.groups.iteritems():
+            group_strs.append(inner_operator.join(g))
+        if len(group_strs) <= 1:
+            outer_operator = ""
+
+        result_string += "If{}\n- {}\nthen invoke {}".format(outer_operator, "\n- ".join(group_strs), self.application_server_uri)
+        return result_string
+
+def explain_user_profile_xml(ims_subscription):
+    response_text = ""
+
+    sp = None
+    for sp in ims_subscription.iter("ServiceProfile"):
+        response_text += "This service profile applies to {}".format(" and ".join([id.text for id in sp.iter("Identity")]))
+        ifc = None
+        for ifc in sp.iter("InitialFilterCriteria"):
+            try:
+                response_text += "\n\n\t" + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t")
+            except XMLError as e:
+                response_text += "\n\tSkipping Malformed IFC: " + e.message
+        if ifc is None:
+            response_text += "\n\tService Profile does not contain any initial filter criteria"
+    if sp is None:
+        response_text = "Cannot parse IMS Subscription: No Service Profiles found"
+
+    return response_text
+
