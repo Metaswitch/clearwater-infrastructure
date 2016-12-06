@@ -39,15 +39,46 @@
 
 grep -v ' #+clearwater-infrastructure$' /etc/hosts > /tmp/hosts.$$
 
+rc=$?;
+if [ $rc != 0 ];
+then
+  echo "ERROR: unable to copy /etc/hosts to a temporary file"
+  exit $rc
+fi
+
 # Check if the public hostname is actually an IPv4 address or an IPv6 address.
 if echo $public_hostname | egrep -v -q -e '^[0-9.]+$' -e '^[0-9A-Fa-f:]+$'
 then
   # If not, set that as the server's internal hostname.
   echo $public_hostname > /etc/hostname
+
+  rc=$?;
+  if [ $rc != 0 ];
+  then
+    echo "ERROR: unable to write to /etc/hostname"
+    rm /tmp/hosts.$$
+    exit $rc
+  fi
 fi
 
 # Ensure that the local hostname is resolvable (regardless of whether it was us that set it or not)
 hostname $(cat /etc/hostname)
 echo $local_ip $(cat /etc/hostname) '#+clearwater-infrastructure' >> /tmp/hosts.$$
 
+rc=$?;
+if [ $rc != 0 ];
+then
+  echo "ERROR: unable to write to /tmp/hosts.$$"
+  rm /tmp/hosts.$$
+  exit $rc
+fi
+
 mv /tmp/hosts.$$ /etc/hosts
+
+rc=$?;
+if [ $rc != 0 ];
+then
+  echo "ERROR: unable to move /tmp/hosts.$$ to /etc/hosts"
+  rm /tmp/hosts.$$
+  exit $rc
+fi

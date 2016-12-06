@@ -8,111 +8,8 @@ import re
 from configobj import ConfigObj
 import datetime
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+import subscriber_cache_utils
 
-# Utility classes and functions to turn the XML into a human-readable summary
-
-def spt_factory(xml_elem):
-    if xml_elem.find("SIPHeader") is not None:
-        return HeaderSPT(xml_elem)
-    if xml_elem.find("Method") is not None:
-        return MethodSPT(xml_elem)
-    if xml_elem.find("SessionCase") is not None:
-        return SessCaseSPT(xml_elem)
-    if xml_elem.find("RequestURI") is not None:
-        return RURISPT(xml_elem)
-    return BaseSPT(xml_elem)
-
-class BaseSPT(object):
-    def __init__(self, xml_elem):
-        self.group = xml_elem.find("Group").text
-        self.negated = (xml_elem.find("ConditionNegated").text == "1")
-    
-    def __str__(self):
-        return "(unknown SPT)"
-
-class RURISPT(BaseSPT):
-    def __init__(self, xml_elem):
-        BaseSPT.__init__(self, xml_elem)
-        self.r = xml_elem.find("RequestURI").text
-
-    def __str__(self):
-        if self.negated:
-            return "(Request-URI is not \"{}\")".format(self.r)
-        else:
-            return "(Request-URI is \"{}\")".format(self.r)
-
-class MethodSPT(BaseSPT):
-    def __init__(self, xml_elem):
-        BaseSPT.__init__(self, xml_elem)
-        self.m = xml_elem.find("Method").text
-
-    def __str__(self):
-        if self.negated:
-            return "(Method is not {})".format(self.m)
-        else:
-            return "(Method is {})".format(self.m)
-
-class SessCaseSPT(BaseSPT):
-    def __init__(self, xml_elem):
-        BaseSPT.__init__(self, xml_elem)
-        self.group = xml_elem.find("Group").text
-        self.s = xml_elem.find("SessionCase").text
-
-    def __str__(self):
-        sesscase = {"0": "originating-registered",
-                    "1": "terminating-registered",
-                    "2": "terminating-unregistered",
-                    "3": "originating-unregistered",
-                    "4": "originating-cdiv"}[self.s]
-        if self.negated:
-            return "(Session case is not {})".format(sesscase)
-        else:
-            return "(Session case is {})".format(sesscase)
-
-class HeaderSPT(BaseSPT):
-    def __init__(self, xml_elem):
-        BaseSPT.__init__(self, xml_elem)
-        h = xml_elem.find("SIPHeader")
-        self.header = h.find("Header").text
-        self.content = h.find("Content").text
-
-    def __str__(self):
-        if self.content == ".*":
-            if self.negated:
-                return "({} header is not present)".format(self.header)
-            else:
-                return "({} header is present)".format(self.header)
-        else:
-            if self.negated:
-                return "({} header does not match \"{}\")".format(self.header, self.content)
-            else:
-                return "({} header matches \"{}\")".format(self.header, self.content)
-
-class InitialFilterCriteria(object):
-    def __init__(self, xml_elem):
-        self.groups = defaultdict(list)
-        as_elem = xml_elem.find("ApplicationServer")
-        self.application_server_uri = as_elem.find("ServerName").text
-        self.default_handling = as_elem.find("DefaultHandling").text
-        self.priority = xml_elem.find("Priority").text
-        for spt_elem in xml_elem.iter("SPT"):
-            spt = spt_factory(spt_elem)
-            self.groups[spt.group].append(str(spt))
-
-    def __str__(self):
-        group_strs = []
-        for n, g in self.groups.iteritems():
-            group_strs.append(" AND ".join(g))
-
-        return "Priority {}:\nIf {}\n\tthen invoke {}".format(self.priority, " OR ".join(group_strs), self.application_server_uri)
-
-def explain_user_profile_xml(data):
-    for sp in data.iter("ServiceProfile"):
-        print "\tThis service profile applies to {}".format(" and ".join([id.text for id in sp.iter("Identity")]))
-        for ifc in sp.iter("InitialFilterCriteria"):
-	    print
-            print "\t" + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t")
 
 parser = argparse.ArgumentParser(description='View information about a '
                                              'subscriber assigned to this '
@@ -150,45 +47,34 @@ def main():
     # in Sprout, and we don't know what this subscriber's primary public
     # identity is yet. For the same reason, if the Homestead query fails for
     # whatever reason, we immediately give up.
-    reg_data_url = 'http://{}/impu/{}/reg-data'.format(hs_mgmt_hostname, impu)
+    try:
+        reg_data = subscriber_cache_utils.get_reg_data(hs_mgmt_hostname, impu)
+    except subscriber_cache_utils.RegDataException as e:
+        sys.exit(e)
 
     try:
-        reg_data_r = requests.get(reg_data_url)
-    except requests.exceptions.ConnectionError:
-        sys.exit('Unable to connect to the Homestead HTTP stack.\nPlease '
-                 'contact your system administrator.')
+        reg_state = reg_data.find('RegistrationState').text
 
-    if reg_data_r.status_code == 200:
-        try:
-            reg_data = ET.fromstring(reg_data_r.content)
-            reg_state = reg_data.find('RegistrationState').text
+        if reg_state == 'NOT_REGISTERED':
+            sys.exit('Subscriber {} is not assigned to this S-CSCF.'.format(impu))
+        else:
+            # The first public identity is the primary public identity. We
+            # save this off and also extract the IMS subscription XML, and
+            # all of the charging addresses.
+            primary_impu = reg_data.find('IMSSubscription/ServiceProfile/PublicIdentity/Identity').text
 
-            if reg_state == 'NOT_REGISTERED':
-                sys.exit('Subscriber {} is not assigned to this S-CSCF.'.format(impu))
+            ims_subscription_elem = reg_data.find('IMSSubscription')
+            ims_subscription = ET.tostring(ims_subscription_elem)
+
+            if reg_data.find('ChargingAddresses') is not None:
+                ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
+                ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
             else:
-                # The first public identity is the primary public identity. We
-                # save this off and also extract the IMS subscription XML, and
-                # all of the charging addresses.
-                primary_impu = reg_data.find('IMSSubscription/ServiceProfile/PublicIdentity/Identity').text
+                ccf_addresses = ecf_addresses = []
 
-                ims_subscription = ET.tostring(reg_data.find('IMSSubscription'))
-
-                if reg_data.find('ChargingAddresses'):
-                    ccf_addresses = [(ccf.text, ccf.attrib['priority']) for ccf in reg_data.find('ChargingAddresses').findall('CCF')]
-                    ecf_addresses = [(ecf.text, ecf.attrib['priority']) for ecf in reg_data.find('ChargingAddresses').findall('ECF')]
-                else:
-                    ccf_addresses = ecf_addresses = []
-
-        except (ET.ParseError, AttributeError, KeyError):
-            sys.exit('Registration information XML returned in unexpected format.\n'
-                     'Please contact your system administrator.')
-    elif reg_data_r.status_code == 502:
-        sys.exit('Unable to contact HSS.\nPlease contact your system administrator.')
-    elif reg_data_r.status_code == 503:
-        sys.exit('HSS gateway is currently overloaded.\nPlease try again later.')
-    else:
-        sys.exit('Unable to retrieve subscriber\'s subscription XML due to unexpected '
-                 '{} error.\nPlease contact your system administrator.'.format(reg_data_r.status_code))
+    except (ET.ParseError, AttributeError, KeyError):
+        sys.exit('Registration information XML returned in unexpected format.\n'
+                 'Please contact your system administrator.')
 
     # Now we can build the Sprout API URLs (with the primary public identity).
     bindings_url = 'http://{}/impu/{}/bindings'.format(sprout_mgmt_hostname,
@@ -285,8 +171,7 @@ def main():
 
     print
     print 'User profile summary:'
-    print
-    explain_user_profile_xml(reg_data.find('IMSSubscription'))
+    print '\t{}'.format(subscriber_cache_utils.explain_user_profile_xml(ims_subscription_elem).replace('\n','\n\t'))
     print
     print 'User profile XML:'
     # Some nice hacky whitespace manipulation to display the XML nicely.
