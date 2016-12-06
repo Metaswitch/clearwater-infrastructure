@@ -40,10 +40,21 @@ def get_reg_data(hs_mgmt_hostname, impu):
     return reg_data
 
 # Utility classes and functions to turn IFC XML into a human-readable summary
-
 class XMLError(Exception):
     def __init__(self, message):
         self.message = message
+
+def get_xml_element_text(xml_root, element, default=None, error=""):
+    try:
+        return xml_root.find(element).text
+    except:
+        if default is not None:
+            return default
+        raise XMLError(error)
+
+def get_xml_element_bool(xml_root, element, default=None, error=""):
+    text = get_xml_element_text(xml_root, element, default, error)
+    return ((text == "1") or (text == "true"))
 
 def spt_factory(xml_elem):
     if xml_elem.find("SIPHeader") is not None:
@@ -54,12 +65,16 @@ def spt_factory(xml_elem):
         return SessCaseSPT(xml_elem)
     if xml_elem.find("RequestURI") is not None:
         return RURISPT(xml_elem)
+    if xml_elem.find("SessionDescription") is not None:
+        return SessDescSPT(xml_elem)
     return BaseSPT(xml_elem)
 
 class BaseSPT(object):
     def __init__(self, xml_elem):
         self.groups = [group.text for group in xml_elem.iter("Group")]
-        self.negated = (xml_elem.find("ConditionNegated").text == "1")
+        self.negated = get_xml_element_bool(xml_elem,
+                "ConditionNegated",
+                error="No ConditionNegated defined for IFC")
 
     def __str__(self):
         return "(unknown SPT)"
@@ -86,18 +101,44 @@ class MethodSPT(BaseSPT):
         else:
             return "(Method is {})".format(self.m)
 
+class SessDescSPT(BaseSPT):
+    def __init__(self, xml_elem):
+        BaseSPT.__init__(self, xml_elem)
+        s = xml_elem.find("SessionDescription")
+        self.line = get_xml_element_text(s,
+                "Line",
+                error="SessionDescription SPT missing Line element")
+        self.content = get_xml_element_text(s, "Content", default=".*")
+
+    def __str__(self):
+        if self.content == ".*":
+            content_string = ""
+        else:
+            content_string = " with value matching \"{}\"".format(self.content)
+
+        if self.negated:
+            return "(SDP does not contain a field of type \"{}\"{})".format(
+                    self.line,
+                    content_string)
+        else:
+            return "(SDP contains a field of type \"{}\"{})".format(
+                    self.line,
+                    content_string)
+
 class SessCaseSPT(BaseSPT):
     def __init__(self, xml_elem):
         BaseSPT.__init__(self, xml_elem)
-        self.group = xml_elem.find("Group").text
         self.s = xml_elem.find("SessionCase").text
 
     def __str__(self):
-        sesscase = {"0": "originating-registered",
-                    "1": "terminating-registered",
-                    "2": "terminating-unregistered",
-                    "3": "originating-unregistered",
-                    "4": "originating-cdiv"}[self.s]
+        try:
+            sesscase = {"0": "originating-registered",
+                        "1": "terminating-registered",
+                        "2": "terminating-unregistered",
+                        "3": "originating-unregistered",
+                        "4": "originating-cdiv"}[self.s]
+        except:
+            raise XMLError("Unrecognised SessionCase")
         if self.negated:
             return "(Session case is not {})".format(sesscase)
         else:
@@ -107,8 +148,8 @@ class HeaderSPT(BaseSPT):
     def __init__(self, xml_elem):
         BaseSPT.__init__(self, xml_elem)
         h = xml_elem.find("SIPHeader")
-        self.header = h.find("Header").text
-        self.content = h.find("Content").text
+        self.header = get_xml_element_text(h, "Header", error="SIPHeader SPT missing Header element")
+        self.content = get_xml_element_text(h, "Content", default=".*")
 
     def __str__(self):
         if self.content == ".*":
@@ -134,20 +175,18 @@ class InitialFilterCriteria(object):
         if as_elem is None:
             raise XMLError("No ApplicationServer defined for IFC")
 
-        try:
-            self.application_server_uri = as_elem.find("ServerName").text
-        except:
-            raise XMLError("No ServerName defined for Application Server")
+        self.application_server_uri = get_xml_element_text(as_elem,
+                "ServerName",
+                error="No ServerName defined for Application Server")
 
-        try:
-            self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT[as_elem.find("DefaultHandling").text]
-        except:
-            self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT["0"] # This is what Sprout does
+        self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT[get_xml_element_text(
+            as_elem,
+            "DefaultHandling",
+            default="0")] # Default to match Sprout's behaviour
 
-        try:
-            self.priority = ifc_elem.find("Priority").text
-        except:
-            self.priority = "[Not specified -- will be treated as zero]" # Match Sprout's behaviour
+        self.priority = get_xml_element_text(ifc_elem,
+                "Priority",
+                default="[Not specified -- will be treated as zero]") # Default to match Sprout's behaviour
 
         trigger_point_elem = ifc_elem.find("TriggerPoint")
         if trigger_point_elem is None:
@@ -156,14 +195,9 @@ class InitialFilterCriteria(object):
         else:
             self.unconditional_match = False
 
-        try:
-            condition_type_text = trigger_point_elem.find("ConditionTypeCNF").text
-            if (condition_type_text == "1") or (condition_type_text == "true"):
-                self.condition_type_cnf = True
-            else:
-                self.condition_type_cnf = False
-        except:
-            raise XMLError("No ConditionTypeCNF attribute defined for Trigger Point")
+        self.condition_type_cnf = get_xml_element_bool(trigger_point_elem,
+                "ConditionTypeCNF",
+                error="No ConditionTypeCNF element defined for Trigger Point")
 
         for spt_elem in ifc_elem.iter("SPT"):
             spt = spt_factory(spt_elem)
