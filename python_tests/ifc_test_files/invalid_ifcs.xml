@@ -1,0 +1,561 @@
+<IMSSubscription noNamespaceSchemaLocation="CxDataType.xsd" xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <PrivateID>Unspecified</PrivateID>
+    <ServiceProfile>
+        <PublicIdentity>
+            <BarringIndication>0</BarringIndication>
+            <Identity>tel:+2012012001</Identity>
+        </PublicIdentity>
+<!-- Start with a valid IFC -->       
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+<!-- No / too many Priorities -->        
+        <InitialFilterCriteria>
+            <Priority></Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        <InitialFilterCriteria>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        <InitialFilterCriteria>
+            <Priority>Blah</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        <InitialFilterCriteria>
+            <Priority>1</Priority>
+            <Priority>2</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+<!-- No / Too many / Invalid Trigger Point -->
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+                
+<!-- No / Invalid ApplicationServers -->
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+            <ApplicationServer>
+                <ServerName>somewhere-else</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- No / invalid / too many ConditionTypeCNF -->
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF></ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <ConditionTypeCNF>1</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- No / Too many / invalid ConditionNegated -->
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated></ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>Blah</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- No / invalid Group -->        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group></Group>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Method>INVITE</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- No / invalid / multiple SPT Types -->        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <FakeType></FakeType>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>Fred</Method>
+                    <RequestURI>Fred</RequestURI>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+<!-- SessionDescription SPT without Line -->      
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionDescription>
+                    </SessionDescription>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- SessionCase SPT without valid value -->        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>INVITE</SessionCase>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase></SessionCase>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+
+<!-- SIP Header SPT without Header -->        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SIPHeader>INVITE</SIPHeader>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SIPHeader></SIPHeader>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+        
+        <InitialFilterCriteria>
+            <Priority>1010</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SIPHeader><Something></Something></SIPHeader>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+                
+<!-- End with a valid IFC -->
+        <InitialFilterCriteria>
+            <Priority>1012</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>0</Group>
+                    <SIPHeader>
+                        <Header>Feature-Caps</Header>
+                        <Content>.*</Content>
+                    </SIPHeader>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>2</SessionCase>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=term_unregistered</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+    </ServiceProfile>
+</IMSSubscription>

@@ -1,0 +1,16 @@
+<IMSSubscription noNamespaceSchemaLocation="CxDataType.xsd" xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <PrivateID>Unspecified</PrivateID>
+    <ServiceProfile>
+        <PublicIdentity>
+            <BarringIndication>0</BarringIndication>
+            <Identity>sip:2012012001@test.cw-ngv.com</Identity>
+        </PublicIdentity>
+        <PublicIdentity>
+            <BarringIndication>0</BarringIndication>
+            <Identity>tel:+2012012001</Identity>
+        </PublicIdentity>
+        <PublicIdentity>
+            <Identity>sip:2125550822@mgm.cw-ngv.com</Identity>
+        </PublicIdentity>
+    </ServiceProfile>
+</IMSSubscription>

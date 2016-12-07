@@ -1,0 +1,112 @@
+
+This service profile applies to tel:+2012012001
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority None:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority [Not specified -- will be treated as zero]:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority Blah:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Skipping Malformed IFC: No ConditionTypeCNF element defined for Trigger Point
+	Priority 1010:
+	Unconditionally invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE) AND (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Skipping Malformed IFC: No ServerName defined for Application Server
+	Skipping Malformed IFC: No ApplicationServer defined for IFC
+	Skipping Malformed IFC: No ServerName defined for Application Server
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Skipping Malformed IFC: No ConditionTypeCNF element defined for Trigger Point
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Skipping Malformed IFC: No ConditionNegated defined for IFC
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is INVITE)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- 
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (unknown SPT)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (unknown SPT)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Priority 1010:
+	If
+	- (Method is Fred)
+	then invoke sip:tas.cw-ngv.com;lr;call=orig
+
+	Skipping Malformed IFC: SessionDescription SPT missing Line element
+	Skipping Malformed IFC: Unrecognised SessionCase
+	Skipping Malformed IFC: Unrecognised SessionCase
+	Skipping Malformed IFC: SIPHeader SPT missing Header element
+	Skipping Malformed IFC: SIPHeader SPT missing Header element
+	Skipping Malformed IFC: SIPHeader SPT missing Header element
+	Priority 1012:
+	If
+	- (Method is INVITE) AND (Feature-Caps header is not present) AND (Session case is terminating-unregistered)
+	then invoke sip:tas.cw-ngv.com;lr;call=term_unregistered
