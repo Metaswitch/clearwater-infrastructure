@@ -1,14 +1,14 @@
 
 This service profile applies to sip:2012012001@test.cw-ngv.com and tel:+2012012001
 
-	Priority 1010:
+	Priority 1012:
 	If
 	- (Method is INVITE) AND (Diversion header is not present) AND (Contact header does not match ".*xs.*\.tas\.ims\.cw-ngv.*") AND (Session case is originating-registered)
 	then invoke sip:tas.cw-ngv.com;lr;call=orig
 
 This service profile applies to sip:2125550822@mgm.cw-ngv.com
 
-	Priority 1012:
+	Priority 1010:
 	If
 	- (Method is INVITE) AND (Feature-Caps header is not present) AND (Session case is terminating-unregistered)
 	then invoke sip:tas.cw-ngv.com;lr;call=term_unregistered

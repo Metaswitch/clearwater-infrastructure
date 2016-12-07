@@ -9,43 +9,7 @@
             <BarringIndication>0</BarringIndication>
             <Identity>tel:+2012012001</Identity>
         </PublicIdentity>
-        <InitialFilterCriteria>
-            <Priority>1010</Priority>
-            <TriggerPoint>
-                <ConditionTypeCNF>0</ConditionTypeCNF>
-                <SPT>
-                    <ConditionNegated>0</ConditionNegated>
-                    <Group>0</Group>
-                    <Method>INVITE</Method>
-                </SPT>
-                <SPT>
-                    <ConditionNegated>1</ConditionNegated>
-                    <Group>0</Group>
-                    <SIPHeader>
-                        <Header>Diversion</Header>
-                        <Content>.*</Content>
-                    </SIPHeader>
-                </SPT>
-                <SPT>
-                    <ConditionNegated>1</ConditionNegated>
-                    <Group>0</Group>
-                    <SIPHeader>
-                        <Header>Contact</Header>
-                        <Content>.*xs.*\.tas\.ims\.cw-ngv.*</Content>
-                    </SIPHeader>
-                </SPT>
-                <SPT>
-                    <ConditionNegated>0</ConditionNegated>
-                    <Group>0</Group>
-                    <SessionCase>0</SessionCase>
-                </SPT>
-            </TriggerPoint>
-            <ApplicationServer>
-                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
-                <DefaultHandling>0</DefaultHandling>
-                <ServiceInfo />
-            </ApplicationServer>
-        </InitialFilterCriteria>
+<!-- Test priority ordering -->        
         <InitialFilterCriteria>
             <Priority>1012</Priority>
             <TriggerPoint>
@@ -75,24 +39,9 @@
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+<!-- Test Method SPT -->
         <InitialFilterCriteria>
-            <Priority>1014</Priority>
-            <TriggerPoint>
-                <ConditionTypeCNF>0</ConditionTypeCNF>
-                <SPT>
-                    <ConditionNegated>0</ConditionNegated>
-                    <Group>0</Group>
-                    <Method>REGISTER</Method>
-                </SPT>
-            </TriggerPoint>
-            <ApplicationServer>
-                <ServerName>sip:tas.cw-ngv.com;lr</ServerName>
-                <DefaultHandling>0</DefaultHandling>
-                <ServiceInfo />
-            </ApplicationServer>
-        </InitialFilterCriteria>
-        <InitialFilterCriteria>
-            <Priority>1016</Priority>
+            <Priority>1010</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -103,15 +52,107 @@
                 <SPT>
                     <ConditionNegated>1</ConditionNegated>
                     <Group>0</Group>
-                    <SIPHeader>
-                        <Header>Feature-Caps</Header>
+                    <Method>REGISTER</Method>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+<!-- Test SessionDescription SPT -->        
+        <InitialFilterCriteria>
+            <Priority>1014</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionDescription>
+                        <Line>.*media</Line>
+                        <Content>//\\.*g711</Content>
+                    </SessionDescription>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionDescription>
+                        <Line>.*audio</Line>
+                    </SessionDescription>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionDescription>
+                        <Line>.*video</Line>
                         <Content>.*</Content>
-                    </SIPHeader>
+                    </SessionDescription>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SessionDescription>
+                        <Line>.*media</Line>
+                        <Content>//\\.*g711</Content>
+                    </SessionDescription>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SessionDescription>
+                        <Line>.*audio</Line>
+                    </SessionDescription>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SessionDescription>
+                        <Line>.*video</Line>
+                        <Content>.*</Content>
+                    </SessionDescription>
+                </SPT>
+            </TriggerPoint>
+            <ApplicationServer>
+                <ServerName>sip:tas.cw-ngv.com;lr</ServerName>
+                <DefaultHandling>0</DefaultHandling>
+                <ServiceInfo />
+            </ApplicationServer>
+        </InitialFilterCriteria>
+<!-- Test SessionCase SPT -->   
+        <InitialFilterCriteria>
+            <Priority>1016</Priority>
+            <TriggerPoint>
+                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>0</SessionCase>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>0</SessionCase>
                 </SPT>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
                     <SessionCase>1</SessionCase>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>2</SessionCase>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>3</SessionCase>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <SessionCase>4</SessionCase>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -120,6 +161,7 @@
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+<!-- Test SIPHeader SPT -->
         <InitialFilterCriteria>
             <Priority>1018</Priority>
             <TriggerPoint>
@@ -127,30 +169,48 @@
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
-                    <Method>MESSAGE</Method>
+                    <SIPHeader>
+                        <Header>Event</Header>
+                        <Content>Reg</Content>
+                    </SIPHeader>
                 </SPT>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
                     <SIPHeader>
-                        <Header>Content-Type</Header>
-                        <Content>application/vnd.3gpp.sms</Content>
+                        <Header>Event</Header>
                     </SIPHeader>
-                </SPT>
-                <SPT>
-                    <ConditionNegated>1</ConditionNegated>
-                    <Group>0</Group>
-                    <RequestURI>ipsm-rstn.ims.cw-ngv.com</RequestURI>
-                </SPT>
-                <SPT>
-                    <ConditionNegated>1</ConditionNegated>
-                    <Group>0</Group>
-                    <RequestURI>ipsm-sob.ims.cw-ngv.com</RequestURI>
                 </SPT>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
-                    <SessionCase>0</SessionCase>
+                    <SIPHeader>
+                        <Header>Event</Header>
+                        <Content>.*</Content>
+                    </SIPHeader>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SIPHeader>
+                        <Header>Event</Header>
+                        <Content>Reg</Content>
+                    </SIPHeader>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SIPHeader>
+                        <Header>Event</Header>
+                    </SIPHeader>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <SIPHeader>
+                        <Header>Event</Header>
+                        <Content>.*</Content>
+                    </SIPHeader>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -159,30 +219,44 @@
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+<!-- Test ConditionTypeCNF -->
         <InitialFilterCriteria>
             <Priority>1020</Priority>
             <TriggerPoint>
-                <ConditionTypeCNF>0</ConditionTypeCNF>
+                <ConditionTypeCNF>1</ConditionTypeCNF>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
-                    <Method>SUBSCRIBE</Method>
+                    <Method>INVITE</Method>
                 </SPT>
                 <SPT>
                     <ConditionNegated>1</ConditionNegated>
                     <Group>0</Group>
-                    <SIPHeader>
-                        <Header>Event</Header>
-                        <Content>reg</Content>
-                    </SIPHeader>
+                    <Method>REGISTER</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>1</Group>
+                    <Method>INVITE</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>1</Group>
+                    <Method>REGISTER</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>1</ConditionNegated>
+                    <Group>2</Group>
+                    <Method>REGISTER</Method>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
-                <ServerName>sip:tas.cw-ngv.com</ServerName>
+                <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
                 <DefaultHandling>0</DefaultHandling>
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+
         <PublicIdentity>
             <Identity>sip:2125550822@mgm.cw-ngv.com</Identity>
         </PublicIdentity>

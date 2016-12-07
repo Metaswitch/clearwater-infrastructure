@@ -7,13 +7,18 @@
         </PublicIdentity>
 <!-- Start with a valid IFC -->       
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>1</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
                     <Method>INVITE</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>REGISTER</Method>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -22,6 +27,7 @@
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+        
 <!-- No / too many Priorities -->        
         <InitialFilterCriteria>
             <Priority></Priority>
@@ -87,9 +93,10 @@
                 <ServiceInfo />
             </ApplicationServer>
         </InitialFilterCriteria>
+
 <!-- No / Too many / Invalid Trigger Point -->
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>2</Priority>
             <TriggerPoint>
             </TriggerPoint>
             <ApplicationServer>
@@ -100,7 +107,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>3</Priority>
             <ApplicationServer>
                 <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
                 <DefaultHandling>0</DefaultHandling>
@@ -109,7 +116,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>4</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -123,7 +130,7 @@
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
-                    <Method>INVITE</Method>
+                    <Method>REGISTER</Method>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -135,7 +142,7 @@
                 
 <!-- No / Invalid ApplicationServers -->
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>5</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -149,7 +156,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>6</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -161,7 +168,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>7</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -177,7 +184,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>8</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -193,7 +200,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>9</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -216,7 +223,7 @@
 
 <!-- No / invalid / too many ConditionTypeCNF -->
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>10</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF></ConditionTypeCNF>
                 <SPT>
@@ -224,6 +231,11 @@
                     <Group>0</Group>
                     <Method>INVITE</Method>
                 </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>REGISTER</Method>
+                </SPT>
             </TriggerPoint>
             <ApplicationServer>
                 <ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName>
@@ -233,7 +245,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>11</Priority>
             <TriggerPoint>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
@@ -249,7 +261,7 @@
         </InitialFilterCriteria>
 
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>12</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <ConditionTypeCNF>1</ConditionTypeCNF>
@@ -257,6 +269,11 @@
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
                     <Method>INVITE</Method>
+                </SPT>
+                <SPT>
+                    <ConditionNegated>0</ConditionNegated>
+                    <Group>0</Group>
+                    <Method>REGISTER</Method>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -268,7 +285,7 @@
 
 <!-- No / Too many / invalid ConditionNegated -->
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>13</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -285,7 +302,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>14</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -302,7 +319,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>15</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -318,7 +335,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>16</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -337,7 +354,7 @@
 
 <!-- No / invalid Group -->        
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>17</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -354,7 +371,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>18</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -371,7 +388,7 @@
 
 <!-- No / invalid / multiple SPT Types -->        
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>19</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -387,7 +404,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>20</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -404,14 +421,14 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>21</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
                     <ConditionNegated>0</ConditionNegated>
                     <Group>0</Group>
-                    <Method>Fred</Method>
                     <RequestURI>Fred</RequestURI>
+                    <Method>Fred</Method>
                 </SPT>
             </TriggerPoint>
             <ApplicationServer>
@@ -423,7 +440,7 @@
         
 <!-- SessionDescription SPT without Line -->      
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>22</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -442,7 +459,7 @@
 
 <!-- SessionCase SPT without valid value -->        
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>23</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -459,7 +476,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>24</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -477,7 +494,7 @@
 
 <!-- SIP Header SPT without Header -->        
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>25</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -494,7 +511,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>26</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -511,7 +528,7 @@
         </InitialFilterCriteria>
         
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>27</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -529,7 +546,7 @@
                 
 <!-- End with a valid IFC -->
         <InitialFilterCriteria>
-            <Priority>1012</Priority>
+            <Priority>28</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>

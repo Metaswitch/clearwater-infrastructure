@@ -42,29 +42,40 @@ def get_reg_data(hs_mgmt_hostname, impu):
 
 # Utility classes and functions to turn IFC XML into a human-readable summary
 class XMLError(Exception):
-    def __init__(self, message):
+    def __init__(self, message, xml_elem):
         self.message = message
+        if xml_elem is not None:
+            self.message += " (" + ET.tostring(xml_elem) + ")"
 
 
-def get_xml_element_text(xml_root, element, default=None, error=""):
+def get_xml_element_text(xml_root, element, default=None, error="", error_include_xml=False):
     try:
         return xml_root.find(element).text
     except:
         if default is not None:
             return default
-        raise XMLError(error)
+        if error_include_xml:
+            raise XMLError(error, xml_root)
+        else:
+            raise XMLError(error, None)
 
 
-def get_xml_element_bool(xml_root, element, default=None, error=""):
-    text = get_xml_element_text(xml_root, element, default, error)
+def get_xml_element_bool(xml_root, element, default=None, error="", error_include_xml=False):
+    text = get_xml_element_text(xml_root,
+                                element,
+                                default,
+                                error,
+                                error_include_xml)
     return ((text == "1") or (text == "true"))
 
 
 def spt_factory(xml_elem):
-    if xml_elem.find("SIPHeader") is not None:
-        return HeaderSPT(xml_elem)
+    # Note that the ordering of the following test cases should match that in
+    # Sprout to ensure that we interpret IFCs consistently.
     if xml_elem.find("Method") is not None:
         return MethodSPT(xml_elem)
+    if xml_elem.find("SIPHeader") is not None:
+        return HeaderSPT(xml_elem)
     if xml_elem.find("SessionCase") is not None:
         return SessCaseSPT(xml_elem)
     if xml_elem.find("RequestURI") is not None:
@@ -76,13 +87,15 @@ def spt_factory(xml_elem):
 
 class BaseSPT(object):
     def __init__(self, xml_elem):
+        self.spt_elem = xml_elem
         self.groups = [group.text for group in xml_elem.iter("Group")]
         self.negated = get_xml_element_bool(xml_elem,
             "ConditionNegated",
-            error="No ConditionNegated defined for IFC")
+            error="No ConditionNegated defined for SPT",
+            error_include_xml=True)
 
     def __str__(self):
-        return "(unknown SPT)"
+        return "[unknown SPT type -- will never match]"
 
 
 class RURISPT(BaseSPT):
@@ -115,7 +128,8 @@ class SessDescSPT(BaseSPT):
         s = xml_elem.find("SessionDescription")
         self.line = get_xml_element_text(s,
             "Line",
-            error="SessionDescription SPT missing Line element")
+            error="SessionDescription SPT missing Line element",
+            error_include_xml=True)
         self.content = get_xml_element_text(s, "Content", default=".*")
 
     def __str__(self):
@@ -147,7 +161,8 @@ class SessCaseSPT(BaseSPT):
                         "3": "originating-unregistered",
                         "4": "originating-cdiv"}[self.s]
         except:
-            raise XMLError("Unrecognised SessionCase")
+            raise XMLError("SessionCase SPT has unrecognised SessionCase",
+                    self.spt_elem)
         if self.negated:
             return "(Session case is not {})".format(sesscase)
         else:
@@ -160,7 +175,8 @@ class HeaderSPT(BaseSPT):
         h = xml_elem.find("SIPHeader")
         self.header = get_xml_element_text(h,
            "Header",
-           error="SIPHeader SPT missing Header element")
+           error="SIPHeader SPT missing Header element",
+           error_include_xml=True)
         self.content = get_xml_element_text(h,
            "Content",
            default=".*")
@@ -190,11 +206,12 @@ class InitialFilterCriteria(object):
 
         as_elem = ifc_elem.find("ApplicationServer")
         if as_elem is None:
-            raise XMLError("No ApplicationServer defined for IFC")
+            raise XMLError("No ApplicationServer defined for IFC: ", ifc_elem)
 
         self.application_server_uri = get_xml_element_text(as_elem,
             "ServerName",
-            error="No ServerName defined for Application Server")
+            error="No ServerName defined for Application Server",
+            error_include_xml=True)
 
         self.default_handling = InitialFilterCriteria.DEFAULT_HANDLING_TEXT[get_xml_element_text(
             as_elem,
@@ -205,7 +222,11 @@ class InitialFilterCriteria(object):
         # and default to zero though in order to match Sprout's behaviour.
         self.priority = get_xml_element_text(ifc_elem,
             "Priority",
-            default="[Not specified -- will be treated as zero]")
+            default="0")
+        try:
+            self.priority = int(self.priority)
+        except:
+            raise XMLError("IFC has non-integer Priority value", ifc_elem)
 
         trigger_point_elem = ifc_elem.find("TriggerPoint")
         if trigger_point_elem is None:
@@ -216,9 +237,10 @@ class InitialFilterCriteria(object):
 
         self.condition_type_cnf = get_xml_element_bool(trigger_point_elem,
             "ConditionTypeCNF",
-            error="No ConditionTypeCNF element defined for Trigger Point")
+            error="No ConditionTypeCNF element defined for Trigger Point",
+            error_include_xml=True)
 
-        for spt_elem in ifc_elem.iter("SPT"):
+        for spt_elem in trigger_point_elem.iter("SPT"):
             spt = spt_factory(spt_elem)
             for group in spt.groups:
                 self.groups[group].append(str(spt))
@@ -241,7 +263,10 @@ class InitialFilterCriteria(object):
         group_strs = []
         for n, g in self.groups.iteritems():
             group_strs.append(inner_operator.join(g))
-        if len(group_strs) <= 1:
+        if len(group_strs) == 0:
+            group_strs.append("[No IFC groups defined -- will match "
+                "unconditionally]")
+        if len(group_strs) == 1:
             outer_operator = ""
 
         result_string += "If{}\n- {}\nthen invoke {}".format(
@@ -249,7 +274,6 @@ class InitialFilterCriteria(object):
             "\n- ".join(group_strs),
             self.application_server_uri)
         return result_string
-
 
 def explain_user_profile_xml(ims_subscription):
     response_text = ""
@@ -263,18 +287,25 @@ def explain_user_profile_xml(ims_subscription):
         response_text += "\nThis service profile applies to {}".format(
             " and ".join(identities) + "\n")
 
-        ifc = None
+        ifcs = []
         for ifc in sp.iter("InitialFilterCriteria"):
             try:
-                response_text += ("\n\t"
-                    + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t") +
-                    "\n")
+                ifcs.append(InitialFilterCriteria(ifc))
             except XMLError as e:
-                response_text += "\n\tSkipping Malformed IFC: " + e.message
-        if ifc is None:
+                response_text += ("\n\tSkipping Malformed IFC: " + e.message +
+                    "\n")
+                continue
+
+        if len(ifcs) == 0:
             response_text += (
                 "\n\tService Profile does not contain any initial filter "
                 "criteria")
+        else:
+            ifcs.sort(key=lambda ifc: ifc.priority)
+            for ifc in ifcs:
+                response_text += ("\n\t"
+                    + str(ifc).replace("\n", "\n\t") +
+                    "\n")
 
     if sp is None:
         response_text = "\nCannot parse IMS Subscription: No Service Profiles found"

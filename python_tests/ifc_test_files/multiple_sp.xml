@@ -10,7 +10,7 @@
             <Identity>tel:+2012012001</Identity>
         </PublicIdentity>
         <InitialFilterCriteria>
-            <Priority>1010</Priority>
+            <Priority>1012</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
@@ -49,7 +49,7 @@
     </ServiceProfile>
     <ServiceProfile>
         <InitialFilterCriteria>
-            <Priority>1012</Priority>
+            <Priority>1010</Priority>
             <TriggerPoint>
                 <ConditionTypeCNF>0</ConditionTypeCNF>
                 <SPT>
