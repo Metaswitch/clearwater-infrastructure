@@ -1,33 +1,33 @@
-
+1
 This service profile applies to tel:+2012012001
 
-	Skipping Malformed IFC: IFC has non-integer Priority value (<InitialFilterCriteria><Priority /><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint><ApplicationServer><ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName><DefaultHandling>0</DefaultHandling><ServiceInfo /></ApplicationServer></InitialFilterCriteria>)
+	Skipping Malformed IFC: IFC has non-integer Priority value (<InitialFilterCriteria><Priority/><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint><ApplicationServer><ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName><DefaultHandling>0</DefaultHandling><ServiceInfo/></ApplicationServer></InitialFilterCriteria>)
 
-	Skipping Malformed IFC: IFC has non-integer Priority value (<InitialFilterCriteria><Priority>Blah</Priority><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint><ApplicationServer><ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName><DefaultHandling>0</DefaultHandling><ServiceInfo /></ApplicationServer></InitialFilterCriteria>)
+	Skipping Malformed IFC: IFC has non-integer Priority value (<InitialFilterCriteria><Priority>Blah</Priority><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint><ApplicationServer><ServerName>sip:tas.cw-ngv.com;lr;call=orig</ServerName><DefaultHandling>0</DefaultHandling><ServiceInfo/></ApplicationServer></InitialFilterCriteria>)
 
-	Skipping Malformed IFC: No ConditionTypeCNF element defined for Trigger Point (<TriggerPoint />)
+	Skipping Malformed IFC: No ConditionTypeCNF element defined for Trigger Point (<TriggerPoint></TriggerPoint>)
 
-	Skipping Malformed IFC: No ServerName defined for Application Server (<ApplicationServer />)
+	Skipping Malformed IFC: No ServerName defined for Application Server (<ApplicationServer></ApplicationServer>)
 
-	Skipping Malformed IFC: No ApplicationServer defined for IFC:  (<InitialFilterCriteria><Priority>6</Priority><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint></InitialFilterCriteria>)
+	Skipping Malformed IFC: No ApplicationServer defined for IFC (<InitialFilterCriteria><Priority>6</Priority><TriggerPoint><ConditionTypeCNF>0</ConditionTypeCNF><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint></InitialFilterCriteria>)
 
-	Skipping Malformed IFC: No ServerName defined for Application Server (<ApplicationServer><DefaultHandling>0</DefaultHandling><ServiceInfo /></ApplicationServer>)
+	Skipping Malformed IFC: No ServerName defined for Application Server (<ApplicationServer><DefaultHandling>0</DefaultHandling><ServiceInfo/></ApplicationServer>)
 
 	Skipping Malformed IFC: No ConditionTypeCNF element defined for Trigger Point (<TriggerPoint><SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><Method>INVITE</Method></SPT></TriggerPoint>)
 
 	Skipping Malformed IFC: No ConditionNegated defined for SPT (<SPT><Group>0</Group><Method>INVITE</Method></SPT>)
 
-	Skipping Malformed IFC: SessionDescription SPT missing Line element (<SessionDescription />)
+	Skipping Malformed IFC: SessionDescription SPT missing Line element (<SessionDescription></SessionDescription>)
 
 	Skipping Malformed IFC: SessionCase SPT has unrecognised SessionCase (<SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><SessionCase>INVITE</SessionCase></SPT>)
 
-	Skipping Malformed IFC: SessionCase SPT has unrecognised SessionCase (<SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><SessionCase /></SPT>)
+	Skipping Malformed IFC: SessionCase SPT has unrecognised SessionCase (<SPT><ConditionNegated>0</ConditionNegated><Group>0</Group><SessionCase/></SPT>)
 
 	Skipping Malformed IFC: SIPHeader SPT missing Header element (<SIPHeader>INVITE</SIPHeader>)
 
-	Skipping Malformed IFC: SIPHeader SPT missing Header element (<SIPHeader />)
+	Skipping Malformed IFC: SIPHeader SPT missing Header element (<SIPHeader/>)
 
-	Skipping Malformed IFC: SIPHeader SPT missing Header element (<SIPHeader><Something /></SIPHeader>)
+	Skipping Malformed IFC: SIPHeader SPT missing Header element (<SIPHeader><Something/></SIPHeader>)
 
 	Priority 0:
 	If

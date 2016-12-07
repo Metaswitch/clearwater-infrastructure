@@ -2,6 +2,7 @@
 # Copyright (C) 2016 Metaswitch Networks Ltd. All rights reserved.
 
 import requests
+import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
@@ -45,7 +46,9 @@ class XMLError(Exception):
     def __init__(self, message, xml_elem):
         self.message = message
         if xml_elem is not None:
-            self.message += " (" + ET.tostring(xml_elem) + ")"
+            xml_elem_text = ET.tostring(xml_elem)
+            xml_elem_text = re.sub('(?m)\n*\s*', '', xml_elem_text)
+            self.message += " (" + xml_elem_text + ")"
 
 
 def get_xml_element_text(xml_root, element, default=None, error="", error_include_xml=False):
@@ -206,7 +209,7 @@ class InitialFilterCriteria(object):
 
         as_elem = ifc_elem.find("ApplicationServer")
         if as_elem is None:
-            raise XMLError("No ApplicationServer defined for IFC: ", ifc_elem)
+            raise XMLError("No ApplicationServer defined for IFC", ifc_elem)
 
         self.application_server_uri = get_xml_element_text(as_elem,
             "ServerName",
