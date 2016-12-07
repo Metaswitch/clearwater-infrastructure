@@ -52,3 +52,8 @@ deb: build deb-only
 include build-infra/cw-rpm.mk
 .PHONY: rpm
 rpm: build rpm-only
+
+.PHONY: test
+test:
+	cd python_tests; python -m unittest discover
+
