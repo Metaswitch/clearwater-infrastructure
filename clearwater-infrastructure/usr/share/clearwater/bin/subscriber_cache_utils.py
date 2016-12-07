@@ -256,20 +256,27 @@ def explain_user_profile_xml(ims_subscription):
 
     sp = None
     for sp in ims_subscription.iter("ServiceProfile"):
-        response_text += "This service profile applies to {}".format(
-            " and ".join([ident.text for ident in sp.iter("Identity")]))
+        identities = [ident.text for ident in sp.iter("Identity")]
+        if len(identities) == 0:
+            return "\nCannot parse IMS Subscription: no Identity elements found"
+
+        response_text += "\nThis service profile applies to {}".format(
+            " and ".join(identities) + "\n")
+
         ifc = None
         for ifc in sp.iter("InitialFilterCriteria"):
             try:
-                response_text += ("\n\n\t"
-                    + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t"))
+                response_text += ("\n\t"
+                    + str(InitialFilterCriteria(ifc)).replace("\n", "\n\t") +
+                    "\n")
             except XMLError as e:
                 response_text += "\n\tSkipping Malformed IFC: " + e.message
         if ifc is None:
             response_text += (
-                "\n\tService Profile does not contain any initial filter"
-                + "criteria")
+                "\n\tService Profile does not contain any initial filter "
+                "criteria")
+
     if sp is None:
-        response_text = "Cannot parse IMS Subscription: No Service Profiles found"
+        response_text = "\nCannot parse IMS Subscription: No Service Profiles found"
 
     return response_text
