@@ -52,7 +52,7 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
+        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.prerm
     ;;
 
     failed-upgrade)
