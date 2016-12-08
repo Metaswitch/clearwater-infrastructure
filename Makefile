@@ -52,4 +52,3 @@ deb: build deb-only
 include build-infra/cw-rpm.mk
 .PHONY: rpm
 rpm: build rpm-only
-
