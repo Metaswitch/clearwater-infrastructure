@@ -1,4 +1,0 @@
-
-This service profile applies to sip:2012012001@test.cw-ngv.com and tel:+2012012001 and sip:2125550822@mgm.cw-ngv.com
-
-	Service Profile does not contain any initial filter criteria
