@@ -16,7 +16,7 @@ endif
 
 bin/buildout: ${ENV_DIR}/bin/python
 	mkdir -p .buildout_downloads/dist
-	${ENV_DIR}/bin/easy_install "setuptools>0.7"
+	${ENV_DIR}/bin/easy_install "setuptools==18.0.1"
 	${ENV_DIR}/bin/easy_install distribute
 	${ENV_DIR}/bin/easy_install zc.buildout
 	mkdir -p bin/
@@ -26,7 +26,7 @@ ${ENV_DIR}/bin/python:
 	virtualenv --no-site-packages --setuptools --python=${PYTHON_BIN} ${ENV_DIR}
 
 .PHONY: clean
-clean: 
+clean:
 	rm -rf bin eggs develop-eggs parts .installed.cfg .buildout_downloads
 	rm -rf ${ENV_DIR}
 
