@@ -16,7 +16,7 @@ endif
 
 bin/buildout: ${ENV_DIR}/bin/python
 	mkdir -p .buildout_downloads/dist
-	${ENV_DIR}/bin/easy_install "setuptools==18.0.1"
+	${ENV_DIR}/bin/easy_install "setuptools==24"
 	${ENV_DIR}/bin/easy_install distribute
 	${ENV_DIR}/bin/easy_install zc.buildout
 	mkdir -p bin/
