@@ -53,7 +53,7 @@ set -e
 
 case "$1" in
     configure)
-        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
+        /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst $2
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

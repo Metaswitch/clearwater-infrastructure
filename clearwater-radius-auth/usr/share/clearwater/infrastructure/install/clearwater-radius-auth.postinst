@@ -39,3 +39,10 @@
 sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
 # Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
 sed -i "3i# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n" /etc/pam.d/sshd
+
+# If this is a fresh install, we will not have been called with the previous version.
+# In this case, we want to comment out the default entries in /etc/pam_radius_auth.conf
+if [ -z "$1" ]; then
+  echo "This is a fresh install of clearwater-radius-auth\nDisabling default entries in /etc/pam_radius_auth.conf"
+  sed -i "/^#/! s/^/# /" /etc/pam_radius_auth.conf
+fi
