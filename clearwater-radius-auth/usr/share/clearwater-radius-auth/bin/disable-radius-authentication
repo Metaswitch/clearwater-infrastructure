@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# @file clearwater-radius-auth.postinst
+# @file disable-radius-authentication
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016 Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,8 +34,6 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Adds 'ato' after the password and shadow entries in nsswitch.conf.
-# This sets NSS to check the libnss_ato component for the user if they are not found locally.
-sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
-# Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
-sed -i "3i# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n" /etc/pam.d/sshd
+# Remove entries put in place by the enable-radius-auth script
+sed -i "s/ ato//" /etc/nsswitch.conf
+sed -i "/+clearwater-radius-auth/,/-clearwater-radius-auth/d" /etc/pam.d/sshd
