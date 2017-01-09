@@ -65,7 +65,7 @@ sip_ip=$(/usr/share/clearwater/bin/bracket-ipv6-address $local_ip)
 #
 # Note that the -w option (the overall timeout) needs to be larger than the -q
 # option - set it to the calculated -q value plus 1.
-wait_time=1
+wait_time=2
 
 if [ ! -z "$target_latency_us" ]
 then
