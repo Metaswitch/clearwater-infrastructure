@@ -12,6 +12,7 @@ Common infrastructure for all Clearwater servers
 . %{rootdir}/build-infra/cw-rpm-utils clearwater-infrastructure %{rootdir} %{buildroot}
 setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-infrastructure.install
+install_links_in_buildroot < %{rootdir}/debian/clearwater-infrastructure.links
 dirs_to_buildroot < %{rootdir}/debian/clearwater-infrastructure.dirs
 copy_to_buildroot debian/clearwater-infrastructure.init.d /etc/init.d clearwater-infrastructure
 build_files_list > clearwater-infrastructure.files
