@@ -170,7 +170,7 @@ get_cw_package_config_files() {
   else
     # The dpkg etc lines are of the form below, so we need the 2nd field from cut.
     #   <space><path-to-config-file><space><checksum>
-    $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2)
+    dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2
   fi
 }
 
@@ -297,7 +297,7 @@ get_network_info()
 
   for ns in `ip netns list`
   do
-    ip netns exec $ns ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig.txt > /dev/null
+    ip netns exec $ns ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig_$ns.txt > /dev/null
     ip netns exec $ns netstat -rn > $CURRENT_DUMP_DIR/routes_$ns.txt
     ip netns exec $ns netstat -anp > $CURRENT_DUMP_DIR/netstat_$ns.txt
   done
@@ -591,7 +591,7 @@ do
   copy_to_dump '/etc/hosts'
 
   # Get the config files for installed clearwater packages.
-  for conffile in get_cw_package_config_files
+  for conffile in $(get_cw_package_config_files)
   do
     copy_to_dump $conffile
   done
