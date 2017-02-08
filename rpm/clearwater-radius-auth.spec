@@ -15,16 +15,4 @@ setup_buildroot
 install_to_buildroot < %{rootdir}/debian/clearwater-radius-auth.install
 build_files_list > clearwater-radius-auth.files
 
-%post
-# Initial install, not upgrade
-if [ "$1" == 1 ] ; then
-  /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.postinst
-fi
-
-%preun
-# Uninstall, not upgrade
-if [ "$1" == 0 ] ; then
-  /usr/share/clearwater/infrastructure/install/clearwater-radius-auth.prerm
-fi
-
 %files -f clearwater-radius-auth.files
