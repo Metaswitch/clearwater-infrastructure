@@ -255,3 +255,7 @@ dlmod memento_as_handler /usr/lib/clearwater/memento_as_handler.so
 pass .1.2.826.0.1.1578918.9.8.4 /usr/share/clearwater/bin/memento-disk-usage-stats
 dlmod astaire_handler /usr/lib/clearwater/astaire_handler.so
 dlmod chronos_handler /usr/lib/clearwater/chronos_handler.so
+
+# Don't log on successful connections - allowing this log means that a log is
+# made to syslog on every stats query, which is too spammy
+dontLogTCPWrappersConnects
