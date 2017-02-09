@@ -258,4 +258,4 @@ dlmod chronos_handler /usr/lib/clearwater/chronos_handler.so
 
 # Don't log on successful connections - allowing this log means that a log is
 # made to syslog on every stats query, which is too spammy
-dontLogTCPWrappersConnects
+dontLogTCPWrappersConnects 1
