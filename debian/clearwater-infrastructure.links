@@ -1,2 +1,2 @@
-/usr/share/clearwater/bin/run-in-signaling-namespace /usr/bin/cw-run-in-signaling-namespace
+/usr/share/clearwater/bin/run-in-signaling-namespace /usr/bin/cw-run_in_signaling_namespace
 /usr/share/clearwater/bin/gather_diags /usr/bin/cw-gather_diags
