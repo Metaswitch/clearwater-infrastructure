@@ -161,6 +161,9 @@ SCTP_streams = 3;
 # Uncomment (and create acl.conf) to allow incoming connections from other peers.
 $acl_commenter LoadExtension = "$fd_dir/acl_wl.fdx" : "$cfg_dir/acl.conf";
 
+# Follow Diameter redirections
+LoadExtension = "$fd_dir/rt_redirect.fdx";
+
 # Uncomment to display periodic state information
 LoadExtension = "$fd_dir/dbg_monitor.fdx";
 
