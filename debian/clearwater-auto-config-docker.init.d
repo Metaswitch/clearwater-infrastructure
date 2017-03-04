@@ -101,6 +101,7 @@ do_auto_config()
       # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
       # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
       sprout_hostname=sprout
+      sprout_registration_store=astaire
       chronos_hostname=chronos
       cassandra_hostname=cassandra
       hs_hostname=homestead:8888
@@ -112,6 +113,7 @@ do_auto_config()
     else
       # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
+      sprout_registration_store=astaire.$ZONE
       chronos_hostname=chronos.$ZONE
       cassandra_hostname=cassandra.$ZONE
       hs_hostname=hs.$ZONE:8888
@@ -129,6 +131,7 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^sprout_registration_store=.*$/sprout_registration_store='$sprout_registration_store'/g
             s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
             s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
