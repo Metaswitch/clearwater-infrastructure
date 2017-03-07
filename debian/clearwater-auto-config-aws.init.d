@@ -49,7 +49,7 @@
 do_auto_config()
 {
   mkdir -p /etc/clearwater
- 
+
   local_config=/etc/clearwater/local_config
   shared_config=/etc/clearwater/shared_config
 
@@ -66,6 +66,7 @@ do_auto_config()
           s/^xdms_hostname=.*$/xdms_hostname='$public_hostname':7888/g
           s/^hs_hostname=.*$/hs_hostname='$public_hostname':8888/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$public_hostname':8889/g
+          s/^sprout_registration_store=.*$/sprout_registration_store='$public_hostname'/g
           s/^upstream_hostname=.*$/upstream_hostname='$public_hostname'/g' -i $shared_config
 
   # Sprout will replace the cluster-settings file with something appropriate when it starts
