@@ -79,6 +79,10 @@ do_auto_config()
     sed -e '/^etcd_cluster=.*/d
             /^etcd_proxy=.*/d' -i $local_config
 
+  # Extract DNS servers from resolv.conf and comma-separate them.
+  nameserver=`grep nameserver /etc/resolv.conf | cut -d ' ' -f 2`
+  nameserver=`echo $nameserver | tr ' ' ','`
+
   if [ -n "$ETCD_PROXY" ]
   then
     # Set up etcd proxy configuration from environment.  Shared configuration
@@ -101,6 +105,7 @@ do_auto_config()
       # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
       # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
       sprout_hostname=sprout
+      sprout_registration_store=astaire
       chronos_hostname=chronos
       cassandra_hostname=cassandra
       hs_hostname=homestead:8888
@@ -108,10 +113,12 @@ do_auto_config()
       xdms_hostname=homer:7888
       upstream_hostname=scscf.sprout
       ralf_hostname=ralf:10888
+      ralf_session_store=astaire
       home_domain="example.com"
     else
       # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
+      sprout_registration_store=astaire.$ZONE
       chronos_hostname=chronos.$ZONE
       cassandra_hostname=cassandra.$ZONE
       hs_hostname=hs.$ZONE:8888
@@ -119,6 +126,7 @@ do_auto_config()
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=scscf.sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
+      ralf_session_store=astaire.$ZONE
       home_domain=$ZONE
     fi
 
@@ -129,17 +137,31 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^sprout_registration_store=.*$/sprout_registration_store='$sprout_registration_store'/g
+            s/^ralf_session_store=.*$/ralf_session_store='$ralf_session_store'/g
             s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
             s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
-    # Extract DNS servers from resolv.conf and comma-separate them.
-    nameserver=`grep nameserver /etc/resolv.conf | cut -d ' ' -f 2`
-    nameserver=`echo $nameserver | tr ' ' ','`
     if [ -n "$nameserver" ]
     then
       sed -e '/^signaling_dns_server=.*/d' -i $shared_config
       echo "signaling_dns_server=$nameserver" >> $shared_config
+    fi
+  fi
+
+  # Is this a Chronos node?   If so then we need to sort chronos.conf including setting up DNS server config.
+  if [ -e /etc/chronos/chronos.conf.sample ]
+  then
+    if [ ! -e /etc/chronos/chronos.conf ]
+    then
+      cp /etc/chronos/chronos.conf.sample /etc/chronos/chronos.conf
+    fi
+
+    if [ -n "$nameserver" ]
+    then
+      echo "\n[dns]" >> /etc/chronos/chronos.conf
+      echo "servers=$nameserver" >> /etc/chronos/chronos.conf
     fi
   fi
 }
