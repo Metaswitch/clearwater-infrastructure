@@ -113,6 +113,7 @@ do_auto_config()
       xdms_hostname=homer:7888
       upstream_hostname=scscf.sprout
       ralf_hostname=ralf:10888
+      ralf_session_store=astaire
       home_domain="example.com"
     else
       # Configure relative to the base zone and rely on externally configured DNS entries.
@@ -125,6 +126,7 @@ do_auto_config()
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=scscf.sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
+      ralf_session_store=astaire.$ZONE
       home_domain=$ZONE
     fi
 
@@ -136,6 +138,7 @@ do_auto_config()
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
             s/^sprout_registration_store=.*$/sprout_registration_store='$sprout_registration_store'/g
+            s/^ralf_session_store=.*$/ralf_session_store='$ralf_session_store'/g
             s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
             s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
