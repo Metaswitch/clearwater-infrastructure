@@ -1,5 +1,5 @@
 # We want the node type to be displayed as a hyphen-separated list of all the 
-#flavours of Clearwater services installed on this node
+# flavours of Clearwater services installed on this node.
 type=$(. /etc/clearwater/config
        {
          # Different operating systems use their own package management systems. 
@@ -8,22 +8,23 @@ type=$(. /etc/clearwater/config
          # working with .deb packages.
          if which yum > /dev/null 2>&1 ; then
            # rpm returns an unsorted list and as the version numbers are 
-           # stripped off we also need to filter out duplicates
+           # stripped off we also need to filter out duplicates.
            rpm -qa --qf '%{NAME}\n' | sort | uniq
          else
            dpkg-query -W -f='${Package}\n'
          fi
        } |
        egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|stats-engine|ralf)$' |
-       # Replacements to shorten the constructed name and to remove hyphenated
-       # product names as hyphens are used as node separators
+       # Shorten the constructed name and replace product names containing
+       # hyphens.
        sed -e 's/clearwater-sip-stress/sipp/g' |
        sed -e 's/stats-engine/mvse/g' |
        tr "\\n" "-" |
        sed -e 's/bono-ellis-homer-homestead-sprout/cw-aio/g
                s/-$//g')
 
-# We should only set the node-index if it is configured in the underlying config
+# We should only set the node-index if it is configured in the underlying
+# config.
 node_idx=$(. /etc/clearwater/config
            if [ -n "$node_idx" ]
            then
