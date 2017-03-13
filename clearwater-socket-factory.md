@@ -1,6 +1,6 @@
 # Clearwater Socket Factory
 
-The Clearwater Socket Factory` comprises two services, `clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` that run as root in the management and signaling network namespaces respectively (both run in the default namespace if traffic separation is not enabled). They allow processes running in one namespace to establish TCP connections from the other namespace.
+The Clearwater Socket Factory comprises two services, `clearwater-socket-factory-mgmt` and `clearwater-socket-factory-sig` that run as root in the management and signaling network namespaces respectively (both run in the default namespace if traffic separation is not enabled). They allow processes running in one namespace to establish TCP connections from the other namespace.
 
 For example, when traffic separation is enabled on a Clearwater node the default namespace is used for management traffic. `clearwater-socket-factory-mgmt` is used by processes in the signalling namespace (such as Sprout) to obtain connections to the Metaswitch Service Assurance Server (which lives in the management network).
 
