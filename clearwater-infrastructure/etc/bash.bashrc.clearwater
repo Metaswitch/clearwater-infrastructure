@@ -38,3 +38,5 @@ else
     PS1='${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
 fi
 unset type node_idx
+
+PATH=$PATH:/usr/share/clearwater/bin:/usr/share/clearwater/clearwater-cluster-manager/scripts:/usr/share/clearwater/clearwater-queue-manager/scripts:/usr/share/clearwater/clearwater-config-manager/scripts
