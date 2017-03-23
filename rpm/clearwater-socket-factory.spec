@@ -1,6 +1,5 @@
 Name:           clearwater-socket-factory
 Summary:        Enables other processes to establish connections using a different network namespace
-BuildArch:      noarch
 BuildRequires:  python2-devel python-virtualenv
 Requires:       redhat-lsb-core clearwater-infrastructure
 

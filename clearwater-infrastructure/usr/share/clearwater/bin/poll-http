@@ -42,9 +42,10 @@ address=$1
 . /etc/clearwater/config
 [ -z $signaling_namespace ] || namespace_prefix="ip netns exec $signaling_namespace"
 
-# Send HTTP request and check that the response is "OK".
+# Send HTTP request, writing the return code as well as the body to ensure we
+# catch overload correctly. Check that the response is "OK200" or "503".
 http_url=http://$address/ping
-$namespace_prefix curl -f -g -m 2 -s $http_url 2> /tmp/poll-http.sh.stderr.$$ | tee /tmp/poll-http.sh.stdout.$$ | head -1 | egrep -q "^OK$"
+$namespace_prefix curl -f -g -m 2 -s $http_url --write-out %{http_code} 2> /tmp/poll-http.sh.stderr.$$ | tee /tmp/poll-http.sh.stdout.$$ | head -1 | egrep -q "(^OK200$|^503$)"
 rc=$?
 
 # Check the return code and log if appropriate.

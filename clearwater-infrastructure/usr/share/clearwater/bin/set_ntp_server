@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/usr/bin/python
 
-# @file gather_diags
+# @file set_ntp_server
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,10 +34,63 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-echo 'gather_diags:
-This script triggers diagnostics collection. 
+import os, pipes, platform, subprocess, sys
+from datetime import datetime
 
-The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
+NTP_CONFIG="/etc/ntp.conf"
+KEY="server"
+SCRIPT=__file__
 
-# Write a file to trigger a diagnostic dump.
-echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
+def set_ntp_server():
+    lines = []
+
+    with open(NTP_CONFIG, 'r') as f:
+        for line in f:
+            if line.startswith(KEY):
+                # Comment line out
+                lines.append('#' + line)
+            else:
+                lines.append(line)
+
+    with open(NTP_CONFIG, 'w') as f:
+        for line in lines:
+            f.write(line)
+        f.write("\n")
+        now = datetime.now()
+        f.write("# NTP Address Configuration added by {0} on {1}\n".format(SCRIPT, now))
+        for num in range(1, len(sys.argv)):
+            f.write("{0} {1}\n".format(KEY, pipes.quote(sys.argv[num])))
+
+def restart_ntp():
+    # Hide output
+    with open("/dev/null", 'w') as null:
+        if "CentOS" in platform.linux_distribution()[0]:
+            service_name = "ntpd"
+        else:
+            service_name = "ntp"
+
+        ret_code = subprocess.call("service {0} restart".format(service_name),
+                                   shell=True,
+                                   stdout=null,
+                                   stderr=null)
+
+        if ret_code != 0:
+            print "Failed to restart ntp"
+            sys.exit(3)
+
+if __name__ == "__main__":
+    if os.geteuid() != 0:
+        print "This script requires root privileges"
+        sys.exit(1)
+
+    if len(sys.argv) < 2:
+        print "Usage: {0} NTP_ADDRESS_1 NTP_ADDRESS_2 NTP_ADDRESS_3 ...".format(SCRIPT)
+        sys.exit(2)
+
+    set_ntp_server()
+
+    restart_ntp()
+
+    print "Updated NTP Address to: " + format(sys.argv[1:])
+
+    sys.exit()

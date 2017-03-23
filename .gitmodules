@@ -1,3 +1,6 @@
 [submodule "build-infra"]
 	path = build-infra
 	url = git@github.com:ClearwaterCore/clearwater-build-infra.git
+[submodule "clearwater-etcd-plugins"]
+	path = modules/clearwater-etcd-plugins
+	url = git@github.com:ClearwaterCore/clearwater-etcd-plugins.git

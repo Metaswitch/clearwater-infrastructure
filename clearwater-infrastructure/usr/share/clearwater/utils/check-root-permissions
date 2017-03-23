@@ -1,5 +1,9 @@
+#!/bin/bash
+
+# @file check-root-permissions
+#
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -30,37 +34,22 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-from metaswitch.clearwater.cluster_manager.plugin_utils import WARNING_HEADER, combine_ip_port
-from metaswitch.clearwater.etcd_shared.plugin_utils import safely_write
-from metaswitch.clearwater.cluster_manager import constants
+# Usage:
+#
+# To use this script, add the following to a bash file:
+#
+# . /usr/share/clearwater/utils/check-root-permissions [exit_code]
+#
+# where exit_code is the code to exit the script with if it detects the user
+# is not running as root
 
-def write_memcached_cluster_settings(filename, cluster_view):
-    """Writes out the memcached cluster_settings file"""
-    valid_servers_states = [constants.LEAVING_ACKNOWLEDGED_CHANGE,
-                            constants.LEAVING_CONFIG_CHANGED,
-                            constants.NORMAL_ACKNOWLEDGED_CHANGE,
-                            constants.NORMAL_CONFIG_CHANGED,
-                            constants.NORMAL]
-    valid_new_servers_states = [constants.NORMAL,
-                                constants.NORMAL_ACKNOWLEDGED_CHANGE,
-                                constants.NORMAL_CONFIG_CHANGED,
-                                constants.JOINING_ACKNOWLEDGED_CHANGE,
-                                constants.JOINING_CONFIG_CHANGED]
-    servers_ips = sorted([combine_ip_port(k, 11211)
-                          for k, v in cluster_view.iteritems()
-                          if v in valid_servers_states])
+if [ $EUID -ne 0 ]
+then
+  echo "You must run this script with root permissions"
+  if [ "$#" -ne 0 ]
+  then
+    exit $1
+  fi
 
-    new_servers_ips = sorted([combine_ip_port(k, 11211)
-                              for k, v in cluster_view.iteritems()
-                              if v in valid_new_servers_states])
-
-    new_file_contents = WARNING_HEADER + "\n"
-
-    if new_servers_ips == servers_ips:
-        new_file_contents += "servers={}\n".format(",".join(servers_ips))
-    else:
-        new_file_contents += "servers={}\nnew_servers={}\n".format(
-            ",".join(servers_ips),
-            ",".join(new_servers_ips))
-
-    safely_write(filename, new_file_contents)
+  exit 1
+fi

@@ -1,9 +1,6 @@
-#!/bin/sh
-
-# @file clearwater-radius-auth.postinst
-#
+#!/bin/bash
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016 Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -34,8 +31,49 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# Adds 'ato' after the password and shadow entries in nsswitch.conf.
-# This sets NSS to check the libnss_ato component for the user if they are not found locally.
-sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
-# Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
-sed -i "3i# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth\n" /etc/pam.d/sshd
+# This utility script does an abort of a service, if it hasn't aborted for
+# at least a day.  If the script has been used to abort the process more
+# recently than 24 hours ago, the script just stops the service instead.
+#
+# The script is intended to be used in those cases where a service is
+# misbehaving and a core file needs to be generated, but where we don't want
+# all existing diagnostic sets to be flushed out if the condition keeps
+# happening
+
+usage="Usage: stop_or_abort [service] [reason] [abort period in seconds]"
+
+service=$1
+reason=$2
+abortperiod=$3
+
+if [[ $# != 3 ]]
+then
+    # Usage message to stderr
+    echo $usage >&2
+    exit 1
+fi
+
+# Check for the existence of the temporary marker file
+marker=/tmp/stop_or_abort.$service.$reason.abort
+
+last_abort=0
+if [ -f $marker ]
+then
+  # Get the last modification time of the marker file
+  last_abort=$(stat -c %Y $marker)
+fi
+
+# Get time now
+time_now=$(date +%s)
+
+# Is the difference in times greater than the time passed?
+age=$(( $time_now - $last_abort ))
+
+if [ $age -gt $abortperiod ]
+then
+  # Do an abort and touch the marker file
+  /etc/init.d/$service abort; touch $marker
+else
+  # Do a stop
+  /etc/init.d/$service stop
+fi

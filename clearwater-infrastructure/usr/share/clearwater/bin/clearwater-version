@@ -1,7 +1,9 @@
 #!/bin/bash
-#
+
+# @file clearwater-version
+
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,49 +34,28 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# This installs the Clearwater packages onto an AIO node. It sets up which
-# repo to pull the packages from, and creates numbers on Ellis. This is
-# used by the OVF install, AIO install through Chef, and the AMI creation
-set -e
-
-if [[ $EUID -ne 0 ]]
+if [ $# -gt 1 ]
 then
-  echo "You must run this script with root permissions"
+  echo "Usage: clearwater-version [package name]"
   exit 1
 fi
 
-if [[ $# -lt 1 || $# -gt 5 ]]
-then
-  echo "Usage: clearwater-aio-install [auto_config_package] <install_repo> <updates_repo> <number_start> <number_count>"
-  exit 1
-fi
+package_name=$1
 
-auto_package=$1
-install_repo=$2
-updates_repo=$3
-number_start=$4
-number_count=$5
+# Gets all the installed packages, pulls out only those packages installed
+# by clearwater (where the maintainer is 'Project Clearwater Maintainers' or
+# it's the cassandra package), pulls out the name of the packages, then
+# discards any that are the debug/libs version of the package
+pkgs="$(dpkg-query -W -f="\${binary:Package} \${Maintainer}\n" \
+     | egrep -e "(Project Clearwater Maintainers |cassandra)" \
+     | cut -d ' ' -f 1|sort -u \
+     | egrep -v "*-dbg$|-libs")"
 
-[ -n "$install_repo" ] || install_repo=http://repo.cw-ngv.com/stable
-[ -n "$updates_repo" ] || updates_repo=http://repo.cw-ngv.com/stable
-[ -n "$number_start" ] || number_start=6505550000
-[ -n "$number_count" ] || number_count=1000
-
-# Set up the repo
-echo deb $install_repo binary/ > /etc/apt/sources.list.d/clearwater.list
-curl -L http://repo.cw-ngv.com/repo_key | sudo apt-key add -
-apt-get update
-
-# Install the initial clearwater packages
-export DEBIAN_FRONTEND=noninteractive
-apt-get install -y --force-yes $auto_package clearwater-management clearwater-cassandra < /dev/null
-
-# Install the remaining clearwater packages
-apt-get install -y --force-yes ellis-node bono-node restund sprout-node homer-node homestead-node clearwater-prov-tools < /dev/null
-
-# Create numbers on Ellis
-export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
-python /usr/share/clearwater/ellis/src/metaswitch/ellis/tools/create_numbers.py --start $number_start --count $number_count
-
-# Now switch over to using the repo we expect to get updates from.
-echo deb $updates_repo binary/ > /etc/apt/sources.list.d/clearwater.list
+# Prints out the name and version of the packages.
+for pkg in $pkgs; do
+    if [[ -z $package_name ]] || [[ ! -z "`echo $pkg|grep $package_name`" ]]
+    then
+        version=`dpkg-query -f='${Version}\n' -W $pkg`
+        printf "%-40s %s\n" "$pkg" "$version"
+    fi
+done

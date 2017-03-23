@@ -1,0 +1,6 @@
+radius_authenticated_user:x:1000:1000:radius_authenticated_user:/tmp:/bin/bash
+# This is a template of the configuration file for the libnss-ato module
+# Only the first line of this file is parsed.
+# This file may be copied directly to /etc/libnss-ato.conf on most linux 
+# systems, to map to the default user, but can be configured to match
+# other user entries as formatted in /etc/passwd.

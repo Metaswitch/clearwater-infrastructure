@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/bin/sh
+
+# @file gather_diags_and_report_location
 #
 # Project Clearwater - IMS in the Cloud
-# Copyright (C) 2015  Metaswitch Networks Ltd
+# Copyright (C) 2016  Metaswitch Networks Ltd
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -32,49 +34,57 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-# This installs the Clearwater packages onto an AIO node. It sets up which
-# repo to pull the packages from, and creates numbers on Ellis. This is
-# used by the OVF install, AIO install through Chef, and the AMI creation
-set -e
+DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
 
-if [[ $EUID -ne 0 ]]
+# In some scenarios we are run as root, and $HOME is not defined.
+# Instead, we should create a dump in the Clearwater user's directory.
+if [ ! -z $HOME ]
 then
-  echo "You must run this script with root permissions"
+  CLEARWATER_USER_HOME=$HOME
+elif [ -d /home/clearwater ]
+then
+  CLEARWATER_USER_HOME=/home/clearwater
+elif [ -d /home/centos ]
+then
+  CLEARWATER_USER_HOME=/home/centos
+else
+  CLEARWATER_USER_HOME=/home/ubuntu
+fi
+
+DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
+
+if [ $# -ne 0 ]
+then
+  echo "Usage: gather_diags_and_report_location"
+  echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
   exit 1
 fi
 
-if [[ $# -lt 1 || $# -gt 5 ]]
-then
-  echo "Usage: clearwater-aio-install [auto_config_package] <install_repo> <updates_repo> <number_start> <number_count>"
-  exit 1
-fi
+# Store the current time
+current_time=$(date --utc "+%Y%m%d%H%M%S")
 
-auto_package=$1
-install_repo=$2
-updates_repo=$3
-number_start=$4
-number_count=$5
+# Write a file to trigger a diagnostic dump.
+echo "Collecting diagnostics from the system.\n"
+echo "This operation can take a few minutes to run."
+echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
 
-[ -n "$install_repo" ] || install_repo=http://repo.cw-ngv.com/stable
-[ -n "$updates_repo" ] || updates_repo=http://repo.cw-ngv.com/stable
-[ -n "$number_start" ] || number_start=6505550000
-[ -n "$number_count" ] || number_count=1000
+# Now wait for the diagnostics collection to complete
+latest_diags_time=0
+while [ $latest_diags_time -lt $current_time ]
+do
+  echo -n "."
+  sleep 2
 
-# Set up the repo
-echo deb $install_repo binary/ > /etc/apt/sources.list.d/clearwater.list
-curl -L http://repo.cw-ngv.com/repo_key | sudo apt-key add -
-apt-get update
+  latest_diags_file=$(ls -t $DIAGS_LOCATION | grep -v temp | grep -e tar.gz | tr '\n' ' ' | cut -d ' ' -f 1)
+  if [ ! -z $latest_diags_file ]
+  then
+    # Format of the dumps is /var/clearwater-diags-monitor/dumps/<datestamp>.<hostname>.<cause>.tar.gz
+    latest_diags_time=$(echo $latest_diags_file | cut -d '.' -f 1 | cut -d 'Z' -f 1)
+  fi
+done
 
-# Install the initial clearwater packages
-export DEBIAN_FRONTEND=noninteractive
-apt-get install -y --force-yes $auto_package clearwater-management clearwater-cassandra < /dev/null
+mkdir -p $DIAGS_END_LOCATION
 
-# Install the remaining clearwater packages
-apt-get install -y --force-yes ellis-node bono-node restund sprout-node homer-node homestead-node clearwater-prov-tools < /dev/null
+cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
 
-# Create numbers on Ellis
-export PATH=/usr/share/clearwater/ellis/env/bin:$PATH
-python /usr/share/clearwater/ellis/src/metaswitch/ellis/tools/create_numbers.py --start $number_start --count $number_count
-
-# Now switch over to using the repo we expect to get updates from.
-echo deb $updates_repo binary/ > /etc/apt/sources.list.d/clearwater.list
+echo "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"

@@ -36,8 +36,10 @@
 
 . /usr/share/clearwater/infrastructure/install/common
 
-# Save off the current core file pattern so we can restore it on uninstallation.
-cat /proc/sys/kernel/core_pattern > /etc/clearwater/diags-monitor/core_pattern.old
+# Save off the current core file pattern so we can restore it on
+# uninstallation.   || true as this fails when building the MVSE images (where
+# it doesn't matter).
+cat /proc/sys/kernel/core_pattern > /etc/clearwater/diags-monitor/core_pattern.old || true
 
 # Create the temporary diagnostics directory and give it appropriate permissions.
 mkdir -p /var/clearwater-diags-monitor/tmp
@@ -46,8 +48,6 @@ chmod a+rwx /var/clearwater-diags-monitor/tmp
 # Do the same for the dumps directory.
 mkdir -p /var/clearwater-diags-monitor/dumps
 chmod a+rwx /var/clearwater-diags-monitor/dumps
-
-chmod a+x /usr/share/clearwater/bin/gather_diags
 
 # Make sure the monit configuration directory exists, copy our file in and restart monit.
 mkdir -p /etc/monit/conf.d/
