@@ -37,7 +37,7 @@
 . /usr/share/clearwater/infrastructure/install/common
 
 install /usr/share/clearwater/infrastructure/conf/memcached_11211.monit /etc/monit/conf.d/
-/usr/share/clearwater/infrastructure/scripts/memcached
+invoke-rc.d clearwater-infrastructure restart
 [ ! -x /etc/init.d/clearwater-secure-connections ] || /etc/init.d/clearwater-secure-connections reload
 pkill -HUP monit || /bin/true
 
