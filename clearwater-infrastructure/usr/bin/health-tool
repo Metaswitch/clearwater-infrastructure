@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/share/clearwater/health_tool/run.py;
