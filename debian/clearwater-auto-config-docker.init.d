@@ -111,7 +111,7 @@ do_auto_config()
       hs_hostname=homestead:8888
       hs_provisioning_hostname=homestead:8889
       xdms_hostname=homer:7888
-      upstream_hostname=scscf.sprout
+      upstream_hostname=sprout
       ralf_hostname=ralf:10888
       ralf_session_store=astaire
       home_domain="example.com"
@@ -124,7 +124,7 @@ do_auto_config()
       hs_hostname=hs.$ZONE:8888
       hs_provisioning_hostname=hs.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
-      upstream_hostname=scscf.sprout.$ZONE
+      upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
       ralf_session_store=astaire.$ZONE
       home_domain=$ZONE
@@ -142,6 +142,11 @@ do_auto_config()
             s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
             s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
+
+    sed -e '/^scscf_uri=.*/d' -i $shared_config
+    echo "scscf_uri=\"sip:$sprout_hostname:5054;transport=tcp\"" >> $shared_config
+    sed -e '/^icscf_uri=.*/d' -i $shared_config
+    echo "icscf_uri=\"sip:$sprout_hostname:5052;transport=tcp\"" >> $shared_config
 
     if [ -n "$nameserver" ]
     then
