@@ -121,8 +121,8 @@ do_auto_config()
       sprout_registration_store=astaire.$ZONE
       chronos_hostname=chronos.$ZONE
       cassandra_hostname=cassandra.$ZONE
-      hs_hostname=hs.$ZONE:8888
-      hs_provisioning_hostname=hs.$ZONE:8889
+      hs_hostname=homestead.$ZONE:8888
+      hs_provisioning_hostname=homestead.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
