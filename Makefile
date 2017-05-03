@@ -16,7 +16,9 @@ PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-co
 RPM_NAMES := $(subst clearwater-memcached,,$(PKG_NAMES))
 
 # Also exclude vellum and dime
+RPM_NAMES := $(subst vellum-dbg,,$(RPM_NAMES))
 RPM_NAMES := $(subst vellum,,$(RPM_NAMES))
+RPM_NAMES := $(subst dime-dbg,,$(RPM_NAMES))
 RPM_NAMES := $(subst dime,,$(RPM_NAMES))
 
 .PHONY: build
