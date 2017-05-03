@@ -10,7 +10,7 @@ CW_SOCK_FACT_DIR := ${PWD}/clearwater-socket-factory
 
 PKG_COMPONENT := clearwater-infrastructure
 PKG_MAJOR_VERSION ?= 1.0
-PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-diags-monitor clearwater-auto-config-aws clearwater-auto-config-docker clearwater-auto-config-generic clearwater-log-cleanup clearwater-auto-upgrade clearwater-socket-factory clearwater-radius-auth
+PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-connections clearwater-tcp-scalability clearwater-snmpd clearwater-diags-monitor clearwater-auto-config-aws clearwater-auto-config-docker clearwater-auto-config-generic clearwater-log-cleanup clearwater-auto-upgrade clearwater-socket-factory clearwater-radius-auth vellum vellum-dbg dime dime-dbg
 # Override the list of PKG_NAMES for RPM to exclude clearwater-memcached.
 # We don't yet have a build of that.
 RPM_NAMES := $(subst clearwater-memcached,,$(PKG_NAMES))
