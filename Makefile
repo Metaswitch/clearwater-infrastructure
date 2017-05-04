@@ -15,6 +15,12 @@ PKG_NAMES := clearwater-infrastructure clearwater-memcached clearwater-secure-co
 # We don't yet have a build of that.
 RPM_NAMES := $(subst clearwater-memcached,,$(PKG_NAMES))
 
+# Also exclude vellum and dime
+RPM_NAMES := $(subst vellum-dbg,,$(RPM_NAMES))
+RPM_NAMES := $(subst vellum,,$(RPM_NAMES))
+RPM_NAMES := $(subst dime-dbg,,$(RPM_NAMES))
+RPM_NAMES := $(subst dime,,$(RPM_NAMES))
+
 .PHONY: build
 build: pyzmq_build clearwater_infrastructure_build clearwater_socket_factory_build
 
