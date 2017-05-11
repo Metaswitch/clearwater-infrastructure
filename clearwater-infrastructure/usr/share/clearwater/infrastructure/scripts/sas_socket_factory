@@ -47,13 +47,21 @@ mkdir -p $management_cfg_dir
 . /etc/clearwater/config
 
 if [ ! -z $sas_server ]; then
-  if [ "$sas_use_signaling_interface" == "Y" ]; then
-    echo "$sas_server" > $signaling_cfg_dir/clearwater-infrastructure
-    rm -f $management_cfg_dir/clearwater-infrastructure
-  else
-    echo "$sas_server" > $management_cfg_dir/clearwater-infrastructure
-    rm -f $signaling_cfg_dir/clearwater-infrastructure
-  fi
+  OLDIFS="$IFS"
+  IFS="|"
+  for sas_host in $sas_server
+  do
+    if [ ! -z $sas_host ]; then
+      if [ "$sas_use_signaling_interface" == "Y" ]; then
+        echo "$sas_host" > $signaling_cfg_dir/clearwater-infrastructure
+        rm -f $management_cfg_dir/clearwater-infrastructure
+      else
+        echo "$sas_host" > $management_cfg_dir/clearwater-infrastructure
+        rm -f $signaling_cfg_dir/clearwater-infrastructure
+      fi
+    fi
+  done
+  IFS="$OLDIFS"
 else
   rm -f $management_cfg_dir/clearwater-infrastructure
   rm -f $signaling_cfg_dir/clearwater-infrastructure
