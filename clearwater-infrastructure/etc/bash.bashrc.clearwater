@@ -1,22 +1,37 @@
+# We want the node type to be displayed as a hyphen-separated list of all the 
+# flavours of Clearwater services installed on this node.
 type=$(. /etc/clearwater/config
        {
+         # Different operating systems use their own package management systems. 
+         # We assume that if yum is installed we are running on CentOS and 
+         # working with RPMs, and otherwise we are running on Ubuntu and 
+         # working with .deb packages.
          if which yum > /dev/null 2>&1 ; then
-           rpm -qa --qf '%{NAME}\n'
+           # rpm returns an unsorted list and as the version numbers are 
+           # stripped off we also need to filter out duplicates.
+           rpm -qa --qf '%{NAME}\n' | sort | uniq
          else
            dpkg-query -W -f='${Package}\n'
          fi
        } |
-       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|ralf)$' |
+       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|stats-engine|ralf)$' |
+       # Shorten the constructed name and replace product names containing
+       # hyphens.
        sed -e 's/clearwater-sip-stress/sipp/g' |
+       sed -e 's/stats-engine/mvse/g' |
        tr "\\n" "-" |
-       sort |
        sed -e 's/bono-ellis-homer-homestead-sprout/cw-aio/g
                s/-$//g')
+
+# We should only set the node-index if it is configured in the underlying
+# config.
 node_idx=$(. /etc/clearwater/config
            if [ -n "$node_idx" ]
            then
              echo -$node_idx
            fi)
+
+# The node type and index should be present in the command prompt.
 if [ "$TERM" = xterm-color ]; then
     PS1='\[\e]0;['$type$node_idx']\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}['$type$node_idx']\u@\h:\w\$ '
 else
