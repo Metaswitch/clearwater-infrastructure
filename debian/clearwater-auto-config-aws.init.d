@@ -73,7 +73,7 @@ do_auto_config()
   rm -f /etc/clearwater/cluster_settings
 
   # Ensure that we start a clean cluster, so that cloned AIO nodes etc. boot cleanly
-  rm -rf /var/lib/clearwater-etcd/
+  rm -rf /var/lib/clearwater-etcd/*
 
   # Set up DNS for the S-CSCF
   grep -v ' #+scscf.aio$' /etc/hosts > /tmp/hosts.$$
