@@ -1,5 +1,5 @@
 #!/bin/bash
-# @file reload_dns_config
+# @file reload_dns_json
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2016 Metaswitch Networks Ltd
@@ -33,7 +33,7 @@
 # under which the OpenSSL Project distributes the OpenSSL toolkit software,
 # as those licenses appear in the file LICENSE-OPENSSL.
 
-for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/dns_config/* 2>/dev/null)
+for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/dns_json/* 2>/dev/null)
 do
   if [ -f "$SCRIPT" ]; then
     $SCRIPT
