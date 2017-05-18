@@ -52,7 +52,7 @@ MIN_IDLE_CPU_FOR_GATHER=40
 . /etc/clearwater/config || exit
 
 # Setup prefix to use when running commands that need to execute within
-# the signaling network namespace for multi-interface configurations. 
+# the signaling network namespace for multi-interface configurations.
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Setup dig's server argument for when it needs to execute within the
@@ -439,6 +439,7 @@ get_etcd_info()
 {
   clearwater-etcdctl member list > $CURRENT_DUMP_DIR/etcd_member_list.txt
   clearwater-etcdctl cluster-health > $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  echo "When the cluster was last healthy, the members were" "$(</var/lib/clearwater-etcd/healthy_etcd_members)" >> $CURRENT_DUMP_DIR/etcd_cluster_health.txt
   curl "http://$management_local_ip:4000/v2/keys/clearwater?consistent=true&recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state.txt
   curl "http://$management_local_ip:4000/v2/keys/clearwater?recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state_no_consistency.txt
 }
