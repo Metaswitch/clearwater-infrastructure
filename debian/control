@@ -79,3 +79,29 @@ Package: clearwater-radius-auth
 Architecture: all
 Depends: libpam-radius-auth, libnss-ato
 Description: Package enabling RADIUS authentication on Clearwater nodes
+
+Package: vellum
+Architecture: any
+Depends: clearwater-memcached, astaire, chronos, homestead-cassandra, homestead-prov-cassandra, homer-cassandra, clearwater-etcd, clearwater-monit
+Description: vellum, the storage node for all Clearwater servers
+
+Package: vellum-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends: vellum (= ${binary:Version})
+Recommends: astaire-dbg, chronos-dbg
+Description: Debugging symbols for vellum, the Clearwater storage node
+
+Package: dime
+Architecture: any
+Depends: ralf, homestead, homestead-prov
+Description: dime, the Clearwater HTTP to Rf/Cx gateway node
+
+Package: dime-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends: dime (= ${binary:Version})
+Recommends: ralf-dbg, homestead-dbg
+Description: Debugging symbols for dime, the Clearwater gateway node

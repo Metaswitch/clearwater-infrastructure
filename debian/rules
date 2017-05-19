@@ -38,3 +38,6 @@ override_dh_installinit:
 	dh_installinit -pclearwater-secure-connections
 
 override_dh_shlibdeps:
+override_dh_strip:
+	dh_strip -pvellum --dbg-package=vellum-dbg
+	dh_strip -pdime --dbg-package=dime-dbg
