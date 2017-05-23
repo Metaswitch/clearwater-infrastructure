@@ -55,6 +55,9 @@ do_auto_config()
   # Sprout will replace the cluster-settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
 
+  # Ensure that we start a clean cluster, so that cloned AIO nodes etc. boot cleanly
+  rm -rf /var/lib/clearwater-etcd/*
+
   # Set up DNS for the S-CSCF
   grep -v ' #+clearwater-aio$' /etc/hosts > /tmp/hosts.$$
   echo $ip $aio_hostname '#+clearwater-aio'>> /tmp/hosts.$$
