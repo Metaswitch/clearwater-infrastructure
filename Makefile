@@ -4,6 +4,7 @@
 .PHONY: all
 all: build
 
+ROOT ?= ${PWD}
 PYZMQ_DIR := ${PWD}/clearwater-infrastructure/PyZMQ
 SRC_DIR := ${PWD}/src
 CW_SOCK_FACT_DIR := ${PWD}/clearwater-socket-factory
