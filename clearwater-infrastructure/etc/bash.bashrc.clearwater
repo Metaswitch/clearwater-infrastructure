@@ -15,10 +15,13 @@ type=$(. /etc/clearwater/config
          fi
        } |
        # Filter out the packages we care about
-       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout|stats-engine|ralf|chronos|cassandra|astaire)$' |
+       # Use sprout-base instead of sprout to catch all cases of sprout being
+       # installed
+       egrep '^(bono|clearwater-sip-stress|ellis|homer|homestead|sprout-base|stats-engine|ralf|chronos|cassandra|astaire)$' |
        # Shorten the constructed name and replace product names containing
        # hyphens.
        sed -e 's/clearwater-sip-stress/sipp/g' |
+       sed -e 's/sprout-base/sprout/g' |
        sed -e 's/stats-engine/mvse/g' |
        tr "\\n" "-" |
 
