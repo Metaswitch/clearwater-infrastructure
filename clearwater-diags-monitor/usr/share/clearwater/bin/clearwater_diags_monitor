@@ -326,6 +326,7 @@ get_hardware_info()
   cat /proc/cpuinfo > $CURRENT_DUMP_DIR/cpuinfo.txt
   cat /proc/meminfo > $CURRENT_DUMP_DIR/meminfo.txt
   df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
+  fdisk -l          > $CURRENT_DUMP_DIR/fdisk-l.txt
 }
 
 # Get historical resource usage stats. This includes things like network usage,
