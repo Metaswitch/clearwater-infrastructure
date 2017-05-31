@@ -606,7 +606,7 @@ do
   get_process_info
 
   # Database statuses.
-  if cw_component_installed homer homestead memento
+  if cw_component_installed clearwater-cassandra
   then
     get_cassandra_info
   fi
@@ -616,7 +616,7 @@ do
     get_mysql_info
   fi
 
-  if cw_component_installed sprout ralf memento
+  if cw_component_installed memcached
   then
     get_memcached_info
   fi
