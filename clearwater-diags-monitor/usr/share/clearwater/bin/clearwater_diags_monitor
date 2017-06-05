@@ -315,9 +315,8 @@ get_ntp_status()
 # system.
 get_cw_package_checksums()
 {
-  # For RPM the --verify flag includes several verifications, including a `5`
-  # indicating files that have an MD5 checksum problem.
-  rpm_verification_file=
+  # For Centos the --verify flag for the rpm command returns several
+  # verification diags, including MD5 checksum problems (labelled with a `5`).
   {
     if which rpm > /dev/null ; then
     for pkg in $(clearwater_packages)
@@ -326,7 +325,7 @@ get_cw_package_checksums()
     done
   fi
   } >> $CURRENT_DUMP_DIR/rpm_verification.txt
-  # This isn't supported function under RPM, so only do it for Debian
+  # For Debian just collect the MD5 checksums
   if which dpkg > /dev/null ; then
     for pkg in $(clearwater_packages)
     do
