@@ -52,7 +52,7 @@ MIN_IDLE_CPU_FOR_GATHER=40
 . /etc/clearwater/config || exit
 
 # Setup prefix to use when running commands that need to execute within
-# the signaling network namespace for multi-interface configurations. 
+# the signaling network namespace for multi-interface configurations.
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Setup dig's server argument for when it needs to execute within the
@@ -315,6 +315,17 @@ get_ntp_status()
 # system.
 get_cw_package_checksums()
 {
+  # For RPM the --verify flag includes several verifications, including a `5`
+  # indicating files that have an MD5 checksum problem.
+  rpm_verification_file=
+  {
+    if which rpm > /dev/null ; then
+    for pkg in $(clearwater_packages)
+    do
+      rpm --verify $pkg
+    done
+  fi
+  } >> $CURRENT_DUMP_DIR/rpm_verification.txt
   # This isn't supported function under RPM, so only do it for Debian
   if which dpkg > /dev/null ; then
     for pkg in $(clearwater_packages)
