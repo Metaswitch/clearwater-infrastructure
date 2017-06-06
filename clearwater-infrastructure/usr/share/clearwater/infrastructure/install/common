@@ -23,6 +23,16 @@ add_section() {
     echo "#-$tag" ; } >> $file
 }
 
+add_section_text() {
+  remove_section $1 $2
+  file=$1
+  tag=$2
+  delta=$3
+  { echo "#+$tag"
+    echo "$delta"
+    echo "#-$tag" ; } >> $file
+}
+
 remove_section() {
   file=$1
   tag=$2

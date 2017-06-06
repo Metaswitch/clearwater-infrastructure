@@ -32,17 +32,24 @@ EOF
   fi
 }
 
+add_bashrc_shim() {
+  add_section_text $1 clearwater-infrastructure ". /usr/share/clearwater/infrastructure/bin/bash.bashrc"
+}
+
 add_config_shim
 
 if [ -f /etc/bash.bashrc ]; then
-  add_section /etc/bash.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+  add_bashrc_shim /etc/bash.bashrc
 fi
 
 for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
   if [ -e $HOME_DIR/.bashrc ]; then
-    add_section $HOME_DIR/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+    add_bashrc_shim $HOME_DIR/.bashrc
   fi
 done
 
-[ ! -d /etc/skel ] || add_section /etc/skel/.bashrc clearwater-infrastructure /etc/bash.bashrc.clearwater
+if [ ! -d /etc/skel ]; then
+  add_bashrc_shim /etc/skel/.bashrc
+fi
+
 /usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg
