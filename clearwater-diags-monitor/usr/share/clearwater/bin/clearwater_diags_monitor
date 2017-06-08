@@ -317,19 +317,21 @@ get_cw_package_checksums()
 {
   # For Centos the --verify flag for the rpm command returns several
   # verification diags, including MD5 checksum problems (labelled with a `5`).
+  # See https://linux.die.net/man/8/rpm for other flags description.
   {
     if which rpm > /dev/null ; then
-    for pkg in $(clearwater_packages)
-    do
-      rpm --verify $pkg
-    done
-  fi
-  } >> $CURRENT_DUMP_DIR/rpm_verification.txt
+      for pkg in $(clearwater_packages)
+      do
+        rpm --verify "$pkg"
+      done
+    fi
+  } >> "$CURRENT_DUMP_DIR"/rpm_verification.txt
+
   # For Debian just collect the MD5 checksums
   if which dpkg > /dev/null ; then
     for pkg in $(clearwater_packages)
     do
-      cp -p /var/lib/dpkg/info/$pkg.md5sums $CURRENT_DUMP_DIR
+      cp -p /var/lib/dpkg/info/"$pkg".md5sums "$CURRENT_DUMP_DIR"
     done
   fi
 }
