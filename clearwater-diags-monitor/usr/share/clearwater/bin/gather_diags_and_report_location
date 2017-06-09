@@ -13,7 +13,10 @@ DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
 
 # In some scenarios we are run as root, and $HOME is not defined.
 # Instead, we should create a dump in the Clearwater user's directory.
-if [ ! -z $HOME ]
+if [ ! -z $SUDO_USER ]
+then
+  eval CLEARWATER_USER_HOME="~$SUDO_USER"
+elif [ ! -z $HOME ]
 then
   CLEARWATER_USER_HOME=$HOME
 elif [ -d /home/clearwater ]
