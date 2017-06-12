@@ -11,9 +11,13 @@
 
 DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
 
-# In some scenarios we are run as root, and $HOME is not defined.
-# Instead, we should create a dump in the Clearwater user's directory.
-if [ ! -z $HOME ]
+# We always want to create a dump in the clearwater user's directory,
+# irrespective of whether or not the command was run with sudo.
+if [ -n $SUDO_USER ]
+then
+  # Evaluate the SUDO_USER's home directory and assign to CLEARWATER_USER_HOME.
+  eval CLEARWATER_USER_HOME="~$SUDO_USER"
+elif [ -n $HOME ]
 then
   CLEARWATER_USER_HOME=$HOME
 elif [ -d /home/clearwater ]
@@ -39,7 +43,7 @@ fi
 current_time=$(date --utc "+%Y%m%d%H%M%S")
 
 # Write a file to trigger a diagnostic dump.
-echo "Collecting diagnostics from the system.\n"
+echo "Collecting diagnostics from the system."
 echo "This operation can take a few minutes to run."
 echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
 
@@ -62,4 +66,4 @@ mkdir -p $DIAGS_END_LOCATION
 
 cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
 
-echo "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"
+echo -e "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"
