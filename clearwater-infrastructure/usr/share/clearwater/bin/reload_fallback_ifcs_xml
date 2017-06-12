@@ -1,5 +1,5 @@
 #!/bin/bash
-# @file reload_default_ifcs_xml
+# @file reload_fallback_ifcs_xml
 #
 # Copyright (C) Metaswitch Networks 2017
 # If license terms are provided to you in a COPYING file in the root directory
@@ -8,7 +8,7 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/default_ifcs_xml/* 2>/dev/null)
+for SCRIPT in $(ls -1 /usr/share/clearwater/infrastructure/scripts/reload/fallback_ifcs_xml/* 2>/dev/null)
 do
   if [ -f "$SCRIPT" ]; then
     $SCRIPT
