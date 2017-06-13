@@ -40,7 +40,7 @@ then
 fi
 
 # Store the current time
-current_time=$(date --utc "+%Y%m%d%H%M%S")
+current_time=$(date "+%Y%m%d%H%M%S")
 
 # Write a file to trigger a diagnostic dump.
 echo "Collecting diagnostics from the system."
