@@ -1,3 +1,5 @@
 /usr/share/clearwater/bin/run-in-signaling-namespace /usr/bin/cw-run_in_signaling_namespace
 /usr/share/clearwater/bin/gather_diags /usr/bin/cw-gather_diags
 /usr/share/clearwater/bin/gather_diags_and_report_location /usr/bin/cw-gather_diags_and_report_location
+/usr/share/clearwater/bin/sync_alarms.py /usr/bin/cw-sync_alarms
+/usr/share/clearwater/bin/clear_alarms.py /usr/bin/cw-clear_alarms
