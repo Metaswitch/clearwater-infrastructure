@@ -48,7 +48,7 @@ for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
   fi
 done
 
-if [ ! -d /etc/skel ]; then
+if [ -d /etc/skel ]; then
   add_bashrc_shim /etc/skel/.bashrc
 fi
 
