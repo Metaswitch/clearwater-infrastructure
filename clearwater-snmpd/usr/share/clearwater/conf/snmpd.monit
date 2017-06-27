@@ -18,4 +18,4 @@ check process snmpd_process
   stop program = "/bin/bash -c '[ -x /etc/init.d/snmpd ] && /etc/init.d/snmpd stop || systemctl stop snmpd && systemctl disable snmpd'"
 
   # Check the service's resource usage, and restart snmpd if it's too high.
-  if memory > 80% for 6 cycles then restart
+  if memory > 80% then restart

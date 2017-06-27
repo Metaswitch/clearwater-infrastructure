@@ -18,7 +18,7 @@ check process memcached_process with pidfile "/var/run/memcached_11211.pid"
   restart program = "/bin/bash -c '/usr/share/clearwater/bin/issue-alarm monit 3500.3; /etc/init.d/memcached restart 11211'"
 
   # Check the service's resource usage, and restart memcached if it's too high.
-  if memory > 80% for 6 cycles then restart
+  if memory > 80% then restart
 
 # Clear any alarms if the process has been running long enough.
 check program memcached_uptime with path /usr/share/clearwater/infrastructure/monit_uptime/check-memcached-uptime
