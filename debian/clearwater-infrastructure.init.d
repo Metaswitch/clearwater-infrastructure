@@ -9,6 +9,11 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
+# On systems running cloud-init, some of the configuration set by
+# clearwater-infrastructure, e.g. hostname, is also managed by cloud-init.
+# In order to avoid cloud-init overwriting these settings, we ask the init
+# system to run clearwater-infrastructure after cloud-init has finished.
+
 ### BEGIN INIT INFO
 # Provides:          clearwater-infrastructure
 # Required-Start:    $network $local_fs
