@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Enable or disable RADIUS authentication based on whether there are any RADIUS
-# servers set up in /etc/pam_radius_auth.conf
-if grep -qP "^server" /etc/pam_radius_auth.conf; then
+# servers set up in /etc/pam_radius_auth.conf. The regex checks if there are any
+# lines where the first non-whitespace character is a # (i.e. a comment).
+if grep -qP '^[ \t]*[^ \t#]' /etc/pam_radius_auth.conf; then
   /usr/share/clearwater-radius-auth/bin/enable-radius-authentication
 else
   /usr/share/clearwater-radius-auth/bin/disable-radius-authentication
