@@ -1,0 +1,2 @@
+# Get iotop reports every minute
+* * * * * root /usr/sbin/iotop -b -o -t -n 1 -k >> /var/log/iotop.log 2>&1
