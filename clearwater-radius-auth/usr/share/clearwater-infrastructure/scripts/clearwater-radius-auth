@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# @file clearwater-radius-auth
+#
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# Enable or disable RADIUS authentication based on whether there are any RADIUS
+# servers set up in /etc/pam_radius_auth.conf. The regex checks if there are any
+# lines where the first non-whitespace character is a non-# (i.e. lines that are
+# not blank and not comments, i.e. actual configuration).
+if grep -qP '^[ \t]*[^ \t#]' /etc/pam_radius_auth.conf; then
+  /usr/share/clearwater-radius-auth/bin/enable-radius-authentication
+else
+  /usr/share/clearwater-radius-auth/bin/disable-radius-authentication
+fi
