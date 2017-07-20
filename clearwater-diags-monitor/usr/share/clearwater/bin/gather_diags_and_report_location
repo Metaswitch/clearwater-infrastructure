@@ -13,11 +13,11 @@ DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
 
 # We always want to create a dump in the clearwater user's directory,
 # irrespective of whether or not the command was run with sudo.
-if [ -n $SUDO_USER ]
+if [ -n "$SUDO_USER" ]
 then
   # Evaluate the SUDO_USER's home directory and assign to CLEARWATER_USER_HOME.
   eval CLEARWATER_USER_HOME="~$SUDO_USER"
-elif [ -n $HOME ]
+elif [ -n "$HOME" ]
 then
   CLEARWATER_USER_HOME=$HOME
 elif [ -d /home/clearwater ]
