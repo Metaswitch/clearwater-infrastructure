@@ -25,4 +25,6 @@ sed -e 's/^-l .*$/-l '$listen_address'/g'\
     -e 's/^# *-v *$/-v/g'\
     -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
 
+echo "\n# Disable listening on UDP\n-U 0" >> /etc/memcached_11211.conf
+
 echo "START_PREFIX=/usr/share/clearwater/bin/run-in-signaling-namespace" > /etc/default/memcached
