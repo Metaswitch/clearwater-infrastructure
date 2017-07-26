@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# @file init-functions
+#
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# This file provides basic shared init functionality between the different
+# auto-config varieties
+
+# Include basic functions to add and remove sections from files
+. /usr/share/clearwater-auto-config/bin/common
+
+write_config()
+{
+  # Save off the arguments
+  arg_local_ip=$1
+  arg_public_ip=$2
+  arg_public_hostname=$3
+  # This can either be a FQDN or an IP but it must resolve to
+  # this node. If it's an IPv6 address, it must be bracketed
+  arg_address=$4
+  arg_upstream_hostname=$5
+
+  mkdir -p /etc/clearwater
+
+  # Allow the user to alter the default config by adding additional config
+  scscf=5054
+  scscf_prefix=scscf
+  icscf=5052
+  icscf_prefix=icscf
+  bgcf=5053
+  bgcf_prefix=bgcf
+
+  if [ -f /etc/clearwater/config ]; then
+    . /etc/clearwater/config
+  fi
+
+  local_config=/etc/clearwater/local_config
+  shared_config=/etc/clearwater/shared_config
+
+  sed -e 's/^local_ip=.*$/local_ip='$arg_local_ip'/g
+          s/^public_ip=.*$/public_ip='$arg_public_ip'/g
+          s/^etcd_cluster=.*$/etcd_cluster='$arg_local_ip'/g
+          s/^public_hostname=.*$/public_hostname='$arg_public_hostname'/g' -i $local_config
+
+  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$arg_public_hostname'/g
+          s/^xdms_hostname=.*$/xdms_hostname='$arg_address':7888/g
+          s/^hs_hostname=.*$/hs_hostname='$arg_addresse':8888/g
+          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$arg_address':8889/g
+          s/^sprout_registration_store=.*$/sprout_registration_store='$arg_address'/g
+          s/^upstream_hostname=.*$/upstream_hostname='$arg_upstream_hostname'/g
+          s/^scscf_uri=.*/scscf_uri=sip:'$scscf_prefix'.'$arg_public_hostname':'$scscf';transport=TCP/g
+          s/^icscf_uri=.*/icscf_uri=sip:'$icscf_prefix'.'$arg_public_hostname':'$icscf';transport=TCP/g
+          s/^bgcf_uri=.*/icscf_uri=sip:'$bgcf_prefix'.'$arg_public_hostname':'$bgcf';transport=TCP/g
+          ' -i $shared_config
+
+  # Sprout will replace the cluster-settings file with something appropriate when it starts
+  rm -f /etc/clearwater/cluster_settings
+
+  # Ensure that we start a clean cluster, so that cloned AIO nodes etc. boot cleanly
+  rm -rf /var/lib/clearwater-etcd/*
+
+  # Set up DNS for the S-CSCF
+  add_section_text \
+    /etc/hosts \
+    "clearwater-aio" \
+    "$arg_local_ip $public_hostname ${scsf_prefix}.${public_hostname}"
+
+  service dnsmasq restart
+}
