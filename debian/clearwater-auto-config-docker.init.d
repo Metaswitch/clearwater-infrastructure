@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file clearwater-auto-config-docker.init.d
 #
@@ -123,6 +123,10 @@ do_auto_config()
     sed -e '/^icscf_uri=.*/d' -i $shared_config
     echo "icscf_uri=\"sip:$sprout_hostname:5052;transport=tcp\"" >> $shared_config
 
+    # Add any additional shared config provided via the
+    # ADDITIONAL_SHARED_CONFIG environment variable.
+    echo -e $ADDITIONAL_SHARED_CONFIG >> $shared_config
+
     if [ -n "$nameserver" ]
     then
       sed -e '/^signaling_dns_server=.*/d' -i $shared_config
@@ -143,6 +147,8 @@ do_auto_config()
       echo "\n[dns]" >> /etc/chronos/chronos.conf
       echo "servers=$nameserver" >> /etc/chronos/chronos.conf
     fi
+
+    sed -i "s/bind-address = 0.0.0.0/bind-address = $ip/" /etc/chronos/chronos.conf
   fi
 }
 
