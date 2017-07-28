@@ -122,6 +122,8 @@ do_auto_config()
     echo "scscf_uri=\"sip:$sprout_hostname:5054;transport=tcp\"" >> $shared_config
     sed -e '/^icscf_uri=.*/d' -i $shared_config
     echo "icscf_uri=\"sip:$sprout_hostname:5052;transport=tcp\"" >> $shared_config
+    sed -e '/^bgcf_uri=.*/d' -i $shared_config
+    echo "bgcf_uri=\"sip:$sprout_hostname:5053;transport=tcp\"" >> $shared_config
 
     # Add any additional shared config provided via the
     # ADDITIONAL_SHARED_CONFIG environment variable.

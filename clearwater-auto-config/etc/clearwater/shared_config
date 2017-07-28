@@ -18,6 +18,9 @@ email_recovery_sender=clearwater@example.com
 
 # I-CSCF/S-CSCF configuration
 upstream_hostname=
+scscf_uri=
+icscf_uri=
+bgcf_uri=
 
 # Keys
 signup_key=secret

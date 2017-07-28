@@ -20,11 +20,11 @@
 # X-Start-Before:    clearwater-infrastructure bono sprout homer homestead ellis restund
 ### END INIT INFO
 
+. /usr/share/clearwater-auto-config/bin/init-functions
+
 # Changes in this command should be replicated in clearwater-auto-config-*.init.d
 do_auto_config()
 {
-  local_config=/etc/clearwater/local_config
-  shared_config=/etc/clearwater/shared_config
   aio_hostname=cw-aio
 
   if [ -f /etc/clearwater/force_ipv6 ]
@@ -37,34 +37,11 @@ do_auto_config()
     ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
   fi
 
-  sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^etcd_cluster=.*$/etcd_cluster='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$aio_hostname'/g' -i $local_config
-
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-generic/bin/bracket-ipv6-address $ip)
 
-  sed -e 's/^sprout_hostname=.*$/sprout_hostname='$aio_hostname'/g
-          s/^xdms_hostname=.*$/xdms_hostname='$bracketed_ip':7888/g
-          s/^hs_hostname=.*$/hs_hostname='$bracketed_ip':8888/g
-          s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$bracketed_ip':8889/g
-          s/^sprout_registration_store=.*$/sprout_registration_store='$bracketed_ip'/g
-          s/^upstream_hostname=.*$/upstream_hostname=scscf.'$aio_hostname'/g' -i $shared_config
-
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm -f /etc/clearwater/cluster_settings
-
-  # Ensure that we start a clean cluster, so that cloned AIO nodes etc. boot cleanly
-  rm -rf /var/lib/clearwater-etcd/*
-
-  # Set up DNS for the S-CSCF
-  grep -v ' #+clearwater-aio$' /etc/hosts > /tmp/hosts.$$
-  echo $ip $aio_hostname '#+clearwater-aio'>> /tmp/hosts.$$
-  echo $ip scscf.$aio_hostname '#+clearwater-aio'>> /tmp/hosts.$$
-  mv /tmp/hosts.$$ /etc/hosts
-
-  service dnsmasq restart
+  # Call through to update the config using the generic function
+  write_config $ip $ip $aio_hostname $bracketed_ip "scscf.$aio_hostname"
 }
 
 case "$1" in
