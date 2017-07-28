@@ -50,7 +50,7 @@ write_config()
 
   sed -e 's/^sprout_hostname=.*$/sprout_hostname='$arg_public_hostname'/g
           s/^xdms_hostname=.*$/xdms_hostname='$arg_address':7888/g
-          s/^hs_hostname=.*$/hs_hostname='$arg_addresse':8888/g
+          s/^hs_hostname=.*$/hs_hostname='$arg_address':8888/g
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$arg_address':8889/g
           s/^sprout_registration_store=.*$/sprout_registration_store='$arg_address'/g
           s/^upstream_hostname=.*$/upstream_hostname='$arg_upstream_hostname'/g
@@ -59,7 +59,7 @@ write_config()
           s/^bgcf_uri=.*/icscf_uri=sip:'$bgcf_prefix'.'$arg_public_hostname':'$bgcf';transport=TCP/g
           ' -i $shared_config
 
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
+  # Cluster Manager will replace the cluster_settings file with something appropriate when it starts
   rm -f /etc/clearwater/cluster_settings
 
   # Ensure that we start a clean cluster, so that cloned AIO nodes etc. boot cleanly
