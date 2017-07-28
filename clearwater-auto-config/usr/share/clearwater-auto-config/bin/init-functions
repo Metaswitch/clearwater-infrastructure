@@ -69,7 +69,7 @@ write_config()
   add_section_text \
     /etc/hosts \
     "clearwater-aio" \
-    "$arg_local_ip $public_hostname ${scsf_prefix}.${public_hostname}"
+    "$arg_local_ip $public_hostname ${scscf_prefix}.${public_hostname}"
 
   service dnsmasq restart
 }
