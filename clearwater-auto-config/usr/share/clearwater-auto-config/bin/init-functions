@@ -54,9 +54,9 @@ write_config()
           s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$arg_address':8889/g
           s/^sprout_registration_store=.*$/sprout_registration_store='$arg_address'/g
           s/^upstream_hostname=.*$/upstream_hostname='$arg_upstream_hostname'/g
-          s/^scscf_uri=.*/scscf_uri=sip:'$scscf_prefix'.'$arg_public_hostname':'$scscf';transport=TCP/g
-          s/^icscf_uri=.*/icscf_uri=sip:'$icscf_prefix'.'$arg_public_hostname':'$icscf';transport=TCP/g
-          s/^bgcf_uri=.*/bgcf_uri=sip:'$bgcf_prefix'.'$arg_public_hostname':'$bgcf';transport=TCP/g
+          s/^scscf_uri=.*/scscf_uri="sip:'$scscf_prefix'.'$arg_public_hostname':'$scscf';transport=TCP"/g
+          s/^icscf_uri=.*/icscf_uri="sip:'$icscf_prefix'.'$arg_public_hostname':'$icscf';transport=TCP"/g
+          s/^bgcf_uri=.*/bgcf_uri="sip:'$bgcf_prefix'.'$arg_public_hostname':'$bgcf';transport=TCP"/g
           ' -i $shared_config
 
   # Cluster Manager will replace the cluster_settings file with something appropriate when it starts
