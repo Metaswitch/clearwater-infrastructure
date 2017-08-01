@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# @file clearwater-diags-monitor.prerm
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+# Reinstate the original core file pattern.
+[ ! -f /etc/clearwater/diags-monitor/core_pattern.old ] || cat /etc/clearwater/diags-monitor/core_pattern.old > /proc/sys/kernel/core_pattern
+rm -f /etc/clearwater/diags-monitor/core_pattern.old
+
+# Remove the temporary diagnostics directory.  Do not remove the dumps
+# directory, we don't want to delete diags.
+rm -rf /var/clearwater-diags-monitor/tmp
+
+# Stop clearwater-diags-monitor by deleting it from monit and then stopping it.
+# Use || true to ignore a failure, because set -e is in effect.
+rm -f /etc/monit/conf.d/clearwater-diags-monitor.monit
+pkill -HUP monit &> /dev/null || true
+service clearwater-diags-monitor stop || true

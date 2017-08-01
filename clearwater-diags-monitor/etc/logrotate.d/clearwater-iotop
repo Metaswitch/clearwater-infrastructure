@@ -1,0 +1,11 @@
+/var/log/clearwater-iotop.log
+{
+        rotate 4
+        maxsize 10M
+        weekly
+        missingok
+        notifempty
+        compress
+        delaycompress
+        copytruncate
+}

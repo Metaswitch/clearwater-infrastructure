@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# @file clearwater-infrastructure.prerm
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+if [ -f /etc/bash.bashrc ]; then
+  remove_section /etc/bash.bashrc clearwater-infrastructure
+fi
+
+for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
+  if [ -e $HOME_DIR/.bashrc ]; then
+    remove_section $HOME_DIR/.bashrc clearwater-infrastructure
+  fi
+done
+
+[ ! -d /etc/skel ] || remove_section /etc/skel/.bashrc clearwater-infrastructure

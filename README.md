@@ -33,6 +33,4 @@ It contains the following packages:
 
 * clearwater-socket-factory: service that allows other processes to obtain sockets from the factory's network namespace. More details are [here](clearwater-socket-factory.md)
 
-Further info
-------------
-* [Changelog](CHANGELOG.md)
+* clearwater-radius-auth: RADIUS authentication package. More details are [here](http://clearwater.readthedocs.io/en/latest/Radius_Authentication.html).

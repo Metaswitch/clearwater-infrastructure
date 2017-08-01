@@ -1,38 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file clearwater-auto-config-docker.init.d
 #
-# Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
-#
-# This program is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or (at your
-# option) any later version, along with the "Special Exception" for use of
-# the program along with SSL, set forth below. This program is distributed
-# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU General Public License for more
-# details. You should have received a copy of the GNU General Public
-# License along with this program.  If not, see
-# <http://www.gnu.org/licenses/>.
-#
-# The author can be reached by email at clearwater@metaswitch.com or by
-# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
-#
-# Special Exception
-# Metaswitch Networks Ltd  grants you permission to copy, modify,
-# propagate, and distribute a work formed by combining OpenSSL with The
-# Software, or a work derivative of such a combination, even if such
-# copying, modification, propagation, or distribution would otherwise
-# violate the terms of the GPL. You must comply with the GPL in all
-# respects for all of the code used other than OpenSSL.
-# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
-# Project and licensed under the OpenSSL Licenses, or a work based on such
-# software and licensed under the OpenSSL Licenses.
-# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
-# under which the OpenSSL Project distributes the OpenSSL toolkit software,
-# as those licenses appear in the file LICENSE-OPENSSL.
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
 
 ### BEGIN INIT INFO
 # Provides:          clearwater-auto-config-docker
@@ -61,45 +36,72 @@ do_auto_config()
     ip=$(hostname -I | sed -e 's/\(^\|^[0-9A-Fa-f: ]* \)\([0-9.][0-9.]*\)\( .*$\|$\)/\2/g' -e 's/\(^\)\(^[0-9A-Fa-f:]*\)\( .*$\|$\)/\2/g')
   fi
 
+  # If a PUBLIC_IP variable is set use this, otherwise go with the local IP
+  # here too.
+  if [ -n "$PUBLIC_IP" ]
+  then
+    public_ip=$PUBLIC_IP
+  else
+    public_ip=$ip
+  fi
+
   # Add square brackets around the address iff it is an IPv6 address
-  bracketed_ip=$(python /usr/share/clearwater/clearwater-auto-config-docker/bin/bracket_ipv6_address.py $ip)
+  bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-docker/bin/bracket-ipv6-address $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
-          s/^public_ip=.*$/public_ip='$ip'/g
-          s/^public_hostname=.*$/public_hostname='$ip'/g' -i $local_config
+          s/^public_ip=.*$/public_ip='$public_ip'/g
+          s/^public_hostname=.*$/public_hostname='$public_ip'/g' -i $local_config
+    sed -e '/^etcd_cluster=.*/d
+            /^etcd_proxy=.*/d' -i $local_config
+
+  # Extract DNS servers from resolv.conf and comma-separate them.
+  nameserver=`grep nameserver /etc/resolv.conf | cut -d ' ' -f 2`
+  nameserver=`echo $nameserver | tr ' ' ','`
 
   if [ -n "$ETCD_PROXY" ]
   then
     # Set up etcd proxy configuration from environment.  Shared configuration
     # should be uploaded and shared manually.
-    sed -e '/^etcd_cluster=.*/d
-            /^etcd_proxy=.*/d' -i $local_config
     echo "etcd_proxy=$ETCD_PROXY" >> $local_config
 
     # Remove the default shared configuration file.
     rm -f $shared_config
   else
-    # Set up shared configuration on each node.
+    # Use the etcd container that our Docker Compose file sets up. This is so
+    # we can rely on clearwater-cluster-manager to set up our datastores, as
+    # would happen on a non-Docker Clearwater cluster.
+    # We still want to auto-configure shared config on each node, though,
+    # rather than rely on it being uploaded.
+
+    echo "etcd_proxy=etcd0=http://etcd:2380" >> $local_config
+
     if [ -z "$ZONE" ]
     then
-      # Configure using Docker links.  Get the details of the linked Docker containers.  See
-      # https://docs.docker.com/userguide/dockerlinks/#environment-variables
-      # for the definition of this API.
-      [ "$SPROUT_NAME" != "" ]    && sprout_hostname=$SPROUT_PORT_5054_TCP_ADDR                  || sprout_hostname=$ip
-      [ "$HOMESTEAD_NAME" != "" ] && hs_hostname=$HOMESTEAD_PORT_8888_TCP_ADDR:8888              || hs_hostname=$bracketed_ip:8888
-      [ "$HOMESTEAD_NAME" != "" ] && hs_provisioning_hostname=$HOMESTEAD_PORT_8889_TCP_ADDR:8889 || hs_provisioning_hostname=$bracketed_ip:8889
-      [ "$HOMER_NAME" != "" ]     && xdms_hostname=$HOMER_PORT_7888_TCP_ADDR:7888                || xdms_hostname=$ip:7888
-      [ "$SPROUT_NAME" != "" ]    && upstream_hostname=$SPROUT_PORT_5054_TCP_ADDR                || upstream_hostname=$ip
-      [ "$RALF_NAME" != "" ]      && ralf_hostname=$RALF_PORT_10888_TCP_ADDR:10888               || ralf_hostname=$bracketed_ip:10888
+      # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
+      # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
+      sprout_hostname=sprout
+      sprout_registration_store=astaire
+      chronos_hostname=chronos
+      cassandra_hostname=cassandra
+      hs_hostname=homestead:8888
+      hs_provisioning_hostname=homestead:8889
+      xdms_hostname=homer:7888
+      upstream_hostname=sprout
+      ralf_hostname=ralf:10888
+      ralf_session_store=astaire
       home_domain="example.com"
     else
-      # Configure relative to the base zone and rely on DNS entries.
+      # Configure relative to the base zone and rely on externally configured DNS entries.
       sprout_hostname=sprout.$ZONE
-      hs_hostname=hs.$ZONE:8888
-      hs_provisioning_hostname=hs.$ZONE:8889
+      sprout_registration_store=astaire.$ZONE
+      chronos_hostname=chronos.$ZONE
+      cassandra_hostname=cassandra.$ZONE
+      hs_hostname=homestead.$ZONE:8888
+      hs_provisioning_hostname=homestead.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
+      ralf_session_store=astaire.$ZONE
       home_domain=$ZONE
     fi
 
@@ -110,11 +112,23 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^sprout_registration_store=.*$/sprout_registration_store='$sprout_registration_store'/g
+            s/^ralf_session_store=.*$/ralf_session_store='$ralf_session_store'/g
+            s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g
+            s/^cassandra_hostname=.*$/cassandra_hostname='$cassandra_hostname'/g
             s/^email_recovery_sender=.*$/email_recovery_sender=clearwater@'$home_domain'/g' -i $shared_config
 
-    # Extract DNS servers from resolv.conf and comma-separate them.
-    nameserver=`grep nameserver /etc/resolv.conf | cut -d ' ' -f 2`
-    nameserver=`echo $nameserver | tr ' ' ','`
+    sed -e '/^scscf_uri=.*/d' -i $shared_config
+    echo "scscf_uri=\"sip:$sprout_hostname:5054;transport=tcp\"" >> $shared_config
+    sed -e '/^icscf_uri=.*/d' -i $shared_config
+    echo "icscf_uri=\"sip:$sprout_hostname:5052;transport=tcp\"" >> $shared_config
+    sed -e '/^bgcf_uri=.*/d' -i $shared_config
+    echo "bgcf_uri=\"sip:$sprout_hostname:5053;transport=tcp\"" >> $shared_config
+
+    # Add any additional shared config provided via the
+    # ADDITIONAL_SHARED_CONFIG environment variable.
+    echo -e $ADDITIONAL_SHARED_CONFIG >> $shared_config
+
     if [ -n "$nameserver" ]
     then
       sed -e '/^signaling_dns_server=.*/d' -i $shared_config
@@ -122,8 +136,22 @@ do_auto_config()
     fi
   fi
 
-  # Sprout will replace the cluster-settings file with something appropriate when it starts
-  rm -f /etc/clearwater/cluster_settings
+  # Is this a Chronos node?   If so then we need to sort chronos.conf including setting up DNS server config.
+  if [ -e /etc/chronos/chronos.conf.sample ]
+  then
+    if [ ! -e /etc/chronos/chronos.conf ]
+    then
+      cp /etc/chronos/chronos.conf.sample /etc/chronos/chronos.conf
+    fi
+
+    if [ -n "$nameserver" ]
+    then
+      echo -e "\n[dns]" >> /etc/chronos/chronos.conf
+      echo "servers=$nameserver" >> /etc/chronos/chronos.conf
+    fi
+
+    sed -i "s/bind-address = 0.0.0.0/bind-address = $ip/" /etc/chronos/chronos.conf
+  fi
 }
 
 case "$1" in

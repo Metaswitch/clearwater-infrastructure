@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# @file clearwater-diags-monitor.postinst
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+# Save off the current core file pattern so we can restore it on
+# uninstallation.   || true as this fails when building the MVSE images (where
+# it doesn't matter).
+cat /proc/sys/kernel/core_pattern > /etc/clearwater/diags-monitor/core_pattern.old || true
+
+# Create the temporary diagnostics directory and give it appropriate permissions.
+mkdir -p /var/clearwater-diags-monitor/tmp
+chmod a+rwx /var/clearwater-diags-monitor/tmp
+
+# Do the same for the dumps directory.
+mkdir -p /var/clearwater-diags-monitor/dumps
+chmod a+rwx /var/clearwater-diags-monitor/dumps
+
+# Make sure the monit configuration directory exists, copy our file in and restart monit.
+mkdir -p /etc/monit/conf.d/
+cp /usr/share/clearwater/clearwater-diags-monitor/conf/clearwater-diags-monitor.monit /etc/monit/conf.d/
+pkill -HUP monit || true

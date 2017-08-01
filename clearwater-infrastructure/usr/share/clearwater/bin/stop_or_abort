@@ -1,0 +1,54 @@
+#!/bin/bash
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# This utility script does an abort of a service, if it hasn't aborted for
+# at least a day.  If the script has been used to abort the process more
+# recently than 24 hours ago, the script just stops the service instead.
+#
+# The script is intended to be used in those cases where a service is
+# misbehaving and a core file needs to be generated, but where we don't want
+# all existing diagnostic sets to be flushed out if the condition keeps
+# happening
+
+usage="Usage: stop_or_abort [service] [reason] [abort period in seconds]"
+
+service=$1
+reason=$2
+abortperiod=$3
+
+if [[ $# != 3 ]]
+then
+    # Usage message to stderr
+    echo $usage >&2
+    exit 1
+fi
+
+# Check for the existence of the temporary marker file
+marker=/tmp/stop_or_abort.$service.$reason.abort
+
+last_abort=0
+if [ -f $marker ]
+then
+  # Get the last modification time of the marker file
+  last_abort=$(stat -c %Y $marker)
+fi
+
+# Get time now
+time_now=$(date +%s)
+
+# Is the difference in times greater than the time passed?
+age=$(( $time_now - $last_abort ))
+
+if [ $age -gt $abortperiod ]
+then
+  # Do an abort and touch the marker file
+  /etc/init.d/$service abort; touch $marker
+else
+  # Do a stop
+  /etc/init.d/$service stop
+fi

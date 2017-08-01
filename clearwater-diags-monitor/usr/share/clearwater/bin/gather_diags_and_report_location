@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# @file gather_diags_and_report_location
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+DIAGS_LOCATION=/var/clearwater-diags-monitor/dumps/
+
+# We always want to create a dump in the clearwater user's directory,
+# irrespective of whether or not the command was run with sudo.
+if [ -n "$SUDO_USER" ]
+then
+  # Evaluate the SUDO_USER's home directory and assign to CLEARWATER_USER_HOME.
+  eval CLEARWATER_USER_HOME="~$SUDO_USER"
+elif [ -n "$HOME" ]
+then
+  CLEARWATER_USER_HOME=$HOME
+elif [ -d /home/clearwater ]
+then
+  CLEARWATER_USER_HOME=/home/clearwater
+elif [ -d /home/centos ]
+then
+  CLEARWATER_USER_HOME=/home/centos
+else
+  CLEARWATER_USER_HOME=/home/ubuntu
+fi
+
+DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
+
+if [ $# -ne 0 ]
+then
+  echo "Usage: gather_diags_and_report_location"
+  echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
+  exit 1
+fi
+
+# Store the current time
+current_time=$(date --utc "+%Y%m%d%H%M%S")
+
+# Write a file to trigger a diagnostic dump.
+echo "Collecting diagnostics from the system."
+echo "This operation can take a few minutes to run."
+echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
+
+# Now wait for the diagnostics collection to complete
+latest_diags_time=0
+while [ $latest_diags_time -lt $current_time ]
+do
+  echo -n "."
+  sleep 2
+
+  latest_diags_file=$(ls -t $DIAGS_LOCATION | grep -v temp | grep -e tar.gz | tr '\n' ' ' | cut -d ' ' -f 1)
+  if [ ! -z $latest_diags_file ]
+  then
+    # Format of the dumps is /var/clearwater-diags-monitor/dumps/<datestamp>.<hostname>.<cause>.tar.gz
+    latest_diags_time=$(echo $latest_diags_file | cut -d '.' -f 1 | cut -d 'Z' -f 1)
+  fi
+done
+
+mkdir -p $DIAGS_END_LOCATION
+
+cp $DIAGS_LOCATION$latest_diags_file $DIAGS_END_LOCATION
+
+echo -e "\nDiagnostics collected. These are available at $DIAGS_END_LOCATION$latest_diags_file"

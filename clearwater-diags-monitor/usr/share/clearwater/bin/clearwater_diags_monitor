@@ -2,37 +2,12 @@
 
 # @file clearwater_diags_monitor
 #
-# Project Clearwater - IMS in the Cloud
-# Copyright (C) 2013  Metaswitch Networks Ltd
-#
-# This program is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or (at your
-# option) any later version, along with the "Special Exception" for use of
-# the program along with SSL, set forth below. This program is distributed
-# in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU General Public License for more
-# details. You should have received a copy of the GNU General Public
-# License along with this program.  If not, see
-# <http://www.gnu.org/licenses/>.
-#
-# The author can be reached by email at clearwater@metaswitch.com or by
-# post at Metaswitch Networks Ltd, 100 Church St, Enfield EN2 6BQ, UK
-#
-# Special Exception
-# Metaswitch Networks Ltd  grants you permission to copy, modify,
-# propagate, and distribute a work formed by combining OpenSSL with The
-# Software, or a work derivative of such a combination, even if such
-# copying, modification, propagation, or distribution would otherwise
-# violate the terms of the GPL. You must comply with the GPL in all
-# respects for all of the code used other than OpenSSL.
-# "OpenSSL" means OpenSSL toolkit software distributed by the OpenSSL
-# Project and licensed under the OpenSSL Licenses, or a work based on such
-# software and licensed under the OpenSSL Licenses.
-# "OpenSSL Licenses" means the OpenSSL License and Original SSLeay License
-# under which the OpenSSL Project distributes the OpenSSL toolkit software,
-# as those licenses appear in the file LICENSE-OPENSSL.
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
 
 # Redirect stdout and stderr to the logfile.
 LOG_FILE=/var/log/clearwater-diags-monitor.log
@@ -52,7 +27,7 @@ MIN_IDLE_CPU_FOR_GATHER=40
 . /etc/clearwater/config || exit
 
 # Setup prefix to use when running commands that need to execute within
-# the signaling network namespace for multi-interface configurations. 
+# the signaling network namespace for multi-interface configurations.
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
 
 # Setup dig's server argument for when it needs to execute within the
@@ -139,16 +114,40 @@ move_to_dump()
 # List all the clearwater packages installed.
 clearwater_packages()
 {
-  dpkg-query -W -f='${Package} ${Maintainer}\n' | grep " Project Clearwater Maintainers " | cut -d ' ' -f 1
+  {
+    if which rpm > /dev/null ; then
+      rpm -qa --qf '%{NAME} %{PACKAGER}\n'
+    else
+      dpkg-query -W -f='${Package} ${Maintainer}\n'
+    fi
+  } |
+  grep " Project Clearwater Maintainers" |
+  cut -d ' ' -f 1
 }
 
 
 # Get information about all the packages installed.
 get_package_info()
 {
-  dpkg -s $(dpkg --get-selections | cut -f 1) > $CURRENT_DUMP_DIR/package_info.txt
+  {
+    if which rpm > /dev/null ; then
+      rpm -qai
+    else
+      dpkg -s $(dpkg --get-selections | cut -f 1)
+    fi
+  } > $CURRENT_DUMP_DIR/package_info.txt
 }
 
+# Get configuration files for installed Clearwater packages
+get_cw_package_config_files() {
+  if which rpm > /dev/null ; then
+    rpm -qc $CURRENT_CW_COMPONENTS
+  else
+    # The dpkg etc lines are of the form below, so we need the 2nd field from cut.
+    #   <space><path-to-config-file><space><checksum>
+    dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2
+  fi
+}
 
 # Get information about all the clearwater packages installed.
 get_cw_package_info()
@@ -156,12 +155,18 @@ get_cw_package_info()
   info_file=$CURRENT_DUMP_DIR/cw_package_info.txt
 
   cw_packages=$(clearwater_packages)
-  if [ "$cw_packages" ]
-  then
-    dpkg -s $cw_packages > $info_file
-  else
-    echo "No clearwater packages installed" > $info_file
-  fi
+  {
+    if [ "$cw_packages" ]
+    then
+      if which rpm > /dev/null ; then
+        rpm -qi $cw_packages
+      else
+        dpkg -s $cw_packages
+      fi
+    else
+      echo "No clearwater packages installed"
+    fi
+  } > $info_file
 }
 
 
@@ -259,13 +264,15 @@ get_network_info()
 {
   copy_to_dump "/etc/hosts"
 
-  ifconfig -a > $CURRENT_DUMP_DIR/ifconfig.txt
+  # For some reason, redirecting ifconfig to file doesn't work on CentOS, so we
+  # pipe through tee instead.  We do the same below.
+  ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig.txt > /dev/null
   netstat -rn > $CURRENT_DUMP_DIR/routes.txt
   netstat -anp > $CURRENT_DUMP_DIR/netstat.txt
 
   for ns in `ip netns list`
   do
-    ip netns exec $ns ifconfig -a > $CURRENT_DUMP_DIR/ifconfig_$ns.txt
+    ip netns exec $ns ifconfig -a | tee $CURRENT_DUMP_DIR/ifconfig_$ns.txt > /dev/null
     ip netns exec $ns netstat -rn > $CURRENT_DUMP_DIR/routes_$ns.txt
     ip netns exec $ns netstat -anp > $CURRENT_DUMP_DIR/netstat_$ns.txt
   done
@@ -283,10 +290,25 @@ get_ntp_status()
 # system.
 get_cw_package_checksums()
 {
-  for pkg in $(clearwater_packages)
-  do
-    cp -p /var/lib/dpkg/info/$pkg.md5sums $CURRENT_DUMP_DIR
-  done
+  # For Centos the --verify flag for the rpm command returns several
+  # verification diags, including MD5 checksum problems (labelled with a `5`).
+  # See https://linux.die.net/man/8/rpm for other flags description.
+  {
+    if which rpm > /dev/null ; then
+      for pkg in $(clearwater_packages)
+      do
+        rpm --verify "$pkg"
+      done
+    fi
+  } >> "$CURRENT_DUMP_DIR"/rpm_verification.txt
+
+  # For Debian just collect the MD5 checksums
+  if which dpkg > /dev/null ; then
+    for pkg in $(clearwater_packages)
+    do
+      cp -p /var/lib/dpkg/info/"$pkg".md5sums "$CURRENT_DUMP_DIR"
+    done
+  fi
 }
 
 
@@ -316,6 +338,7 @@ get_hardware_info()
   cat /proc/cpuinfo > $CURRENT_DUMP_DIR/cpuinfo.txt
   cat /proc/meminfo > $CURRENT_DUMP_DIR/meminfo.txt
   df -kh            > $CURRENT_DUMP_DIR/df-kh.txt
+  fdisk -l          > $CURRENT_DUMP_DIR/fdisk-l.txt
 }
 
 # Get historical resource usage stats. This includes things like network usage,
@@ -404,6 +427,12 @@ get_etcd_info()
 {
   clearwater-etcdctl member list > $CURRENT_DUMP_DIR/etcd_member_list.txt
   clearwater-etcdctl cluster-health > $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  if [ -f /var/lib/clearwater-etcd/healthy_etcd_members ]
+  then
+    echo "When the cluster was last healthy, the members were" "$(</var/lib/clearwater-etcd/healthy_etcd_members)" >> $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  else
+    echo "The healthy etcd members file \"/var/lib/clearwater-etcd/healthy_etcd_members\" does not exist." >> $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  fi
   curl "http://$management_local_ip:4000/v2/keys/clearwater?consistent=true&recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state.txt
   curl "http://$management_local_ip:4000/v2/keys/clearwater?recursive=true&sorted=false" > $CURRENT_DUMP_DIR/etcd_state_no_consistency.txt
 }
@@ -466,6 +495,7 @@ cd $CRASH_DIR
 if [ $? -ne 0 ]; then
   echo "Crash directory didn't exist, creating"
   mkdir -p $CRASH_DIR
+  chmod a+rwx $CRASH_DIR
   cd $CRASH_DIR
 fi
 
@@ -554,10 +584,8 @@ do
   copy_to_dump '/etc/monit'
   copy_to_dump '/etc/hosts'
 
-  # Get the config files for installed clearwater packages.  The dpkg etc lines
-  # are of the form below, so we need the 2nd field from cut.
-  #   <space><path-to-config-file><space><checksum>
-  for conffile in $(dpkg -s $CURRENT_CW_COMPONENTS | grep "/etc" | cut -d' ' -f 2)
+  # Get the config files for installed clearwater packages.
+  for conffile in $(get_cw_package_config_files)
   do
     copy_to_dump $conffile
   done
@@ -590,7 +618,7 @@ do
   get_process_info
 
   # Database statuses.
-  if cw_component_installed homer homestead memento
+  if cw_component_installed clearwater-cassandra
   then
     get_cassandra_info
   fi
@@ -600,7 +628,7 @@ do
     get_mysql_info
   fi
 
-  if cw_component_installed sprout ralf memento
+  if cw_component_installed memcached
   then
     get_memcached_info
   fi

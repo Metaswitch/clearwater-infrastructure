@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# @file clearwater-snmpd.prerm
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+# Restore original snmpd.conf 
+[ ! -f /etc/snmp/snmpd.conf.pre-clearwater-snmp ] || mv /etc/snmp/snmpd.conf.pre-clearwater-snmp /etc/snmp/snmpd.conf
+
+# Clean up Monit configuration for snmpd
+rm -f /etc/monit/conf.d/snmpd.monit
+pkill -HUP monit &> /dev/null || true
+
+# Use restart here instead of the normal stop, as we've just taken away
+# monit's control of snmpd
+service snmpd restart || true

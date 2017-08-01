@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# @file enable-radius-authentication
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# Run the disable script first, to ensure we are idempotent
+/usr/share/clearwater-radius-auth/bin/disable-radius-authentication
+
+# Adds 'ato' after the password and shadow entries in nsswitch.conf.
+# This sets NSS to check the libnss_ato component for the user if they are not found locally.
+sed -i "s/\(\(passwd\|shadow\).*\)/\1 ato/" /etc/nsswitch.conf
+# Adds a sufficient check for RADIUS authentication before the standard UNIX authentication.
+sed -i "3i# +clearwater-radius-auth\nauth sufficient pam_radius_auth.so\n# -clearwater-radius-auth" /etc/pam.d/sshd

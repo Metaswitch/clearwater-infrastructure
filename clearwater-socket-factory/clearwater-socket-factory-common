@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# @file clearwater-socket-factory-common
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# This function takes as parameters a whitelist directory and a namespace
+# ("signaling"/"management") and returns the argument list to supply to an
+# instance of the socket factory.
+#
+get_daemon_args()
+{
+  WHITELIST_DIR=$1
+  NAMESPACE=$2
+
+  # The whitelist is a comma separated list of hosts. It's built up from
+  # each line of each file in the whitelist directory. We also remove duplicates.
+  if [ -d "$WHITELIST_DIR" ] && [ "$(ls -A $WHITELIST_DIR)" ]; then
+    allowed_hosts="--allowed-hosts=$(echo $(cat $WHITELIST_DIR/* | sort | uniq) | sed -e 's/ /,/g')"
+  fi
+
+  echo "$allowed_hosts --namespace $NAMESPACE"
+}

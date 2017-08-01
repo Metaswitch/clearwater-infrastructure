@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# @file clearwater-version
+
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+if [ $# -gt 1 ]
+then
+  echo "Usage: clearwater-version [package name]"
+  exit 1
+fi
+
+package_name=$1
+
+# Gets all the installed packages, pulls out only those packages installed
+# by clearwater (where the maintainer is 'Project Clearwater Maintainers' or
+# it's the cassandra package), pulls out the name of the packages, then
+# discards any that are the debug/libs version of the package
+pkgs="$(dpkg-query -W -f="\${binary:Package} \${Maintainer}\n" \
+     | egrep -e "(Project Clearwater Maintainers |cassandra)" \
+     | cut -d ' ' -f 1|sort -u \
+     | egrep -v "*-dbg$|-libs")"
+
+# Prints out the name and version of the packages.
+for pkg in $pkgs; do
+    if [[ -z $package_name ]] || [[ ! -z "`echo $pkg|grep $package_name`" ]]
+    then
+        version=`dpkg-query -f='${Version}\n' -W $pkg`
+        printf "%-40s %s\n" "$pkg" "$version"
+    fi
+done

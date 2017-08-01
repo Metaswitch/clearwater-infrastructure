@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# @file common
+#
+# Common installation utilities
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+set -e
+
+add_section() {
+  remove_section $1 $2
+  file=$1
+  tag=$2
+  delta=$3
+  { echo "#+$tag"
+    cat $delta
+    echo "#-$tag" ; } >> $file
+}
+
+add_section_text() {
+  remove_section $1 $2
+  file=$1
+  tag=$2
+  delta=$3
+  { echo "#+$tag"
+    echo "$delta"
+    echo "#-$tag" ; } >> $file
+}
+
+remove_section() {
+  file=$1
+  tag=$2
+  awk '/^#\+'$tag'$/,/^#-'$tag'$/ {next} {print}' $file >/tmp/$(basename $file).$$
+  mv /tmp/$(basename $file).$$ $file
+}

@@ -5,6 +5,10 @@ hs_hostname=
 hs_provisioning_hostname=
 xdms_hostname=
 ralf_hostname=
+chronos_hostname=
+cassandra_hostname=
+sprout_registration_store=
+ralf_session_store=
 
 # Email server configuration
 smtp_smarthost=127.0.0.1
@@ -14,6 +18,9 @@ email_recovery_sender=clearwater@example.com
 
 # I-CSCF/S-CSCF configuration
 upstream_hostname=
+scscf_uri=
+icscf_uri=
+bgcf_uri=
 
 # Keys
 signup_key=secret
@@ -21,3 +28,4 @@ turn_workaround=secret
 ellis_api_key=secret
 ellis_cookie_key=secret
 
+reduce_cassandra_mem_usage=Y

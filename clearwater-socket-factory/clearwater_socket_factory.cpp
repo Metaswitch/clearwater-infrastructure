@@ -1,3 +1,4 @@
+
 #include <sys/un.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,31 +19,31 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-const char* MGMT_SOCKET_PATH = "/tmp/clearwater_management_namespace_socket";
-const char* SIGNALING_SOCKET_PATH = "/tmp/clearwater_signaling_namespace_socket";
 const int MAX_PENDING = 5;
-
-const char* DEFAULT_NS_FD_PATH = "/proc/1/ns/net";
-const std::string SIGNALING_NS_FD_DIR = "/var/run/netns/";
 
 const char* LOG_FILENAME = "/var/log/clearwater-socket-factory.log";
 FILE* LOG_FILE = NULL;
+const char *nsstring = NULL;
 
-void write_timestamp(FILE* stream)
+void write_timestamp_namespace(FILE* stream)
 {
   time_t t;
   time(&t);
   struct tm* time_info = localtime(&t);
 
-  char buffer[64];
-  strftime(buffer, sizeof(buffer), "%Y:%m:%d %H:%M:%S: ", time_info);
+  char buffer[80];
+  size_t bytes = strftime(buffer, sizeof(buffer), "%Y:%m:%d %H:%M:%S: ", time_info);
+  if (nsstring != NULL)
+  {
+    sprintf(buffer + bytes, "[%s] ", nsstring);
+  }
   fputs(buffer, stream);
 }
 
 
 void logmsg(const char* format, ...)
 {
-  write_timestamp(LOG_FILE);
+  write_timestamp_namespace(LOG_FILE);
 
   va_list args;
   va_start(args, format);
@@ -56,7 +57,7 @@ void logmsg(const char* format, ...)
 
 void logerrno(const char* format, ...)
 {
-  write_timestamp(LOG_FILE);
+  write_timestamp_namespace(LOG_FILE);
 
   va_list args;
   va_start(args, format);
@@ -70,27 +71,24 @@ void logerrno(const char* format, ...)
 
 struct options
 {
-  std::string signaling_ns;
-  std::vector<std::string> mgmt_allowed_hosts;
-  std::vector<std::string> signaling_allowed_hosts;
+  std::vector<std::string> allowed_hosts;
+  std::string              ns;
 };
 
 
 enum OptionTokens
 {
-  OPT_SIGNALING_NS = 256,
-  OPT_MGMT_ALLOWED_HOSTS,
-  OPT_SIGNALING_ALLOWED_HOSTS
+  OPT_ALLOWED_HOSTS = 256,
+  OPT_NAMESPACE
 };
 
 
 const static struct option long_opt[] =
 {
-  {"signaling-namespace",      required_argument, NULL, OPT_SIGNALING_NS},
-  {"management-allowed-hosts", required_argument, NULL, OPT_MGMT_ALLOWED_HOSTS},
-  {"signaling-allowed-hosts",  required_argument, NULL, OPT_SIGNALING_ALLOWED_HOSTS},
-  {"help",                     no_argument,       NULL, 'h'},
-  {NULL,                       0,                 NULL, 0},
+  {"allowed-hosts", required_argument, NULL, OPT_ALLOWED_HOSTS},
+  {"namespace",     required_argument, NULL, OPT_NAMESPACE},
+  {"help",          no_argument,       NULL, 'h'},
+  {NULL,            0,                 NULL, 0},
 };
 
 
@@ -98,15 +96,10 @@ void usage(void)
 {
   puts("Options:\n"
        "\n"
-       " --signalling-namespace <namespace>\n"
-       "                               The name of the signaling namespace. If not\n"
-       "                               specified, assume the default namespace.\n"
-       " --management-allowed-hosts <hosts>\n"
-       "                               A comma separated list of whitelisted hosts in\n"
-       "                               the management namespace.\n"
-       " --signaling-allowed-hosts <hosts>\n"
-       "                               A comma separated list of whitelisted hosts in\n"
-       "                               the signaling namespace.\n"
+       " --allowed-hosts <hosts>       A comma separated list of whitelisted hosts in\n"
+       "                               the namespace for this instance of the factory.\n"
+       " --namespace <namespace>       The namespace being handled by this instance of\n"
+       "                               the factory\n"
        " -h, --help                    Show this help screen\n");
 }
 
@@ -121,27 +114,19 @@ int init_options(int argc, char**argv, struct options& options)
   {
     switch (opt)
     {
-    case OPT_SIGNALING_NS:
-      logmsg("Signaling namespace: %s", optarg);
-      options.signaling_ns = std::string(optarg);
-      break;
-
-    case OPT_MGMT_ALLOWED_HOSTS:
-      logmsg("Management whitelist: %s", optarg);
+    case OPT_ALLOWED_HOSTS:
+      logmsg("Whitelist: %s", optarg);
       tmp = std::string(optarg);
-      boost::split(options.mgmt_allowed_hosts,
+      boost::split(options.allowed_hosts,
                    tmp,
                    boost::is_any_of(","),
                    boost::token_compress_on);
       break;
 
-    case OPT_SIGNALING_ALLOWED_HOSTS:
-      logmsg("Signaling whitelist: %s", optarg);
-      tmp = std::string(optarg);
-      boost::split(options.signaling_allowed_hosts,
-                   tmp,
-                   boost::is_any_of(","),
-                   boost::token_compress_on);
+    case OPT_NAMESPACE:
+      logmsg("Namespace: %s", optarg);
+      options.ns = std::string(optarg);
+      nsstring = options.ns.c_str();
       break;
 
     case 'h':
@@ -401,76 +386,36 @@ int create_unix_domain_socket(const char* socket_path)
 
 int create_server(struct options& options)
 {
-  std::vector<int> ns_fds;
-  int mgmt_ns_fd = open(DEFAULT_NS_FD_PATH, 0);
-  if (mgmt_ns_fd == -1)
-  {
-    logerrno("Failed to open %s and retrieve management namespace fd",
-             DEFAULT_NS_FD_PATH);
-    exit(3);
-  }
-  ns_fds.push_back(mgmt_ns_fd);
-
-  int signaling_ns_fd;
-  if (options.signaling_ns != "")
-  {
-    std::string signaling_ns_fd_path = SIGNALING_NS_FD_DIR + options.signaling_ns;
-    signaling_ns_fd = open(signaling_ns_fd_path.c_str(), 0);
-    if (signaling_ns_fd == -1)
-    {
-      logerrno("Failed to open and %s retrieve signaling ns fd",
-               signaling_ns_fd_path.c_str());
-      exit(3);
-    }
-    ns_fds.push_back(signaling_ns_fd);
-  }
-  else
-  {
-    signaling_ns_fd = mgmt_ns_fd;
-  }
-
-  struct pollfd fds[2];
+  struct pollfd fd;
 
   logmsg("Starting server");
 
-  fds[0].fd = create_unix_domain_socket(MGMT_SOCKET_PATH);
-  fds[0].events = POLLIN;
-  fds[1].fd = create_unix_domain_socket(SIGNALING_SOCKET_PATH);
-  fds[1].events = POLLIN;
+  /*
+   * Determine the socket path from the namespace
+   */
+  std::string socket_path =  "/tmp/clearwater_" + options.ns + "_namespace_socket";
+
+  fd.fd = create_unix_domain_socket(socket_path.c_str());
+  fd.events = POLLIN;
 
   /*
-   * Poll the file descriptors. Set timeout to -1 so that we block until a file
+   * Poll the file descriptor. Set timeout to -1 so that we block until the file
    * descriptor has become ready
    */
   for (;;)
   {
-    int ret = poll(fds, 2, -1);
+    int ret = poll(&fd, 1, -1);
 
     if (ret > 0)
     {
-      if (fds[0].revents & POLLIN)
+      if (fd.revents & POLLIN)
       {
-        setns(mgmt_ns_fd, CLONE_NEWNET);
-        process_one_request(fds[0].fd, options.mgmt_allowed_hosts);
-      }
-
-      if (fds[1].revents & POLLIN)
-      {
-        setns(signaling_ns_fd, CLONE_NEWNET);
-        process_one_request(fds[1].fd, options.signaling_allowed_hosts);
+        process_one_request(fd.fd, options.allowed_hosts);
       }
     }
   }
 
-  close(fds[0].fd);
-  close(fds[1].fd);
-
-  for (std::vector<int>::iterator it = ns_fds.begin();
-       it != ns_fds.end();
-       ++it)
-  {
-    close(*it);
-  }
+  close(fd.fd);
 
   return 0;
 }

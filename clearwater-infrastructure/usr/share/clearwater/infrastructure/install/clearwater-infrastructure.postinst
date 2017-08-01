@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# @file clearwater-infrastructure.postinst
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+. /usr/share/clearwater/infrastructure/install/common
+
+EGGS_DIR=/usr/share/clearwater/infrastructure/eggs
+
+add_config_shim() {
+  if [ ! -e /etc/clearwater/config ]
+  then
+    cat <<EOF > /etc/clearwater/config
+if [ -f /etc/clearwater/shared_config ]
+then
+  . /etc/clearwater/shared_config
+fi
+
+. /etc/clearwater/local_config
+
+if [ -f /etc/clearwater/user_settings ]
+then
+  . /etc/clearwater/user_settings
+fi
+EOF
+  fi
+}
+
+add_bashrc_shim() {
+  add_section_text $1 clearwater-infrastructure ". /usr/share/clearwater/infrastructure/bin/bash.bashrc"
+}
+
+add_config_shim
+
+if [ -f /etc/bash.bashrc ]; then
+  add_bashrc_shim /etc/bash.bashrc
+fi
+
+for HOME_DIR in $(find /home -mindepth 1 -maxdepth 1 -type d) ; do
+  if [ -e $HOME_DIR/.bashrc ]; then
+    add_bashrc_shim $HOME_DIR/.bashrc
+  fi
+done
+
+if [ -d /etc/skel ]; then
+  add_bashrc_shim /etc/skel/.bashrc
+fi
+
+/usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg
