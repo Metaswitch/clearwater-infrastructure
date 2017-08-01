@@ -85,6 +85,29 @@ def is_resolvable_domain_name(value):
         return False
 
 
+def is_naptr_resolvable(naptr):
+    """Check whether an NAPTR domain has any records"""
+
+    return is_domain_resolvable(naptr, 'NAPTR')
+
+
+def is_srv_resolvable(srv):
+    """Check whether an SRV domain has any records"""
+
+    return is_domain_resolvable(srv, 'SRV')
+
+
+def is_domain_resolvable(name, rrtype):
+    """Check whether the given domain has any records of the given type"""
+
+    try:
+        answers = dns.resolver.query(name, rrtype)
+        return len(answers) != 0
+
+    except:
+        return False
+
+
 class Option(object):
     """Description of a config option"""
 
@@ -181,6 +204,82 @@ def resolvable_domain_name_validator(name, value):
         return False
 
 
+def sip_uri_validator(name, value):
+    """Validate a config option represents a valid SIP URI"""
+
+    match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$", value)
+
+    if not match:
+        error(name, "{} is not a valid SIP URI".format(value))
+        return False
+
+    scheme = match.group(1)
+    host = match.group(3)
+    port = match.group(4)
+    params = match.group(5)
+
+    if scheme != "sip":
+        error(name, "{} is not a SIP URI".format(value))
+        return False
+
+    if params:
+        pdict = {}
+
+        for param in params.split(';'):
+            pmatch = re.match(r"([^=]+)=(.*)", param)
+            if pmatch:
+                pdict[pmatch.group(1)] = pmatch.group(2)
+            else:
+                pdict[param] = True
+
+        params = pdict
+    else:
+        params = {}
+
+    # Check whether a transport parameter is provided and is valid
+    transport = None
+
+    if 'transport' in params:
+        if params['transport'].lower() not in ('udp', 'tcp'):
+            error(name, ("{} is not a valid SIP "
+                         "transport").format(params['transport']))
+            return False
+
+        else:
+            transport = params['transport']
+
+    if is_ip_addr(host):
+        return True
+
+    elif not is_domain_name(host):
+        error(name, ("{} is neither an IP address or a valid domain "
+                     "name".format(host)))
+
+    elif port:
+        if is_resolvable_domain_name(host):
+            return True
+
+        else:
+            error(name, "{} is not resolvable".format(host))
+            return False
+
+    elif transport:
+        srv = '_sip._{}.{}'.format(params['transport'], host)
+
+        if is_srv_resolvable(srv):
+            return True
+        else:
+            error(name, "{} is not a valid SRV record".format(srv))
+            return False
+    else:
+
+        if is_naptr_resolvable(host):
+            return True
+        else:
+            error(name, "{} is not a valid NAPTR record".format(host))
+            return False
+
+
 def diameter_realm_validator(name, value):
     """Validate a config option that should be a diameter realm"""
 
@@ -188,20 +287,10 @@ def diameter_realm_validator(name, value):
     if not is_domain_name(value):
         error(name, "{} is not a valid realm".format(value))
 
-    try:
-        answers = dns.resolver.query('_diameter._tcp.' + name, 'SRV')
-
-        if len(answers) == 0:
-            error(name, (
-                '_diamater._tcp.{} does not resolve to any SRV '
-                'records'.format(value)))
-
-            return False
-    except:
+    if not is_srv_resolvable('_diameter._tcp.' + name):
         error(name, (
-            '_diameter._tcp.{} failed to resolve to any SRV '
+            '_diamater._tcp.{} does not resolve to any SRV '
             'records'.format(value)))
-
         return False
 
     return True
@@ -345,6 +434,10 @@ OPTIONS = [
 
     Option('snmp_ip', Option.SUGGESTED, ip_addr_list_validator),
     Option('sas_server', Option.SUGGESTED, ip_or_domain_name_validator),
+
+    Option('scscf_uri', Option.OPTIONAL, run_in_sig_ns(sip_uri_validator)),
+    Option('bgcf_uri', Option.OPTIONAL, run_in_sig_ns(sip_uri_validator)),
+    Option('icscf_uri', Option.OPTIONAL, run_in_sig_ns(sip_uri_validator)),
 
     Option('enum_server', Option.OPTIONAL, ip_addr_list_validator),
     Option('signaling_dns_server', Option.OPTIONAL, ip_addr_validator),
