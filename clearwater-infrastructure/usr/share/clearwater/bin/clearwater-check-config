@@ -148,7 +148,7 @@ check_config_values()
   (
     set -a
     source /etc/clearwater/config
-    python $(dirname $BASH_SOURCE)/check_config_values.py
+    /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.check_config_values
   )
 }
 

@@ -1,5 +1,5 @@
 #
-# @file check_config_contents.py
+# @file check_config_values.py
 #
 # Project Clearwater - IMS in the Cloud
 # Copyright (C) 2016  Metaswitch Networks Ltd
@@ -37,6 +37,9 @@ import os
 import sys
 import socket
 import re
+import dns
+
+from nsenter import Namespace
 
 
 def error(option_name, message):
@@ -45,6 +48,14 @@ def error(option_name, message):
        @param option_name - The name of the option the error relates to.
        @param message     - A description of the problem"""
     sys.stderr.write("ERROR: {}: {}\n".format(option_name, message))
+
+
+def warning(option_name, message):
+    """Utility method to print warning messages to stderr.
+
+       @param option_name - The name of the option the warning relates to.
+       @param message     - A description of the problem"""
+    sys.stderr.write("WARN: {}: {}\n".format(option_name, message))
 
 
 def ip_version(value):
@@ -64,7 +75,7 @@ def ip_version(value):
 
 def is_ip_addr(value):
     """Return whether the supplied string is a valid IP address"""
-    return (ip_version(value) != None)
+    return (ip_version(value) is not None)
 
 
 def is_domain_name(value):
@@ -90,32 +101,49 @@ def is_domain_name(value):
         return True
 
 
+def is_resolvable_domain_name(value):
+    """Return whether the supplied string is a resolvable domain name"""
+    try:
+        socket.gethostbyname(value)
+        return True
+    except socket.gaierror:
+        return False
+
+
 class Option(object):
     """Description of a config option"""
 
-    def __init__(self, name, mandatory=True, validator=None):
+    MANDATORY = 0
+    SUGGESTED = 1
+    OPTIONAL = 2
+
+    def __init__(self, name, type=MANDATORY, validator=None):
         """Create a new config option
 
            @param name      - The name of the option.
-           @param mandatory - Whether the option is mandatory or not.
+           @param type      - Is this option mandatory, suggested, or optional
            @param validator - If supplied this must be a callable object that
              checks the option's value. If the check fails this function must
              print an error to stderr and return False. Otherwise it must return
              True.
         """
         self.name = name
-        self.mandatory = mandatory
+        self.type = type
         self.validator = validator
 
+    def mandatory(self):
+        return self.type == Option.MANDATORY
 
-#-------------------------------------------------------------------------------
+    def suggested(self):
+        return self.type == Option.SUGGESTED
+
+
 # Validator definitions. Each of these functions takes two parameters: the
 # parameter name and its value (both as strings). They should behave as follows:
 #
 # - If the value is acceptable, produce no output and return True.
 # - If the value is unacceptable, produce an error log describing the problem
 #   and return False.
-#-------------------------------------------------------------------------------
 
 
 def integer_validator(name, value):
@@ -164,18 +192,44 @@ def ip_or_domain_name_validator(name, value):
     else:
         return True
 
+
 def resolvable_domain_name_validator(name, value):
     """Validate a config option that should be a resolvable domain name"""
     if not is_domain_name(value):
         error(name, "{} is not a valid domain name".format(value))
         return False
 
-    try:
-        socket.gethostbyname(value)
+    if is_resolvable_domain_name(value):
         return True
-    except socket.gaierror:
+    else:
         error(name, "{} is not resolvable".format(value))
         return False
+
+
+def diameter_realm_validator(name, value):
+    """Validate a config option that should be a diameter realm"""
+
+    # Realms should be valid domain names
+    if not is_domain_name(value):
+        error(name, "{} is not a valid realm".format(value))
+
+    try:
+        answers = dns.resolver.query('_diameter._tcp.' + name, 'SRV')
+
+        if len(answers) == 0:
+            error(name, (
+                '_diamater._tcp.{} does not resolve to any SRV '
+                'records'.format(value)))
+
+            return False
+    except:
+        error(name, (
+            '_diameter._tcp.{} failed to resolve to any SRV '
+            'records'.format(value)))
+
+        return False
+
+    return True
 
 
 def ip_or_domain_name_with_port_validator(name, value):
@@ -205,7 +259,11 @@ def ip_or_domain_name_with_port_validator(name, value):
         return True
 
     elif is_domain_name(stem):
-        return True
+
+        if is_resolvable_domain_name(stem):
+            return True
+        else:
+            error(name, "Unable to resolve domain name {}".format(stem))
 
     else:
         error(name, ("{} is neither a domain name, "
@@ -213,50 +271,159 @@ def ip_or_domain_name_with_port_validator(name, value):
         return False
 
 
+def run_in_sig_ns(validator):
+    """Run a validator in the signaling namespace"""
+
+    def sig_ns_validator(name, value):
+
+        sig_ns = os.environ.get('signaling_namespace')
+
+        # If we have a configured signaling DNS server
+        # use it in preference for both DNS Python requests
+        # and none DNS Python requests
+        sig_dns = os.environ.get('signaling_dns_server')
+
+        if sig_dns:
+            dns.get_default_resolver().nameservers = [sig_dns]
+            dns.override_system_resolver()
+
+        if sig_ns:
+            with Namespace('/var/run/netns/' + sig_ns, 'net'):
+                return validator(name, value)
+
+        if sig_dns:
+            dns.restore_system_resolver()
+            dns.reset_default_resolver()
+
+        else:
+            return validator(name, value)
+
+    return sig_ns_validator
+
+
+def number_present(*args):
+    """Determine the number of configuration items given which are present"""
+    config = 0
+
+    for option in args:
+        value = os.environ.get(option)
+        if value:
+            config += 1
+
+    return config
+
+
+def validate_hss_config():
+    """
+    Require that exactly one of hss_realm, hss_hostname,
+    and hs_provisioning_hostname is set.
+    """
+
+    hss_config = number_present('hss_realm', 'hss_hostname', 'hs_provisioning_hostname')
+
+    if hss_config > 1:
+        error('HSS',
+              ('Only one of hss_realm, hss_hostname, or '
+               'hs_provisioning_hostname should be set'))
+    elif hss_config == 0:
+        error('HSS',
+              ('One of hss_realm, hss_hostname or hs_provisioning_hostname'
+               'must be set'))
+
+    return (hss_config == 1)
+
+
+def validate_etcd_config():
+    """Require that exactly one of etcd_proxy or etcd_cluster is set"""
+    etcd_config = number_present('etcd_proxy', 'etcd_cluster')
+
+    if etcd_config > 1:
+        error('etcd', 'Only one of etcd_proxy and etcd_cluster may be set')
+
+    elif etcd_config == 0:
+        error('etcd', 'One of etcd_proxy and etcd_cluster must be set')
+
+    return (etcd_config == 1)
+
+
 # Options that we wish to check.
 OPTIONS = [
-  Option('local_ip', True, ip_addr_validator),
-  Option('public_ip', True, ip_addr_validator),
-  Option('public_hostname', True, resolvable_domain_name_validator),
-  Option('etcd_cluster', True, ip_addr_list_validator),
-  Option('home_domain', True, domain_name_validator),
-  Option('sprout_hostname', True, ip_or_domain_name_validator),
-  Option('hs_hostname', True, ip_or_domain_name_with_port_validator),
+    Option('local_ip', Option.MANDATORY, ip_addr_validator),
+    Option('public_ip', Option.MANDATORY, ip_addr_validator),
+    Option('public_hostname', Option.MANDATORY,
+           run_in_sig_ns(resolvable_domain_name_validator)),
+    Option('home_domain', Option.MANDATORY, domain_name_validator),
+    Option('sprout_hostname', Option.MANDATORY,
+           run_in_sig_ns(ip_or_domain_name_validator)),
+    Option('hs_hostname', Option.MANDATORY,
+           run_in_sig_ns(ip_or_domain_name_with_port_validator)),
 
-  Option('node_idx', False, integer_validator),
-  Option('ralf_hostname', False, ip_or_domain_name_with_port_validator),
-  Option('xdms_hostname', False, ip_or_domain_name_with_port_validator),
+    # Mandatory nature of one of these is enforced below
+    Option('etcd_cluster', Option.OPTIONAL, ip_addr_list_validator),
+    Option('etcd_proxy', Option.OPTIONAL, ip_addr_list_validator),
+
+    # Mandatory nature of one of these is enforced below
+    Option('hss_realm', Option.OPTIONAL, run_in_sig_ns(diameter_realm_validator)),
+    Option('hss_hostname', Option.OPTIONAL, run_in_sig_ns(domain_name_validator)),
+    Option('hs_provisioning_hostname', Option.OPTIONAL,
+           run_in_sig_ns(ip_or_domain_name_with_port_validator)),
+
+    Option('snmp_ip', Option.SUGGESTED, ip_addr_list_validator),
+    Option('sas_server', Option.SUGGESTED, ip_or_domain_name_validator),
+
+    Option('enum_server', Option.OPTIONAL, ip_addr_list_validator),
+    Option('signaling_dns_server', Option.OPTIONAL, ip_addr_validator),
+    Option('remote_cassandra_seeds', Option.OPTIONAL, ip_addr_validator),
+    Option('billing_realm', Option.OPTIONAL,
+           run_in_sig_ns(diameter_realm_validator)),
+    Option('node_idx', Option.OPTIONAL, integer_validator),
+    Option('ralf_hostname', Option.OPTIONAL,
+           run_in_sig_ns(ip_or_domain_name_with_port_validator)),
+    Option('xdms_hostname', Option.OPTIONAL,
+           run_in_sig_ns(ip_or_domain_name_with_port_validator))
 ]
 
-# Flag indicating whether all the config checks have passed. This affects the
-# script's exit code.
-all_ok = True
 
-# Check that each option is present (if mandatory) and correctly formatted (if
-# it has a particular format we wish to check).
-for option in OPTIONS:
-    value = os.environ.get(option.name)
+def check_config():
+    # Flag indicating whether all the config checks have passed. This affects the
+    # script's exit code.
+    all_ok = True
 
-    if value:
-        # The option is present. If it has validator, run it now.
-        if option.validator:
-            if not option.validator(option.name, value):
-                # The validator is responsible for printing an error message.
+    # Check that each option is present (if mandatory) and correctly formatted (if
+    # it has a particular format we wish to check).
+    for option in OPTIONS:
+        value = os.environ.get(option.name)
+
+        if value:
+            # The option is present. If it has validator, run it now.
+            if option.validator:
+                if not option.validator(option.name, value):
+                    # The validator is responsible for printing an error message.
+                    all_ok = False
+
+        else:
+            # The option is not present, which is an error if it's mandatory.
+            if option.mandatory():
+                error(option.name, 'option is mandatory but not present')
                 all_ok = False
+            elif option.suggested():
+                warning(option.name, 'option is not configured')
 
-    else:
-        # The option is not present, which is an error if it's mandatory.
-        if option.mandatory:
-            error(option.name, 'option is mandatory but not present')
-            all_ok = False
+    #
+    # More advanced checks (e.g. checking consistency between multiple options) can
+    # be performed here.
+    #
 
-#
-# More advanced checks (e.g. checking consistency between multiple options) can
-# be performed here.
-#
+    if not validate_hss_config():
+        all_ok = False
 
-# Return an appropriate error code to the caller.
-if not all_ok:
-    sys.exit(1)
-else:
+    if not validate_etcd_config():
+        all_ok = False
+
+    return all_ok
+
+
+if check_config():
     sys.exit(0)
+else:
+    sys.exit(1)

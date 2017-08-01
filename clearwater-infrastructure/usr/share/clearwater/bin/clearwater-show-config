@@ -39,12 +39,20 @@ if [[ "$EUID" != 0 ]]; then
   exit 2
 fi
 
-# clearwater-show-config is actually 3 scripts:
-# - show_config_inner.py is a python script that pretty prints the
-#   configuration. This is called by:
-# - show-config-inner which is a shell script responsible for sourcing in the
+# clearwater-show-config is actually 2 scripts:
+# - show_config.py is a python script that pretty prints the
 #   configuration. This is called by:
 # - clearwater-show-config (this script) which is responsible for running
 #   show-config-inner in a clean environment. This what the `env -i` bit is
 #   for.
-env -i $(dirname $BASH_SOURCE)/show-config-inner
+(
+  # Automatically export all shell variables that get set.
+  set -a
+
+  # Read the config
+  source /etc/clearwater/config
+
+  # Call into a python script to display it. Using exec here cuts down on the
+  # number of extra environment variables the python process sees.
+  exec /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.show_config
+)

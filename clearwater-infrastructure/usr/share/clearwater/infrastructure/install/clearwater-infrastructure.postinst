@@ -53,3 +53,16 @@ if [ -d /etc/skel ]; then
 fi
 
 /usr/bin/python2.7 -m easy_install -f $EGGS_DIR $EGGS_DIR/*.egg
+
+BASE_DIR=/usr/share/clearwater/infrastructure
+
+rm -rf $BASE_DIR/env
+
+virtualenv $BASE_DIR/env
+$BASE_DIR/env/bin/pip install \
+   --compile \
+   --no-index \
+   --upgrade \
+   --force-reinstall \
+   --find-links=$BASE_DIR/wheelhouse/ \
+   cw_infrastructure
