@@ -410,6 +410,25 @@ def validate_etcd_config():
     return (etcd_config == 1)
 
 
+def validate_sprout_hostname():
+    """Check that the default URIs based on the Sprout hostname are valid"""
+
+    sprout_hostname = os.environ.get('sprout_hostname')
+
+    ok = True
+
+    for sproutlet in ('scscf', 'bgcf', 'icscf'):
+
+        # If the default hasn't been overriden, check that the URI
+        # based on the Sprout hostname is a valid SIP URI
+        if not os.environ.get('{}_uri'.format(sproutlet)):
+            uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
+            if not run_in_sig_ns(sip_uri_validator)('sprout_hostname', uri):
+                ok = False
+
+    return ok
+
+
 # Options that we wish to check.
 OPTIONS = [
     Option('local_ip', Option.MANDATORY, ip_addr_validator),
@@ -486,6 +505,9 @@ def check_config():
         all_ok = False
 
     if not validate_etcd_config():
+        all_ok = False
+
+    if not validate_sprout_hostname():
         all_ok = False
 
     return all_ok
