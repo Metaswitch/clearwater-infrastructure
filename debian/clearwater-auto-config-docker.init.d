@@ -84,7 +84,7 @@ do_auto_config()
       chronos_hostname=chronos
       cassandra_hostname=cassandra
       hs_hostname=homestead:8888
-      hs_provisioning_hostname=homestead:8889
+      hs_provisioning_hostname=homestead-prov:8889
       xdms_hostname=homer:7888
       upstream_hostname=sprout
       ralf_hostname=ralf:10888
@@ -97,7 +97,7 @@ do_auto_config()
       chronos_hostname=chronos.$ZONE
       cassandra_hostname=cassandra.$ZONE
       hs_hostname=homestead.$ZONE:8888
-      hs_provisioning_hostname=homestead.$ZONE:8889
+      hs_provisioning_hostname=homestead-prov.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
