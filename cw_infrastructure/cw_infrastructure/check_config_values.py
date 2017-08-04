@@ -16,6 +16,11 @@ import dns
 
 from nsenter import Namespace
 
+## Statuses
+
+ERROR=5
+WARNING=4
+OK=0
 
 def error(option_name, message):
     """Utility method to print error messages to stderr.
@@ -148,19 +153,19 @@ def integer_validator(name, value):
     """Validate a config option that should be an integer"""
     try:
         int(value)
-        return True
+        return OK
     except ValueError:
         error(name, "{} is not an integer".format(value))
-        return False
+        return ERROR
 
 
 def ip_addr_validator(name, value):
     """Validate a config option that should be an IP address"""
     if not is_ip_addr(value):
         error(name, "{} is not an IP address".format(value))
-        return False
+        return ERROR
     else:
-        return True
+        return OK
 
 
 def ip_addr_list_validator(name, value):
@@ -168,40 +173,40 @@ def ip_addr_list_validator(name, value):
     addresses"""
     if not all(is_ip_addr(i) for i in value.split(',')):
         error(name, "{} is not a comma separated list of IP addresses".format(value))
-        return False
+        return ERROR
     else:
-        return True
+        return OK
 
 
 def domain_name_validator(name, value):
     """Validate a config option that should be a domain name"""
     if not is_domain_name(value):
         error(name, "{} is not a valid domain name".format(value))
-        return False
+        return ERROR
     else:
-        return True
+        return OK
 
 
 def ip_or_domain_name_validator(name, value):
     """Validate a config option that should be a domain name or IP address"""
     if not is_ip_addr(value) and not is_domain_name(value):
         error(name, "{} is neither a valid IP address or domain name".format(value))
-        return False
+        return ERROR
     else:
-        return True
+        return OK
 
 
 def resolvable_domain_name_validator(name, value):
     """Validate a config option that should be a resolvable domain name"""
     if not is_domain_name(value):
         error(name, "{} is not a valid domain name".format(value))
-        return False
+        return ERROR
 
     if is_resolvable_domain_name(value):
-        return True
+        return OK
     else:
         error(name, "{} is not resolvable".format(value))
-        return False
+        return ERROR
 
 
 def sip_uri_validator(name, value):
@@ -211,7 +216,7 @@ def sip_uri_validator(name, value):
 
     if not match:
         error(name, "{} is not a valid SIP URI".format(value))
-        return False
+        return ERROR
 
     scheme = match.group(1)
     host = match.group(3)
@@ -220,7 +225,7 @@ def sip_uri_validator(name, value):
 
     if scheme != "sip":
         error(name, "{} is not a SIP URI".format(value))
-        return False
+        return ERROR
 
     if params:
         pdict = {}
@@ -243,41 +248,42 @@ def sip_uri_validator(name, value):
         if params['transport'].lower() not in ('udp', 'tcp'):
             error(name, ("{} is not a valid SIP "
                          "transport").format(params['transport']))
-            return False
+            return ERROR
 
         else:
             transport = params['transport']
 
     if is_ip_addr(host):
-        return True
+        return OK
 
     elif not is_domain_name(host):
         error(name, ("{} is neither an IP address or a valid domain "
                      "name".format(host)))
+        return ERROR
 
     elif port:
         if is_resolvable_domain_name(host):
-            return True
+            return OK
 
         else:
             error(name, "{} is not resolvable".format(host))
-            return False
+            return ERROR
 
     elif transport:
         srv = '_sip._{}.{}'.format(params['transport'], host)
 
         if is_srv_resolvable(srv):
-            return True
+            return OK
         else:
             error(name, "{} is not a valid SRV record".format(srv))
-            return False
+            return ERROR
     else:
 
         if is_naptr_resolvable(host):
-            return True
+            return OK
         else:
             error(name, "{} is not a valid NAPTR record".format(host))
-            return False
+            return ERROR
 
 
 def diameter_realm_validator(name, value):
@@ -286,14 +292,15 @@ def diameter_realm_validator(name, value):
     # Realms should be valid domain names
     if not is_domain_name(value):
         error(name, "{} is not a valid realm".format(value))
+        return ERROR
 
     if not is_srv_resolvable('_diameter._tcp.' + name):
         error(name, (
             '_diamater._tcp.{} does not resolve to any SRV '
             'records'.format(value)))
-        return False
+        return ERROR
 
-    return True
+    return OK
 
 
 def ip_or_domain_name_with_port_validator(name, value):
@@ -302,37 +309,38 @@ def ip_or_domain_name_with_port_validator(name, value):
     match = re.match(r"^(.*):(\d+)$", value)
     if not match:
         error(name, "{} does not contain a port".format(value))
-        return False
+        return ERROR
 
     stem = match.group(1)
     port = match.group(2)
 
     if int(port) >= 2**16:
         error(name, "The port value ({}) is too large".format(port))
-        return False
+        return ERROR
 
     if (stem[0] == '[') and (stem[-1] == ']'):
         ip = stem[1:-1]
         if ip_version(ip) == 6:
-            return True
+            return OK
         else:
             error(name, "{} is not a valid IPv6 address".format(ip))
-            return False
+            return ERROR
 
     elif ip_version(stem) == 4:
-        return True
+        return OK
 
     elif is_domain_name(stem):
 
         if is_resolvable_domain_name(stem):
-            return True
+            return OK
         else:
             error(name, "Unable to resolve domain name {}".format(stem))
+            return ERROR
 
     else:
         error(name, ("{} is neither a domain name, "
                      "IPv4 address, or bracketed IPv6 address").format(stem))
-        return False
+        return OK
 
 
 def run_in_sig_ns(validator):
@@ -389,12 +397,14 @@ def validate_hss_config():
         error('HSS',
               ('Only one of hss_realm, hss_hostname, or '
                'hs_provisioning_hostname should be set'))
+        return ERROR
     elif hss_config == 0:
         error('HSS',
               ('One of hss_realm, hss_hostname or hs_provisioning_hostname'
                'must be set'))
+        return ERROR
 
-    return (hss_config == 1)
+    return OK
 
 
 def validate_etcd_config():
@@ -403,11 +413,13 @@ def validate_etcd_config():
 
     if etcd_config > 1:
         error('etcd', 'Only one of etcd_proxy and etcd_cluster may be set')
+        return ERROR
 
     elif etcd_config == 0:
         error('etcd', 'One of etcd_proxy and etcd_cluster must be set')
+        return ERROR
 
-    return (etcd_config == 1)
+    return OK
 
 
 def validate_sprout_hostname():
@@ -415,7 +427,7 @@ def validate_sprout_hostname():
 
     sprout_hostname = os.environ.get('sprout_hostname')
 
-    ok = True
+    status = OK
 
     for sproutlet in ('scscf', 'bgcf', 'icscf'):
 
@@ -423,10 +435,11 @@ def validate_sprout_hostname():
         # based on the Sprout hostname is a valid SIP URI
         if not os.environ.get('{}_uri'.format(sproutlet)):
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
-            if not run_in_sig_ns(sip_uri_validator)('sprout_hostname', uri):
-                ok = False
+            code = run_in_sig_ns(sip_uri_validator)('sprout_hostname', uri)
+            if code > status:
+                status = code
 
-    return ok
+    return status
 
 
 # Options that we wish to check.
@@ -472,9 +485,7 @@ OPTIONS = [
 
 
 def check_config():
-    # Flag indicating whether all the config checks have passed. This affects the
-    # script's exit code.
-    all_ok = True
+    status = 0
 
     # Check that each option is present (if mandatory) and correctly formatted (if
     # it has a particular format we wish to check).
@@ -484,36 +495,42 @@ def check_config():
         if value:
             # The option is present. If it has validator, run it now.
             if option.validator:
-                if not option.validator(option.name, value):
-                    # The validator is responsible for printing an error message.
-                    all_ok = False
+                code = option.validator(option.name, value)
+
+                # The validator is responsible for printing an error message.
+                if code > status:
+                    status = code
 
         else:
             # The option is not present, which is an error if it's mandatory.
             if option.mandatory():
                 error(option.name, 'option is mandatory but not present')
-                all_ok = False
+                status = ERROR
             elif option.suggested():
                 warning(option.name, 'option is not configured')
+                status = WARNING
 
     #
     # More advanced checks (e.g. checking consistency between multiple options) can
     # be performed here.
     #
 
-    if not validate_hss_config():
-        all_ok = False
+    code = validate_hss_config()
 
-    if not validate_etcd_config():
-        all_ok = False
+    if code > status:
+        status = code
 
-    if not validate_sprout_hostname():
-        all_ok = False
+    code = validate_etcd_config()
 
-    return all_ok
+    if code > status:
+        status = code
+
+    code = validate_sprout_hostname()
+
+    if code > status:
+        status = code
+
+    return status
 
 
-if check_config():
-    sys.exit(0)
-else:
-    sys.exit(1)
+sys.exit(check_config())
