@@ -52,7 +52,9 @@ clearwater_socket_factory_build:
 clearwater_socket_factory_clean:
 	make -C ${CW_SOCK_FACT_DIR} clean
 
+BANDIT_EXCLUDE_LIST = modules/,debian,clearwater-infrastructure/PyZMQ/_env,clearwater-infrastructure/PyZMQ/eggs
 include build-infra/cw-deb.mk
+include build-infra/python.mk
 .PHONY: deb
 deb: build deb-only
 
