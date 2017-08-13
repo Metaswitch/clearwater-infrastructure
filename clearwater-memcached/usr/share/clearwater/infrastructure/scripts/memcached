@@ -20,9 +20,21 @@ then
   listen_address=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
 fi
 
-if [ -n "$hs_provisioning_hostname" ];
+if [ -n "$hs_provisioning_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ -n "$memento_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ -n "$xdms_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ "$USE_CASSANDRA" -eq "Y" ];
 then
-  # If homestead-prov is in use, then only use 256 MB per core
+  # If Cassandra is in use, then only use 256 MB per core
   cache=$(($(grep processor /proc/cpuinfo | wc -l) * 256000000))
 else
   # Otherwise, use 1.5 GB per core
