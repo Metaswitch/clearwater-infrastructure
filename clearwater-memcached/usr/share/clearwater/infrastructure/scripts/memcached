@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file memcached
 #
@@ -32,7 +32,7 @@ if [ -n "$xdms_hostname" ]; then
   USE_CASSANDRA="Y"
 fi
 
-if [ "$USE_CASSANDRA" -eq "Y" ];
+if [ "$USE_CASSANDRA" == "Y" ];
 then
   # If Cassandra is in use, then only use 256 MB per core
   cache=$(($(grep processor /proc/cpuinfo | wc -l) * 256000000))
