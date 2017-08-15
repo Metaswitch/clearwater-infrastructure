@@ -20,9 +20,16 @@ then
   listen_address=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
 fi
 
+# Each line of this command modifies the config as follows:
+# - Sets the listen address to the signaling IP address of this node.
+# - Sets ignore_vbucket to true and sets a cache size limit of 512MB.
+# - Enables the first level of verbose logging.
+# - Enables core dumps.
+# - Sets the limit on the number of simultaneous connections to 4096.
 sed -e 's/^-l .*$/-l '$listen_address'/g'\
     -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=512000000/g"\
     -e 's/^# *-v *$/-v/g'\
+    -e 's/^# *-r *$/-r/g'\
     -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
 
 printf "\n# Disable listening on UDP\n-U 0\n" >> /etc/memcached_11211.conf
