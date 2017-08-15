@@ -23,6 +23,7 @@ fi
 sed -e 's/^-l .*$/-l '$listen_address'/g'\
     -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=512000000/g"\
     -e 's/^# *-v *$/-v/g'\
+    -e 's/^# *-r *$/-r/g'\
     -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
 
 printf "\n# Disable listening on UDP\n-U 0\n" >> /etc/memcached_11211.conf
