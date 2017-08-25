@@ -52,12 +52,25 @@ clearwater_socket_factory_build:
 clearwater_socket_factory_clean:
 	make -C ${CW_SOCK_FACT_DIR} clean
 
-BANDIT_EXCLUDE_LIST = modules/,debian,clearwater-infrastructure/PyZMQ/_env,clearwater-infrastructure/PyZMQ/eggs
 include build-infra/cw-deb.mk
-include build-infra/python.mk
 .PHONY: deb
 deb: build deb-only
 
 include build-infra/cw-rpm.mk
 .PHONY: rpm
 rpm: build rpm-only
+
+ENV_DIR := $(shell pwd)/_env
+$(ENV_DIR)/bin/python:
+	# Set up the virtual environment
+	virtualenv --setuptools --python=$(PYTHON_BIN) $(ENV_DIR)
+	$(ENV_DIR)/bin/easy_install "setuptools==24"
+	$(ENV_DIR)/bin/easy_install distribute
+	$(ENV_DIR)/bin/easy_install bandit
+
+BANDIT_EXCLUDE_LIST = _env,modules/,debian,clearwater-infrastructure/PyZMQ/_env,clearwater-infrastructure/PyZMQ/eggs
+.PHONY: analysis
+analysis: $(ENV_DIR)/bin/python
+	# Scanning python code recursively for security issues using Bandit. 
+	# Files in -x are ignored and only high severity level (-lll) are shown.
+	${ENV_DIR}/bin/bandit -r . -x "${BANDIT_EXCLUDE_LIST}" -lll
