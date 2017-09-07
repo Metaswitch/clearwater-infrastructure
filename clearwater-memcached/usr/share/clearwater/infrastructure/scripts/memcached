@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file memcached
 #
@@ -20,14 +20,36 @@ then
   listen_address=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
 fi
 
+if [ -n "$hs_provisioning_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ -n "$memento_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ -n "$xdms_hostname" ]; then
+  USE_CASSANDRA="Y"
+fi
+
+if [ "$USE_CASSANDRA" == "Y" ];
+then
+  # If Cassandra is in use, then only use 256 MB per core
+  cache=$(($(grep processor /proc/cpuinfo | wc -l) * 256000000))
+else
+  # Otherwise, use 1.5 GB per core
+  cache=$(($(grep processor /proc/cpuinfo | wc -l) * 1536000000))
+fi
+
 # Each line of this command modifies the config as follows:
 # - Sets the listen address to the signaling IP address of this node.
-# - Sets ignore_vbucket to true and sets a cache size limit of 512MB.
+# - Sets ignore_vbucket to true and sets a cache size limit, based on the spec
+#   of the machine, and whether Cassandra is in use.
 # - Enables the first level of verbose logging.
 # - Enables core dumps.
 # - Sets the limit on the number of simultaneous connections to 4096.
 sed -e 's/^-l .*$/-l '$listen_address'/g'\
-    -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=512000000/g"\
+    -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=$cache/g"\
     -e 's/^# *-v *$/-v/g'\
     -e 's/^# *-r *$/-r/g'\
     -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
