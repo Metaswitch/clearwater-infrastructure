@@ -13,7 +13,7 @@
 
 USE_CASSANDRA="N"
 
-for SCRIPT in $(ls -1 /usr/share/clearwater/cassandra/users//* 2>/dev/null)
+for SCRIPT in $(ls -1 /usr/share/clearwater/cassandra/users/* 2>/dev/null)
 do
   if [ -f "$SCRIPT" ]; then
     . $SCRIPT
