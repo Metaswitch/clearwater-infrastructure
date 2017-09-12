@@ -20,17 +20,7 @@ then
   listen_address=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
 fi
 
-if [ -n "$hs_provisioning_hostname" ]; then
-  USE_CASSANDRA="Y"
-fi
-
-if [ -n "$memento_hostname" ]; then
-  USE_CASSANDRA="Y"
-fi
-
-if [ -n "$xdms_hostname" ]; then
-  USE_CASSANDRA="Y"
-fi
+. /usr/share/clearwater/utils/cassandra_enabled
 
 if [ "$USE_CASSANDRA" == "Y" ];
 then
