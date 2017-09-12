@@ -9,7 +9,6 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-
 . /etc/clearwater/config
 
 USE_CASSANDRA="N"
