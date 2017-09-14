@@ -17,14 +17,14 @@
 # hostname that maps to the address.
 
 # Remove any entries that have been previously added by this script.
-grep -v ' # added by clearwater-infrastructure 1hosts script' /etc/hosts | grep -v ' # maps to local IPv6 address' > /tmp/hosts.$$
+grep -v '# added by clearwater-infrastructure 1hosts script' /etc/hosts | grep -v ' # maps to local IPv6 address' > /tmp/hosts.$$
 
 # Determine whether the local IP address is an IPv6 address.
 if /usr/share/clearwater/bin/is-address-ipv6 $local_ip
 then
   # Generate the ip6.arpa hostname from the IP address.  Add it to the hosts file.
   hostname=$(/usr/share/clearwater/bin/ipv6-to-hostname $local_ip)
-  echo $local_ip $hostname '# added by clearwater-infrastructure 1hosts script' >> /tmp/hosts.$$
+  echo $local_ip $hostname ' # added by clearwater-infrastructure 1hosts script' >> /tmp/hosts.$$
 fi
 
 # Append the IPv6 localhost.  This is to satisfy RFC6761 section 6.3, namely
