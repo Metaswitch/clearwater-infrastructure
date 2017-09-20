@@ -768,6 +768,9 @@ do
 
      # Now just rename the current dump dir to the archive name
      (cd $DUMPS_DIR; mv $CURRENT_DUMP_DIR $FINAL_DUMP_ARCHIVE)
+
+     # Also delete the CURRENT_DUMP_ARCHIVE if it exists
+     rm -f $CURRENT_DUMP_ARCHIVE
   fi
 
   # We should have dealt with all the trigger files by now, unless there are
