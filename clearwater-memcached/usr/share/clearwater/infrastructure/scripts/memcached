@@ -33,13 +33,15 @@ fi
 
 # Each line of this command modifies the config as follows:
 # - Sets the listen address to the signaling IP address of this node.
-# - Sets ignore_vbucket to true and sets a cache size limit, based on the spec
-#   of the machine, and whether Cassandra is in use.
+# - Sets ignore_vbucket to true
+# - Sets a cache size limit, based on the spec of the machine, and
+#   whether Cassandra is in use.
+# - Return errors on exhaustion rather than dropping old data
 # - Enables the first level of verbose logging.
 # - Enables core dumps.
 # - Sets the limit on the number of simultaneous connections to 4096.
 sed -e 's/^-l .*$/-l '$listen_address'/g'\
-    -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=$cache/g"\
+    -e "s/^-m .*$/-e ignore_vbucket=true;cache_size=$cache;eviction=false/g"\
     -e 's/^# *-v *$/-v/g'\
     -e 's/^# *-r *$/-r/g'\
     -e 's/^\(# *\|\)-c.*$/-c 4096/g' </etc/memcached.conf >/etc/memcached_11211.conf
