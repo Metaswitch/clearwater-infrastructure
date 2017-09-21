@@ -129,7 +129,7 @@ TLS_Prio = "NORMAL:-VERS-SSL3.0";
 # Limit the number of SCTP streams
 SCTP_streams = 3;
 
-# The delay before a watchdog message is sent
+# The delay between watchdog messages in seconds
 TwTimer = $tw_timer;
 
 # -------- Extensions ---------
