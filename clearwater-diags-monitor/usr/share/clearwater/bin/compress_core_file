@@ -1,0 +1,6 @@
+#!/bin/bash
+
+process=$1
+time=$2
+
+gzip > /var/clearwater-diags-monitor/tmp/core.${process}.${time}.gz
