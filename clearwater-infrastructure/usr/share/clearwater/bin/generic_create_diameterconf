@@ -12,7 +12,9 @@
 # This file creates a freeDiameter config file, and appropriate
 # TLS keys, for either Ralf, Homestead or Cedar.
 
-usage="Usage: generic_create_diameterconf [homestead|ralf|cedar] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS CHECK_DESTINATION_HOST TW_TIMER where TW_TIMER >= 6"
+usage="Usage: generic_create_diameterconf [homestead|ralf|cedar] DIAMETER_IDENTITY DIAMETER_REALM LISTEN_PORT SECURE_LISTEN_PORT INCOMING_CONNECTIONS CHECK_DESTINATION_HOST TW_TIMER
+\nThe TW_TIMER parameter is the Diameter watchdog message delay in seconds.
+\nIt must be an integer greater than or equal to 6."
 
 name=$1
 identity=$2
@@ -23,11 +25,18 @@ acl_required=$6
 check_dh=$7
 tw_timer=$8
 
-if [[ $# != 8 ]] || [[ $tw_timer -lt 6 ]]
+if [[ $# != 8 ]]
 then
     # Usage message to stderr
-    echo $usage >&2
+    echo -e $usage >&2
     exit 1
+fi
+
+if [[ $tw_timer -lt 6 ]]
+then
+  echo "TW_TIMER is less than 6!" >&2
+  echo -e $usage >&2
+  exit 1
 fi
 
 key_dir=/var/lib/$name
