@@ -24,6 +24,9 @@ chmod a+rwx /var/clearwater-diags-monitor/tmp
 mkdir -p /var/clearwater-diags-monitor/dumps
 chmod a+rwx /var/clearwater-diags-monitor/dumps
 
+# Stop the running diags monitor process, if there is one
+service clearwater-diags-monitor stop || /bin/true
+
 # Make sure the monit configuration directory exists, copy our file in and restart monit.
 mkdir -p /etc/monit/conf.d/
 cp /usr/share/clearwater/clearwater-diags-monitor/conf/clearwater-diags-monitor.monit /etc/monit/conf.d/
