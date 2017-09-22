@@ -159,6 +159,26 @@ def integer_validator(name, value):
         return ERROR
 
 
+""" Creates and returns an integer_range_validator """
+def integer_range_validator_creator(min_value = None, max_value = None):
+
+    """Validate a config option that should be an integer lying in a given
+    range"""
+    def integer_range_validator(name, value):
+        if integer_validator(name, value) == ERROR:
+            return ERROR
+        value_int = int(value)
+
+        if min_value is not None and value_int < min_value:
+            error(name, "{} is below the allowed minimum {}".format(value, min_value))
+            return ERROR
+        if max_value is not None and value_int > max_value:
+            error(name, "{} is above the allowed maximum {}".format(value, max_value))
+            return ERROR
+        return OK
+    return integer_range_validator
+
+
 def ip_addr_validator(name, value):
     """Validate a config option that should be an IP address"""
     if not is_ip_addr(value):
@@ -453,6 +473,11 @@ OPTIONS = [
            run_in_sig_ns(ip_or_domain_name_validator)),
     Option('hs_hostname', Option.MANDATORY,
            run_in_sig_ns(ip_or_domain_name_with_port_validator)),
+
+    Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
+           integer_range_validator_creator(min_value = 6)),
+    Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
+           integer_range_validator_creator(min_value = 6)),
 
     # Mandatory nature of one of these is enforced below
     Option('etcd_cluster', Option.OPTIONAL, ip_addr_list_validator),
