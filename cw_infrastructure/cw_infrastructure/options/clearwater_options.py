@@ -10,9 +10,58 @@
 
 import os
 
-import check_config_common as ccc
 import validators as val
 from check_config_utilities import Option, OK, ERROR, WARNING
+
+
+def get_options():
+    """Set up the list of options to be validated"""
+    options = [
+        Option('local_ip', Option.MANDATORY, val.ip_addr_validator),
+        Option('public_ip', Option.MANDATORY, val.ip_addr_validator),
+        Option('public_hostname', Option.MANDATORY,
+               val.run_in_sig_ns(val.resolvable_domain_name_validator)),
+        Option('home_domain', Option.MANDATORY, val.domain_name_validator),
+        Option('sprout_hostname', Option.MANDATORY,
+               val.run_in_sig_ns(val.ip_or_domain_name_validator)),
+        Option('hs_hostname', Option.MANDATORY,
+               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+
+        Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
+               val.integer_range_validator_creator(min_value = 6)),
+        Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
+               val.integer_range_validator_creator(min_value = 6)),
+
+        # Mandatory nature of one of these is enforced below
+        Option('etcd_cluster', Option.OPTIONAL, val.ip_addr_list_validator),
+        Option('etcd_proxy', Option.OPTIONAL, val.ip_addr_list_validator),
+
+        # Mandatory nature of one of these is enforced below
+        Option('hss_realm', Option.OPTIONAL, val.run_in_sig_ns(val.diameter_realm_validator)),
+        Option('hss_hostname', Option.OPTIONAL, val.run_in_sig_ns(val.domain_name_validator)),
+        Option('hs_provisioning_hostname', Option.OPTIONAL,
+               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+
+        Option('snmp_ip', Option.SUGGESTED, val.ip_addr_list_validator),
+        Option('sas_server', Option.SUGGESTED, val.ip_or_domain_name_validator),
+
+        Option('scscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
+        Option('bgcf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
+        Option('icscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
+
+        Option('enum_server', Option.OPTIONAL, val.ip_addr_list_validator),
+        Option('signaling_dns_server', Option.OPTIONAL, val.ip_addr_validator),
+        Option('remote_cassandra_seeds', Option.OPTIONAL, val.ip_addr_validator),
+        Option('billing_realm', Option.OPTIONAL,
+               val.run_in_sig_ns(val.diameter_realm_validator)),
+        Option('node_idx', Option.OPTIONAL, val.integer_validator),
+        Option('ralf_hostname', Option.OPTIONAL,
+               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+        Option('xdms_hostname', Option.OPTIONAL,
+               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator))
+    ]
+    return options
+
 
 def validate_hss_config():
     """
@@ -70,64 +119,12 @@ def validate_sprout_hostname():
 
     return status
 
-# Options that we wish to check.
-OPTIONS = [
-    Option('local_ip', Option.MANDATORY, val.ip_addr_validator),
-    Option('public_ip', Option.MANDATORY, val.ip_addr_validator),
-    Option('public_hostname', Option.MANDATORY,
-           val.run_in_sig_ns(val.resolvable_domain_name_validator)),
-    Option('home_domain', Option.MANDATORY, val.domain_name_validator),
-    Option('sprout_hostname', Option.MANDATORY,
-           val.run_in_sig_ns(val.ip_or_domain_name_validator)),
-    Option('hs_hostname', Option.MANDATORY,
-           val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
-
-    Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
-           val.integer_range_validator_creator(min_value = 6)),
-    Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
-           val.integer_range_validator_creator(min_value = 6)),
-
-    # Mandatory nature of one of these is enforced below
-    Option('etcd_cluster', Option.OPTIONAL, val.ip_addr_list_validator),
-    Option('etcd_proxy', Option.OPTIONAL, val.ip_addr_list_validator),
-
-    # Mandatory nature of one of these is enforced below
-    Option('hss_realm', Option.OPTIONAL, val.run_in_sig_ns(val.diameter_realm_validator)),
-    Option('hss_hostname', Option.OPTIONAL, val.run_in_sig_ns(val.domain_name_validator)),
-    Option('hs_provisioning_hostname', Option.OPTIONAL,
-           val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
-
-    Option('snmp_ip', Option.SUGGESTED, val.ip_addr_list_validator),
-    Option('sas_server', Option.SUGGESTED, val.ip_or_domain_name_validator),
-
-    Option('scscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
-    Option('bgcf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
-    Option('icscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
-
-    Option('enum_server', Option.OPTIONAL, val.ip_addr_list_validator),
-    Option('signaling_dns_server', Option.OPTIONAL, val.ip_addr_validator),
-    Option('remote_cassandra_seeds', Option.OPTIONAL, val.ip_addr_validator),
-    Option('billing_realm', Option.OPTIONAL,
-           val.run_in_sig_ns(val.diameter_realm_validator)),
-    Option('node_idx', Option.OPTIONAL, val.integer_validator),
-    Option('ralf_hostname', Option.OPTIONAL,
-           val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
-    Option('xdms_hostname', Option.OPTIONAL,
-           val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator))
-]
-
-def check_config():
+def check_advanced_config():
+    """
+    More advanced checks (e.g. checking consistency between multiple options)
+    can be performed here.
+    """
     status = OK
-
-    code = ccc.check_config(OPTIONS)
-
-    if code > status:
-        status = code
-
-    #
-    # More advanced checks (e.g. checking consistency between multiple options) can
-    # be performed here.
-    #
 
     code = validate_hss_config()
 
