@@ -11,7 +11,7 @@
 import sys
 import socket
 import re
-# import dns TODO: Uncomment
+import dns
 
 ## Statuses
 

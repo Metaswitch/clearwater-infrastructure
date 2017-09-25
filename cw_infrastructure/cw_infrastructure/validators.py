@@ -15,11 +15,11 @@
 # - If the value is unacceptable, produce an error log describing the problem
 #   and return False.
 
-# import dns TODO: Uncomment
+import dns
 import re
 import check_config_utilities as ccu
 
-# from nsenter import Namespace TODO: Uncomment
+from nsenter import Namespace
 
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""

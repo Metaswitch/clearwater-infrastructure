@@ -32,19 +32,10 @@ def number_present(*args):
 def check_config(options):
     status = 0
 
-    # BEGIN DEBUG CODE TODO: Remove
-    config = {}
-    with open('shared_config') as myfile:
-        for line in myfile:
-            name, var = line.partition('=')[::2]
-            config[name.strip()] = var
-    # END DEBUG CODE TODO: Remove
-
     # Check that each option is present (if mandatory) and correctly formatted (if
     # it has a particular format we wish to check).
     for option in options:
-        # value = os.environ.get(option.name) TODO: Uncomment
-        value = config.get(option.name) # TODO: Remove
+        value = os.environ.get(option.name)
 
         if value:
             # The option is present. If it has validator, run it now.
