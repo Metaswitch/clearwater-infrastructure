@@ -37,17 +37,22 @@ def get_options():
         Option('etcd_proxy', Option.OPTIONAL, vlds.ip_addr_list_validator),
 
         # Mandatory nature of one of these is enforced below
-        Option('hss_realm', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
-        Option('hss_hostname', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.domain_name_validator)),
+        Option('hss_realm', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+        Option('hss_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.domain_name_validator)),
         Option('hs_provisioning_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
         Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
 
-        Option('scscf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        Option('bgcf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        Option('icscf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('scscf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('bgcf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('icscf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
         Option('enum_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
         Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_validator),

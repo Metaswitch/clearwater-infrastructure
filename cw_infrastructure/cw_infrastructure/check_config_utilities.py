@@ -11,7 +11,7 @@
 import sys
 import socket
 import re
-import dns
+import dns.resolver
 import os
 
 ## Statuses

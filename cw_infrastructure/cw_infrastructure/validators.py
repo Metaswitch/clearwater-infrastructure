@@ -188,9 +188,9 @@ def diameter_realm_validator(name, value):
         error(name, "{} is not a valid realm".format(value))
         return ERROR
 
-    if not utils.is_srv_resolvable('_diameter._tcp.' + name):
+    if not utils.is_srv_resolvable('_diameter._tcp.' + value):
         error(name, (
-            '_diamater._tcp.{} does not resolve to any SRV '
+            '_diameter._tcp.{} does not resolve to any SRV '
             'records'.format(value)))
         return ERROR
 
