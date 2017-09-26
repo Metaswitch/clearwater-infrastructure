@@ -20,7 +20,7 @@ import re
 import os
 from nsenter import Namespace
 
-import check_config_utilities as ccu
+import check_config_utilities as utils
 from check_config_utilities import OK, WARNING, ERROR, warning, error
 
 def integer_validator(name, value):
@@ -40,7 +40,7 @@ def integer_range_validator_creator(min_value = None, max_value = None):
     range"""
     def integer_range_validator(name, value):
         if integer_validator(name, value) == ERROR:
-            return ccu.ERROR
+            return utils.ERROR
         value_int = int(value)
 
         if min_value is not None and value_int < min_value:
@@ -55,7 +55,7 @@ def integer_range_validator_creator(min_value = None, max_value = None):
 
 def ip_addr_validator(name, value):
     """Validate a config option that should be an IP address"""
-    if not ccu.is_ip_addr(value):
+    if not utils.is_ip_addr(value):
         error(name, "{} is not an IP address".format(value))
         return ERROR
     else:
@@ -65,7 +65,7 @@ def ip_addr_validator(name, value):
 def ip_addr_list_validator(name, value):
     """Validate a config option that should be a comma-separated list of IP
     addresses"""
-    if not all(ccu.is_ip_addr(i) for i in value.split(',')):
+    if not all(utils.is_ip_addr(i) for i in value.split(',')):
         error(name, "{} is not a comma separated list of IP addresses".format(value))
         return ERROR
     else:
@@ -74,7 +74,7 @@ def ip_addr_list_validator(name, value):
 
 def domain_name_validator(name, value):
     """Validate a config option that should be a domain name"""
-    if not ccu.is_domain_name(value):
+    if not utils.is_domain_name(value):
         error(name, "{} is not a valid domain name".format(value))
         return ERROR
     else:
@@ -83,7 +83,7 @@ def domain_name_validator(name, value):
 
 def ip_or_domain_name_validator(name, value):
     """Validate a config option that should be a domain name or IP address"""
-    if not ccu.is_ip_addr(value) and not ccu.is_domain_name(value):
+    if not utils.is_ip_addr(value) and not utils.is_domain_name(value):
         error(name, "{} is neither a valid IP address or domain name".format(value))
         return ERROR
     else:
@@ -92,11 +92,11 @@ def ip_or_domain_name_validator(name, value):
 
 def resolvable_domain_name_validator(name, value):
     """Validate a config option that should be a resolvable domain name"""
-    if not ccu.is_domain_name(value):
+    if not utils.is_domain_name(value):
         error(name, "{} is not a valid domain name".format(value))
         return ERROR
 
-    if ccu.is_resolvable_domain_name(value):
+    if utils.is_resolvable_domain_name(value):
         return OK
     else:
         error(name, "{} is not resolvable".format(value))
@@ -147,16 +147,16 @@ def sip_uri_validator(name, value):
         else:
             transport = params['transport']
 
-    if ccu.is_ip_addr(host):
+    if utils.is_ip_addr(host):
         return OK
 
-    elif not ccu.is_domain_name(host):
+    elif not utils.is_domain_name(host):
         error(name, ("{} is neither an IP address or a valid domain "
                      "name".format(host)))
         return ERROR
 
     elif port:
-        if ccu.is_resolvable_domain_name(host):
+        if utils.is_resolvable_domain_name(host):
             return OK
 
         else:
@@ -166,14 +166,14 @@ def sip_uri_validator(name, value):
     elif transport:
         srv = '_sip._{}.{}'.format(params['transport'], host)
 
-        if ccu.is_srv_resolvable(srv):
+        if utils.is_srv_resolvable(srv):
             return OK
         else:
             error(name, "{} is not a valid SRV record".format(srv))
             return ERROR
     else:
 
-        if ccu.is_naptr_resolvable(host):
+        if utils.is_naptr_resolvable(host):
             return OK
         else:
             error(name, "{} is not a valid NAPTR record".format(host))
@@ -184,11 +184,11 @@ def diameter_realm_validator(name, value):
     """Validate a config option that should be a diameter realm"""
 
     # Realms should be valid domain names
-    if not ccu.is_domain_name(value):
+    if not utils.is_domain_name(value):
         error(name, "{} is not a valid realm".format(value))
         return ERROR
 
-    if not ccu.is_srv_resolvable('_diameter._tcp.' + name):
+    if not utils.is_srv_resolvable('_diameter._tcp.' + name):
         error(name, (
             '_diamater._tcp.{} does not resolve to any SRV '
             'records'.format(value)))
@@ -220,12 +220,12 @@ def ip_or_domain_name_with_port_validator(name, value):
             error(name, "{} is not a valid IPv6 address".format(ip))
             return ERROR
 
-    elif ccu.ip_version(stem) == 4:
+    elif utils.ip_version(stem) == 4:
         return OK
 
-    elif ccu.is_domain_name(stem):
+    elif utils.is_domain_name(stem):
 
-        if ccu.is_resolvable_domain_name(stem):
+        if utils.is_resolvable_domain_name(stem):
             return OK
         else:
             error(name, "Unable to resolve domain name {}".format(stem))
