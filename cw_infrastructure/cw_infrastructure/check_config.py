@@ -10,7 +10,6 @@
 
 import imp
 import sys
-import warnings # TODO remove
 import os
 from glob import glob
 
@@ -49,16 +48,19 @@ def check_config(options):
 
 def import_option_modules():
     """Retrieve and import option modules from the options/ directory"""
+
+    # Search the specified directory for python modules and obtain (filename, path)
+    # pairs for each such module.
     options_path = os.path.join(option_module_path, '*.py')
-    option_pairs = [(os.path.split(path)[1], path) for path in glob(options_path)]
+    option_pairs = [(os.path.split(path)[1][:-3], path) for path in glob(options_path)]
+
+    # Import the modules
     option_modules = [imp.load_source(name, path) for (name, path) in option_pairs]
     return option_modules
 
 
 # Retrieve and import option modules
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    option_modules = import_option_modules()
+option_modules = import_option_modules()
 
 # Build up the list of options to be validated
 options = []
