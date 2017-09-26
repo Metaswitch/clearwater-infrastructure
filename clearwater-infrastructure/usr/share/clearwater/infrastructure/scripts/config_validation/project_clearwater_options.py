@@ -1,5 +1,5 @@
 #
-# @file clearwater_options.py
+# @file project_clearwater_options.py
 #
 # Copyright (C) Metaswitch Networks 2017
 # If license terms are provided to you in a COPYING file in the root directory
