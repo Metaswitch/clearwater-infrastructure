@@ -10,55 +10,55 @@
 
 import os
 
-import validators as val
-from check_config_utilities import Option, OK, ERROR, WARNING
-
+import cw_infrastructure.validators as vlds
+from cw_infrastructure.check_config_utilities import (OK, ERROR, WARNING,
+        error, warning, number_present, Option)
 
 def get_options():
     """Set up the list of options to be validated"""
     options = [
-        Option('local_ip', Option.MANDATORY, val.ip_addr_validator),
-        Option('public_ip', Option.MANDATORY, val.ip_addr_validator),
+        Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
+        Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
         Option('public_hostname', Option.MANDATORY,
-               val.run_in_sig_ns(val.resolvable_domain_name_validator)),
-        Option('home_domain', Option.MANDATORY, val.domain_name_validator),
+               vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
+        Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
         Option('sprout_hostname', Option.MANDATORY,
-               val.run_in_sig_ns(val.ip_or_domain_name_validator)),
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
         Option('hs_hostname', Option.MANDATORY,
-               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
-               val.integer_range_validator_creator(min_value = 6)),
+               vlds.integer_range_validator_creator(min_value = 6)),
         Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
-               val.integer_range_validator_creator(min_value = 6)),
+               vlds.integer_range_validator_creator(min_value = 6)),
 
         # Mandatory nature of one of these is enforced below
-        Option('etcd_cluster', Option.OPTIONAL, val.ip_addr_list_validator),
-        Option('etcd_proxy', Option.OPTIONAL, val.ip_addr_list_validator),
+        Option('etcd_cluster', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('etcd_proxy', Option.OPTIONAL, vlds.ip_addr_list_validator),
 
         # Mandatory nature of one of these is enforced below
-        Option('hss_realm', Option.OPTIONAL, val.run_in_sig_ns(val.diameter_realm_validator)),
-        Option('hss_hostname', Option.OPTIONAL, val.run_in_sig_ns(val.domain_name_validator)),
+        Option('hss_realm', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+        Option('hss_hostname', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.domain_name_validator)),
         Option('hs_provisioning_hostname', Option.OPTIONAL,
-               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        Option('snmp_ip', Option.SUGGESTED, val.ip_addr_list_validator),
-        Option('sas_server', Option.SUGGESTED, val.ip_or_domain_name_validator),
+        Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
+        Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
 
-        Option('scscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
-        Option('bgcf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
-        Option('icscf_uri', Option.OPTIONAL, val.run_in_sig_ns(val.sip_uri_validator)),
+        Option('scscf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('bgcf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('icscf_uri', Option.OPTIONAL, vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
-        Option('enum_server', Option.OPTIONAL, val.ip_addr_list_validator),
-        Option('signaling_dns_server', Option.OPTIONAL, val.ip_addr_validator),
-        Option('remote_cassandra_seeds', Option.OPTIONAL, val.ip_addr_validator),
+        Option('enum_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_validator),
+        Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
         Option('billing_realm', Option.OPTIONAL,
-               val.run_in_sig_ns(val.diameter_realm_validator)),
-        Option('node_idx', Option.OPTIONAL, val.integer_validator),
+               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+        Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
         Option('ralf_hostname', Option.OPTIONAL,
-               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
         Option('xdms_hostname', Option.OPTIONAL,
-               val.run_in_sig_ns(val.ip_or_domain_name_with_port_validator))
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator))
     ]
     return options
 
@@ -113,7 +113,7 @@ def validate_sprout_hostname():
         # based on the Sprout hostname is a valid SIP URI
         if not os.environ.get('{}_uri'.format(sproutlet)):
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
-            code = run_in_sig_ns(sip_uri_validator)('sprout_hostname', uri)
+            code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname', uri)
             if code > status:
                 status = code
 

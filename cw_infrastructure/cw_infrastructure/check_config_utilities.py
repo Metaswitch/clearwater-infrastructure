@@ -12,6 +12,7 @@ import sys
 import socket
 import re
 import dns
+import os
 
 ## Statuses
 
@@ -108,6 +109,18 @@ def is_domain_resolvable(name, rrtype):
 
     except:
         return False
+
+
+def number_present(*args):
+    """Determine the number of configuration items given which are present"""
+    config = 0
+
+    for option in args:
+        value = os.environ.get(option)
+        if value:
+            config += 1
+
+    return config
 
 
 class Option(object):

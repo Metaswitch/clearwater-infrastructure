@@ -12,21 +12,11 @@ import imp
 import sys
 import warnings # TODO remove
 import os
-
 from glob import glob
 
-from check_config_utilities import OK, WARNING, ERROR
+from check_config_utilities import OK, WARNING, ERROR, error, warning
 
-def number_present(*args):
-    """Determine the number of configuration items given which are present"""
-    config = 0
-
-    for option in args:
-        value = os.environ.get(option)
-        if value:
-            config += 1
-
-    return config
+option_module_path = "/usr/share/clearwater/infrastructure/scripts/config_validation"
 
 
 def check_config(options):
@@ -57,29 +47,32 @@ def check_config(options):
     return status
 
 
-def import_option_modules(option_modules):
+def import_option_modules():
     """Retrieve and import option modules from the options/ directory"""
-    options_path = os.path.join(os.path.dirname(__file__), 'options', '*.py')
+    options_path = os.path.join(option_module_path, '*.py')
     option_pairs = [(os.path.split(path)[1], path) for path in glob(options_path)]
     option_modules = [imp.load_source(name, path) for (name, path) in option_pairs]
+    return option_modules
 
 
 # Retrieve and import option modules
-option_modules = []
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    import_option_modules(option_modules)
+    option_modules = import_option_modules()
 
 # Build up the list of options to be validated
 options = []
 for module in option_modules:
     options += module.get_options()
 
+status = OK
+
 # Validate the options in this list
-check_config(options)
+code = check_config(options)
+if code > status:
+    status = code
 
 # Run advanced config checks in each option module
-status = OK
 for module in option_modules:
     code = module.check_advanced_config()
     if code > status:

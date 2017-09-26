@@ -123,7 +123,7 @@ check_config_values()
   (
     set -a
     source /etc/clearwater/config
-    /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.check_config_values
+    /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.check_config
   )
 }
 

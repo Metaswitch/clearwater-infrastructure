@@ -17,9 +17,11 @@
 
 import dns
 import re
-import check_config_utilities as ccu
-
+import os
 from nsenter import Namespace
+
+import check_config_utilities as ccu
+from check_config_utilities import OK, WARNING, ERROR, warning, error
 
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""
@@ -38,7 +40,7 @@ def integer_range_validator_creator(min_value = None, max_value = None):
     range"""
     def integer_range_validator(name, value):
         if integer_validator(name, value) == ERROR:
-            return ERROR
+            return ccu.ERROR
         value_int = int(value)
 
         if min_value is not None and value_int < min_value:
