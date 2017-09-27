@@ -40,7 +40,7 @@ def integer_range_validator_creator(min_value = None, max_value = None):
     range"""
     def integer_range_validator(name, value):
         if integer_validator(name, value) == ERROR:
-            return utils.ERROR
+            return ERROR
         value_int = int(value)
 
         if min_value is not None and value_int < min_value:

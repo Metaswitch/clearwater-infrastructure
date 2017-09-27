@@ -54,7 +54,7 @@ def import_option_modules():
     options_path = os.path.join(option_module_path, '*.py')
     option_pairs = [(os.path.split(path)[1][:-3], path) for path in glob(options_path)]
 
-    # Import the modules
+    # Import the modules, and return a list containing them
     option_modules = [imp.load_source(name, path) for (name, path) in option_pairs]
     return option_modules
 
