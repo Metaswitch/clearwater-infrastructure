@@ -45,12 +45,29 @@ do_auto_config()
     public_ip=$ip
   fi
 
+  if [ -z "$ZONE" ]
+  then
+    zone_suffix=""
+    home_domain="example.com"
+  else
+    zone_suffix=".$ZONE"
+    home_domain=$ZONE
+  fi
+
+  # If a PUBLIC_HOSTNAME variable is set use this, otherwise go with the public IP.
+  if [ -n "$PUBLIC_HOSTNAME" ]
+  then
+    public_hostname=$PUBLIC_HOSTNAME$zone_suffix
+  else
+    public_hostname=$public_ip
+  fi
+
   # Add square brackets around the address iff it is an IPv6 address
   bracketed_ip=$(/usr/share/clearwater/clearwater-auto-config-docker/bin/bracket-ipv6-address $ip)
 
   sed -e 's/^local_ip=.*$/local_ip='$ip'/g
           s/^public_ip=.*$/public_ip='$public_ip'/g
-          s/^public_hostname=.*$/public_hostname='$public_ip'/g' -i $local_config
+          s/^public_hostname=.*$/public_hostname='$public_hostname'/g' -i $local_config
     sed -e '/^etcd_cluster=.*/d
             /^etcd_proxy=.*/d' -i $local_config
 
@@ -75,37 +92,18 @@ do_auto_config()
 
     echo "etcd_proxy=etcd0=http://etcd:2380" >> $local_config
 
-    if [ -z "$ZONE" ]
-    then
-      # Assume the domain is example.com, and use the Docker internal DNS for service discovery.
-      # See https://docs.docker.com/engine/userguide/networking/configure-dns/ for details.
-      sprout_hostname=sprout
-      sprout_registration_store=astaire
-      chronos_hostname=chronos
-      cassandra_hostname=cassandra
-      homestead_impu_store=astaire
-      hs_hostname=homestead:8888
-      hs_provisioning_hostname=homestead-prov:8889
-      xdms_hostname=homer:7888
-      upstream_hostname=sprout
-      ralf_hostname=ralf:10888
-      ralf_session_store=astaire
-      home_domain="example.com"
-    else
-      # Configure relative to the base zone and rely on externally configured DNS entries.
-      sprout_hostname=sprout.$ZONE
-      sprout_registration_store=astaire.$ZONE
-      chronos_hostname=chronos.$ZONE
-      cassandra_hostname=cassandra.$ZONE
-      homestead_impu_store=astaire.$ZONE
-      hs_hostname=homestead.$ZONE:8888
-      hs_provisioning_hostname=homestead-prov.$ZONE:8889
-      xdms_hostname=homer.$ZONE:7888
-      upstream_hostname=sprout.$ZONE
-      ralf_hostname=ralf.$ZONE:10888
-      ralf_session_store=astaire.$ZONE
-      home_domain=$ZONE
-    fi
+
+    sprout_hostname=sprout$zone_suffix
+    sprout_registration_store=astaire$zone_suffix
+    chronos_hostname=chronos$zone_suffix
+    cassandra_hostname=cassandra$zone_suffix
+    homestead_impu_store=astaire$zone_suffix
+    hs_hostname=homestead$zone_suffix:8888
+    hs_provisioning_hostname=homestead-prov$zone_suffix:8889
+    xdms_hostname=homer$zone_suffix:7888
+    upstream_hostname=sprout$zone_suffix
+    ralf_hostname=ralf$zone_suffix:10888
+    ralf_session_store=astaire$zone_suffix
 
     sed -e 's/^home_domain=.*$/home_domain='$home_domain'/g
             s/^sprout_hostname=.*$/sprout_hostname='$sprout_hostname'/g
@@ -127,6 +125,13 @@ do_auto_config()
     echo "icscf_uri=\"sip:$sprout_hostname:5052;transport=tcp\"" >> $shared_config
     sed -e '/^bgcf_uri=.*/d' -i $shared_config
     echo "bgcf_uri=\"sip:$sprout_hostname:5053;transport=tcp\"" >> $shared_config
+
+    if [ -n "$HSS" ]
+    then
+      echo "hss_hostname=$HSS$zone_suffix" >> $shared_config
+      echo "hss_realm=$ZONE" >> $shared_config
+      sed -e '/hs_provisioning/d' -i $shared_config
+    fi
 
     # Add any additional shared config provided via the
     # ADDITIONAL_SHARED_CONFIG environment variable.
