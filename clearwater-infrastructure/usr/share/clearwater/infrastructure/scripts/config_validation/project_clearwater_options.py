@@ -28,9 +28,9 @@ def get_options():
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
-               vlds.integer_range_validator_creator(min_value = 6)),
+               vlds.create_integer_range_validator(min_value = 6)),
         Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
-               vlds.integer_range_validator_creator(min_value = 6)),
+               vlds.create_integer_range_validator(min_value = 6)),
 
         # Mandatory nature of one of these is enforced below
         Option('etcd_cluster', Option.OPTIONAL, vlds.ip_addr_list_validator),

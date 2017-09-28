@@ -34,7 +34,8 @@ def integer_validator(name, value):
 
 
 """ Creates and returns an integer_range_validator """
-def integer_range_validator_creator(min_value = None, max_value = None):
+def create_integer_range_validator(min_value = None, max_value = None,
+                                   warn_min_value = None, warn_max_value = None):
 
     """Validate a config option that should be an integer lying in a given
     range"""
@@ -43,12 +44,22 @@ def integer_range_validator_creator(min_value = None, max_value = None):
             return ERROR
         value_int = int(value)
 
+        # Check if the value lies in the allowed range
         if min_value is not None and value_int < min_value:
             error(name, "{} is below the allowed minimum {}".format(value, min_value))
             return ERROR
         if max_value is not None and value_int > max_value:
             error(name, "{} is above the allowed maximum {}".format(value, max_value))
             return ERROR
+
+        # Check if the value lies in the recommended range
+        if warn_min_value is not None and value_int < warn_min_value:
+            warning(name, "{} is below the recommended minimum {}".format(value, warn_min_value))
+            return WARNING
+        if warn_max_value is not None and value_int > warn_max_value:
+            warning(name, "{} is above the recommended maximum {}".format(value, warn_max_value))
+            return WARNING
+
         return OK
     return integer_range_validator
 
