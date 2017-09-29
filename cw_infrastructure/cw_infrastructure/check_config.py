@@ -12,10 +12,9 @@ import imp
 import sys
 import os
 from glob import glob
-
 from check_config_utilities import OK, WARNING, ERROR, error, warning
 
-option_module_path = "/usr/share/clearwater/infrastructure/scripts/config_validation"
+OPTION_MODULE_PATH = "/usr/share/clearwater/infrastructure/scripts/config_validation"
 
 
 def check_config(options):
@@ -46,38 +45,49 @@ def check_config(options):
     return status
 
 
+def get_file_name(path):
+    """
+    Given a path, retrieve the file name without the extension, e.g.
+    foo from /path/directory/foo.py
+    """
+    file_name_with_ext = os.path.basename(path)
+    (file_name, ext) = os.path.splitext(file_name_with_ext)
+    return file_name
+
+
 def import_option_modules():
     """Retrieve and import option modules from the options/ directory"""
 
     # Search the specified directory for python modules and obtain (filename, path)
     # pairs for each such module.
-    options_path = os.path.join(option_module_path, '*.py')
-    option_pairs = [(os.path.split(path)[1][:-3], path) for path in glob(options_path)]
+    options_path = os.path.join(OPTION_MODULE_PATH, '*.py')
+    option_pairs = [(get_file_name(path), path) for path in glob(options_path)]
 
     # Import the modules, and return a list containing them
     option_modules = [imp.load_source(name, path) for (name, path) in option_pairs]
     return option_modules
 
 
-# Retrieve and import option modules
-option_modules = import_option_modules()
+if __name__ == '__main__':
+    # Retrieve and import option modules
+    option_modules = import_option_modules()
 
-# Build up the list of options to be validated
-options = []
-for module in option_modules:
-    options += module.get_options()
+    # Build up the list of options to be validated
+    options = []
+    for module in option_modules:
+        options += module.get_options()
 
-status = OK
+    status = OK
 
-# Validate the options in this list
-code = check_config(options)
-if code > status:
-    status = code
-
-# Run advanced config checks in each option module
-for module in option_modules:
-    code = module.check_advanced_config()
+    # Validate the options in this list
+    code = check_config(options)
     if code > status:
         status = code
 
-sys.exit(status)
+    # Run advanced config checks in each option module
+    for module in option_modules:
+        code = module.check_advanced_config()
+        if code > status:
+            status = code
+
+    sys.exit(status)

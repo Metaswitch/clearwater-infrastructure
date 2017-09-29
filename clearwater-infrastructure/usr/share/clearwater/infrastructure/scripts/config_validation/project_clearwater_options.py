@@ -11,8 +11,9 @@
 import os
 
 import cw_infrastructure.validators as vlds
-from cw_infrastructure.check_config_utilities import (OK, ERROR, WARNING,
-        error, warning, number_present, Option)
+from cw_infrastructure.check_config_utilities import (OK, ERROR, error,
+                                                      number_present, Option)
+
 
 def get_options():
     """Set up the list of options to be validated"""
@@ -28,9 +29,9 @@ def get_options():
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
-               vlds.create_integer_range_validator(min_value = 6)),
+               vlds.create_integer_range_validator(min_value=6)),
         Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
-               vlds.create_integer_range_validator(min_value = 6)),
+               vlds.create_integer_range_validator(min_value=6)),
 
         # Mandatory nature of one of these is enforced below
         Option('etcd_cluster', Option.OPTIONAL, vlds.ip_addr_list_validator),
@@ -74,7 +75,9 @@ def validate_hss_config():
     and hs_provisioning_hostname is set.
     """
 
-    hss_config = number_present('hss_realm', 'hss_hostname', 'hs_provisioning_hostname')
+    hss_config = number_present('hss_realm',
+                                'hss_hostname',
+                                'hs_provisioning_hostname')
 
     if hss_config > 1:
         error('HSS',
@@ -87,7 +90,7 @@ def validate_hss_config():
                'must be set'))
         return ERROR
 
-    return ccu.OK
+    return OK
 
 
 def validate_etcd_config():
@@ -118,11 +121,13 @@ def validate_sprout_hostname():
         # based on the Sprout hostname is a valid SIP URI
         if not os.environ.get('{}_uri'.format(sproutlet)):
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
-            code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname', uri)
+            code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname',
+                                                              uri)
             if code > status:
                 status = code
 
     return status
+
 
 def check_advanced_config():
     """

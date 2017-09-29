@@ -11,9 +11,11 @@
 # Validator definitions. Each of these functions takes two parameters: the
 # parameter name and its value (both as strings). They should behave as follows:
 #
-# - If the value is acceptable, produce no output and return True.
+# - If the value is acceptable, produce no output and return OK.
 # - If the value is unacceptable, produce an error log describing the problem
-#   and return False.
+#   and return ERROR.
+# - If the value is acceptable but not recommended, produce a warning log
+#   describing the problem and return WARNING.
 
 import dns
 import re
@@ -22,6 +24,7 @@ from nsenter import Namespace
 
 import check_config_utilities as utils
 from check_config_utilities import OK, WARNING, ERROR, warning, error
+
 
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""
@@ -33,31 +36,37 @@ def integer_validator(name, value):
         return ERROR
 
 
-""" Creates and returns an integer_range_validator """
-def create_integer_range_validator(min_value = None, max_value = None,
-                                   warn_min_value = None, warn_max_value = None):
+def create_integer_range_validator(min_value=None, max_value=None,
+                                   warn_min_value=None, warn_max_value=None):
+    """ Creates and returns an integer_range_validator """
 
-    """Validate a config option that should be an integer lying in a given
-    range"""
     def integer_range_validator(name, value):
+        """Validate a config option that should be an integer lying in a given
+        range"""
         if integer_validator(name, value) == ERROR:
             return ERROR
         value_int = int(value)
 
         # Check if the value lies in the allowed range
         if min_value is not None and value_int < min_value:
-            error(name, "{} is below the allowed minimum {}".format(value, min_value))
+            error(name,
+                  "{} is below the allowed minimum {}".format(value, min_value))
             return ERROR
         if max_value is not None and value_int > max_value:
-            error(name, "{} is above the allowed maximum {}".format(value, max_value))
+            error(name,
+                  "{} is above the allowed maximum {}".format(value, max_value))
             return ERROR
 
         # Check if the value lies in the recommended range
         if warn_min_value is not None and value_int < warn_min_value:
-            warning(name, "{} is below the recommended minimum {}".format(value, warn_min_value))
+            warning(name,
+                    "{} is below the recommended minimum {}".format(value,
+                                                                    warn_min_value))
             return WARNING
         if warn_max_value is not None and value_int > warn_max_value:
-            warning(name, "{} is above the recommended maximum {}".format(value, warn_max_value))
+            warning(name,
+                    "{} is above the recommended maximum {}".format(value,
+                                                                    warn_max_value))
             return WARNING
 
         return OK
@@ -77,7 +86,8 @@ def ip_addr_list_validator(name, value):
     """Validate a config option that should be a comma-separated list of IP
     addresses"""
     if not all(utils.is_ip_addr(i) for i in value.split(',')):
-        error(name, "{} is not a comma separated list of IP addresses".format(value))
+        error(name,
+              "{} is not a comma separated list of IP addresses".format(value))
         return ERROR
     else:
         return OK
@@ -95,7 +105,8 @@ def domain_name_validator(name, value):
 def ip_or_domain_name_validator(name, value):
     """Validate a config option that should be a domain name or IP address"""
     if not utils.is_ip_addr(value) and not utils.is_domain_name(value):
-        error(name, "{} is neither a valid IP address or domain name".format(value))
+        error(name,
+              "{} is neither a valid IP address or domain name".format(value))
         return ERROR
     else:
         return OK
@@ -117,7 +128,8 @@ def resolvable_domain_name_validator(name, value):
 def sip_uri_validator(name, value):
     """Validate a config option represents a valid SIP URI"""
 
-    match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$", value)
+    match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$",
+                     value)
 
     if not match:
         error(name, "{} is not a valid SIP URI".format(value))
@@ -169,7 +181,6 @@ def sip_uri_validator(name, value):
     elif port:
         if utils.is_resolvable_domain_name(host):
             return OK
-
         else:
             error(name, "{} is not resolvable".format(host))
             return ERROR
@@ -225,7 +236,7 @@ def ip_or_domain_name_with_port_validator(name, value):
 
     if (stem[0] == '[') and (stem[-1] == ']'):
         ip = stem[1:-1]
-        if ip_version(ip) == 6:
+        if utils.ip_version(ip) == 6:
             return OK
         else:
             error(name, "{} is not a valid IPv6 address".format(ip))
@@ -235,7 +246,6 @@ def ip_or_domain_name_with_port_validator(name, value):
         return OK
 
     elif utils.is_domain_name(stem):
-
         if utils.is_resolvable_domain_name(stem):
             return OK
         else:

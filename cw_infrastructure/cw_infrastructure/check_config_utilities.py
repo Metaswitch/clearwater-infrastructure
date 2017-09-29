@@ -14,11 +14,12 @@ import re
 import dns.resolver
 import os
 
-## Statuses
+# Statuses
 
-ERROR=5
-WARNING=4
-OK=0
+ERROR = 5
+WARNING = 4
+OK = 0
+
 
 def error(option_name, message):
     """Utility method to print error messages to stderr.
