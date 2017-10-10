@@ -9,6 +9,11 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
+# Make sure that the socket factory itself is not already running.
+# It might be, if the wrapper script was previously killed (by the OOM killer,
+# say) leaving the grandchild clearwater_socket_factory process still running.
+pkill -9 -f -x '/usr/share/clearwater/bin/clearwater_socket_factory.*--namespace signaling'
+
 # Pull in get_daemon_args function
 . /usr/share/clearwater/bin/clearwater-socket-factory-common
 
