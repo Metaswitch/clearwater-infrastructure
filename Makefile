@@ -34,7 +34,7 @@ build: pyzmq_build clearwater_infrastructure_build clearwater_socket_factory_bui
 
 clean: pyzmq_clean clearwater_infrastructure_clean clearwater_socket_factory_clean cw_infrastructure_clean
 
-analysis: clearwater_infrastructure_analysis cw_infrastructure_analysis
+analysis: cw_infrastructure_analysis
 
 test: cw_infrastructure_test
 
@@ -60,6 +60,7 @@ clearwater_infrastructure_clean:
 
 ENV_DIR := $(shell pwd)/_env
 BANDIT_EXCLUDE_LIST = _env,modules/,debian,clearwater-infrastructure/PyZMQ/_env,clearwater-infrastructure/PyZMQ/eggs
+TEST_SETUP_PY :=
 
 include build-infra/python.mk
 

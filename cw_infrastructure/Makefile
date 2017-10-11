@@ -4,7 +4,6 @@ PYTHON_BIN := python
 
 SETUPTOOLS_VERSION=30
 
-TEST_REQUIREMENTS = requirements-test.txt
 TEST_SETUP_PY = setup.py
 FLAKE8_INCLUDE_DIR = .
 
