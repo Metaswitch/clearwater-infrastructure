@@ -95,8 +95,7 @@ check_option_locations()
   local local_rc=0
 
   # First, check that there are no options in shared config that really
-  # shouldn't be shared. log_level is included in this list as it only works
-  # properly when its put in user_settings.
+  # shouldn't be shared.
   check_options_not_in_file $SHARED_CONFIG                                     \
     local_ip                                                                   \
     public_ip                                                                  \
@@ -104,11 +103,7 @@ check_option_locations()
     node_idx                                                                   \
     etcd_cluster                                                               \
     etcd_cluster_key                                                           \
-    log_level                                                                  \
   || local_rc=1
-
-  # Do a similar check on local_config.
-  check_options_not_in_file $LOCAL_CONFIG log_level || local_rc=1
 
   return $local_rc
 }

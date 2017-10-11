@@ -26,7 +26,7 @@ def check_config(options):
         value = os.environ.get(option.name)
 
         if value:
-            # The option is present. If it has validator, run it now.
+            # The option is present. If the option has a validator, run it now.
             if option.validator:
                 code = option.validator(option.name, value)
 
