@@ -9,6 +9,8 @@ PYZMQ_DIR := ${PWD}/clearwater-infrastructure/PyZMQ
 SRC_DIR := ${PWD}/src
 CW_SOCK_FACT_DIR := ${PWD}/clearwater-socket-factory
 
+SETUPTOOLS_VERSION=30
+
 ENV_DIR := $(shell pwd)/_env
 ENV_PYTHON := ${ENV_DIR}/bin/python
 ENV_PIP := ${ENV_DIR}/bin/pip
@@ -27,12 +29,18 @@ RPM_NAMES := $(subst vellum,,$(RPM_NAMES))
 RPM_NAMES := $(subst dime-dbg,,$(RPM_NAMES))
 RPM_NAMES := $(subst dime,,$(RPM_NAMES))
 
-.PHONY: build
-build: pyzmq_build clearwater_infrastructure_build clearwater_socket_factory_build wheelhouse
+.PHONY: build clean analysis test verify style
+build: pyzmq_build clearwater_infrastructure_build clearwater_socket_factory_build cw_infrastructure
 
-.PHONY: clean
-clean: pyzmq_clean clearwater_infrastructure_clean clearwater_socket_factory_clean
-	-rm -r .wheelhouse ${ENV_DIR} build
+clean: pyzmq_clean clearwater_infrastructure_clean clearwater_socket_factory_clean cw_infrastructure_clean
+
+analysis: clearwater_infrastructure_analysis cw_infrastructure_analysis
+
+test: cw_infrastructure_test
+
+verify: cw_infrastructure_verify
+
+style: cw_infrastructure_style
 
 .PHONY: pyzmq_build
 pyzmq_build:
@@ -50,6 +58,11 @@ clearwater_infrastructure_build:
 clearwater_infrastructure_clean:
 	make -C ${SRC_DIR} clean
 
+ENV_DIR := $(shell pwd)/_env
+BANDIT_EXCLUDE_LIST = _env,modules/,debian,clearwater-infrastructure/PyZMQ/_env,clearwater-infrastructure/PyZMQ/eggs
+
+include build-infra/python.mk
+
 .PHONY: clearwater_socket_factory_build
 clearwater_socket_factory_build:
 	make -C ${CW_SOCK_FACT_DIR}
@@ -66,23 +79,21 @@ include build-infra/cw-rpm.mk
 .PHONY: rpm
 rpm: build rpm-only
 
-verify: ${ENV_DIR_PY}/bin/flake8
-	${ENV_DIR}/bin/flake8 --select=E10,E11,E9,F cw_infrastructure
+.PHONY: cw_infrastructure cw_infrastructure_test cw_infrastructure_verify cw_infrastructure_style cw_infrastructure_clean cwc_management_analysis
+cw_infrastructure:
+		${MAKE} -C cw_infrastructure ${ENV_DIR}/.wheels-installed
 
-style: ${ENV_DIR_PY}/bin/flake8
-	${ENV_DIR}/bin/flake8 --select=E,W,C,N --max-line-length=100 cw_infrastructure
+cw_infrastructure_test:
+		${MAKE} -C cw_infrastructure test
 
-.PHONY: wheelhouse
-wheelhouse: .wheelhouse/.sentinel
+cw_infrastructure_verify:
+		${MAKE} -C cw_infrastructure verify
 
-.wheelhouse/.sentinel: ${ENV_PYTHON} ${ENV_PIP} cw_infrastructure/setup.py $(wildcard cw_infrastructure/cw_infrastructure/*.py)
-	${ENV_DIR}/bin/pip wheel -w .wheelhouse cw_infrastructure/
-	@touch $@
+cw_infrastructure_style:
+		${MAKE} -C cw_infrastructure style
 
-${ENV_DIR_PY}/bin/flake8: ${ENV_PIP}
-	${ENV_DIR}/bin/pip install flake8
+cw_infrastructure_clean:
+		${MAKE} -C cw_infrastructure clean
 
-${ENV_PIP} ${ENV_PYTHON}:
-	-rm -rf ${ENV_DIR}
-	virtualenv --python=${PYTHON_BIN} ${ENV_DIR}
-	${ENV_DIR}/bin/pip install pip wheel setuptools --upgrade
+cw_infrastructure_analysis:
+		${MAKE} -C cw_infrastructure analysis

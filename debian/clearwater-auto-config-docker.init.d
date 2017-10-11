@@ -83,8 +83,9 @@ do_auto_config()
       sprout_registration_store=astaire
       chronos_hostname=chronos
       cassandra_hostname=cassandra
+      homestead_impu_store=astaire
       hs_hostname=homestead:8888
-      hs_provisioning_hostname=homestead:8889
+      hs_provisioning_hostname=homestead-prov:8889
       xdms_hostname=homer:7888
       upstream_hostname=sprout
       ralf_hostname=ralf:10888
@@ -96,8 +97,9 @@ do_auto_config()
       sprout_registration_store=astaire.$ZONE
       chronos_hostname=chronos.$ZONE
       cassandra_hostname=cassandra.$ZONE
+      homestead_impu_store=astaire.$ZONE
       hs_hostname=homestead.$ZONE:8888
-      hs_provisioning_hostname=homestead.$ZONE:8889
+      hs_provisioning_hostname=homestead-prov.$ZONE:8889
       xdms_hostname=homer.$ZONE:7888
       upstream_hostname=sprout.$ZONE
       ralf_hostname=ralf.$ZONE:10888
@@ -112,6 +114,7 @@ do_auto_config()
             s/^hs_provisioning_hostname=.*$/hs_provisioning_hostname='$hs_provisioning_hostname'/g
             s/^upstream_hostname=.*$/upstream_hostname='$upstream_hostname'/g
             s/^ralf_hostname=.*$/ralf_hostname='$ralf_hostname'/g
+            s/^homestead_impu_store=.*$/homestead_impu_store='$homestead_impu_store'/g
             s/^sprout_registration_store=.*$/sprout_registration_store='$sprout_registration_store'/g
             s/^ralf_session_store=.*$/ralf_session_store='$ralf_session_store'/g
             s/^chronos_hostname=.*$/chronos_hostname='$chronos_hostname'/g

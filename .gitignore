@@ -1,4 +1,5 @@
 /build/
+/build_setup/
 
 *.swp
 *~
@@ -9,3 +10,5 @@ clearwater-socket-factory/test_client_mgmt
 clearwater-socket-factory/test_client_sig
 .wheelhouse
 _env
+
+cw_infrastructure/cw_infrastructure.egg-info/

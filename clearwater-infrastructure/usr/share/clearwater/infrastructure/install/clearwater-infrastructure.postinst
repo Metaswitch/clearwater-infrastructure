@@ -59,10 +59,12 @@ BASE_DIR=/usr/share/clearwater/infrastructure
 rm -rf $BASE_DIR/env
 
 virtualenv $BASE_DIR/env
-$BASE_DIR/env/bin/pip install \
-   --compile \
+INSTALLER="$BASE_DIR/env/bin/pip install --compil \
    --no-index \
    --upgrade \
    --force-reinstall \
-   --find-links=$BASE_DIR/wheelhouse/ \
-   cw_infrastructure
+   --find-links=$BASE_DIR/wheelhouse/"
+
+$INSTALLER pip
+$INSTALLER wheel
+$INSTALLER cw_infrastructure

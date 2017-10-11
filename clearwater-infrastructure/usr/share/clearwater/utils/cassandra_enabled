@@ -1,17 +1,21 @@
 #!/bin/bash
 
-# @file run-in-signaling-namespace.sh
-
-# Copyright (C) Metaswitch Networks 2016
+# @file cassandra_enabled
+#
+# Copyright (C) Metaswitch Networks 2017
 # If license terms are provided to you in a COPYING file in the root directory
 # of the source code repository by which you are accessing this code, then
 # the license outlined in that COPYING file applies to your use.
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-. /usr/share/clearwater/utils/check-root-permissions 1
-
-# Returns the namespace_prefix (only set if the signaling_namespace is in use).
 . /etc/clearwater/config
-[ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
-$namespace_prefix "$@"
+
+USE_CASSANDRA="N"
+
+for SCRIPT in $(ls -1 /usr/share/clearwater/cassandra/users/* 2>/dev/null)
+do
+  if [ -f "$SCRIPT" ]; then
+    . $SCRIPT
+  fi
+done
