@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# @file clearwater-show-config
+#
+# Copyright (C) Metaswitch Networks 2014
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+if [[ "$EUID" != 0 ]]; then
+  echo "$0 must be run as root" >&2
+  exit 2
+fi
+
+# clearwater-show-config is actually 2 scripts:
+# - show_config.py is a python script that pretty prints the
+#   configuration. This is called by:
+# - clearwater-show-config (this script) which is responsible for running
+#   show-config-inner in a clean environment. This what the `env -i` bit is
+#   for.
+(
+  # Automatically export all shell variables that get set.
+  set -a
+
+  # Read the config
+  source /etc/clearwater/config
+
+  # Call into a python script to display it. Using exec here cuts down on the
+  # number of extra environment variables the python process sees.
+  exec /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.show_config
+)

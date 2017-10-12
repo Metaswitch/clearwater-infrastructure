@@ -1,0 +1,176 @@
+#!/bin/bash
+
+# @file check-clearwater-config
+#
+# Copyright (C) Metaswitch Networks 2014
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+CONFIG_DIR=/etc/clearwater
+
+LOCAL_CONFIG=$CONFIG_DIR/local_config
+USER_SETTINGS=$CONFIG_DIR/user_settings
+CLEARWATER_CONFIG=$CONFIG_DIR/config
+
+if [ -n "$1" ];
+then
+  SHARED_CONFIG="$1"
+else
+  SHARED_CONFIG=$CONFIG_DIR/shared_config
+fi
+
+# Utility function for writing messages to stderr.
+error()
+{
+  echo "ERROR: $@" >&2
+}
+
+# Check that an option is not in a specific file. If it is, print an error to
+# stderr and return a false return code.
+# Params:
+#   1  - The file to search
+#   2+ - The options to check
+check_options_not_in_file()
+{
+  # This function is split up into two parts: check_options_not_in_file which is
+  # the entry point and int_check_options_not_in_file which actually does the
+  # work. The split is because the latter sources in config files and will
+  # pollute the namespace so we use the former function to run the latter in a
+  # subshell. We could just do this all in one function but it breaks syntax
+  # highlighting horribly :-(.
+  ( int_check_options_not_in_file $@ )
+}
+
+int_check_options_not_in_file()
+{
+  local local_rc=0
+
+  filename=$1;
+  shift
+
+  source $filename
+
+  for opt_name in $@; do
+    # Check if the option is set. The `${!opt}` is bash indirection - it
+    # retrieves the value of the parameter whose name is the value of `opt`
+    if [ -n "${!opt_name}" ]; then
+      error "$opt_name should not be placed in $filename"
+      local_rc=1
+    fi
+  done
+
+  return $local_rc
+}
+
+# Check that a config file exists and is syntactically and semantically valid.
+# Params:
+#   1 - Either "mandatory" (if the file is required) or "optional" (otherwise).
+#   2 - The full name and path of the config file to check.
+check_file()
+{
+  local required=$1
+  local filename=$2
+
+  # Check that the file exists.
+  if [[ ! -e "$filename" ]]; then
+    if [[ "$required" = mandatory ]]; then
+      error "$filename does not exist"
+      return 1
+    fi
+    return 0
+  fi
+
+  # There is no need to check that the file has read permissions - all files are
+  # readable to root.
+
+  # Check that the file is syntactically valid.
+  if ! bash -n $filename; then
+    error "$filename is not syntactically valid (see previous errors for details)"
+    return 1
+  fi
+
+  return 0
+}
+
+# Check that certain important config options are not put in the wrong place.
+check_option_locations()
+{
+  local local_rc=0
+
+  # First, check that there are no options in shared config that really
+  # shouldn't be shared.
+  check_options_not_in_file $SHARED_CONFIG                                     \
+    local_ip                                                                   \
+    public_ip                                                                  \
+    public_hostname                                                            \
+    node_idx                                                                   \
+    etcd_cluster                                                               \
+    etcd_cluster_key                                                           \
+  || local_rc=1
+
+  return $local_rc
+}
+
+# Check that the config options are valid.
+check_config_values()
+{
+  # Run a python script to check the contents of the config file. We need to
+  # source in /etc/clearwater/config first so do this within a subshell. The
+  # `set -a` means that all variables from the config file get automatically
+  # exported so are accessible from python.
+  (
+    set -a
+
+    if [ -f $SHARED_CONFIG ]; then
+      . $SHARED_CONFIG
+    fi
+
+    . $LOCAL_CONFIG
+
+    if [ -f $USER_SETTINGS ]; then
+      . $USER_SETTINGS
+    fi
+
+    /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.check_config
+  )
+}
+
+#
+# Script starts here.
+#
+if [[ "$EUID" != 0 ]]; then
+  echo "$0 must be run as root" >&2
+  exit 2
+fi
+
+# The return code that the script will return.
+rc=0
+
+# Check the files are present (if required) and are syntactically correct.
+check_file mandatory $LOCAL_CONFIG       || rc=1
+check_file mandatory $SHARED_CONFIG      || rc=1
+check_file optional  $USER_SETTINGS      || rc=1
+check_file mandatory $CLEARWATER_CONFIG  || rc=1
+
+# If any of the files are invalid there isn't much point in continuing.
+if [[ "$rc" != 0 ]]; then
+  exit $rc
+fi
+
+# Check that the config options are in the correct files.  Currently this just
+# checks that no local/user settings are put into shared config.
+check_option_locations || rc=1
+
+# Check that the config is semantically correct (e.g. required options are
+# present, they are correctly formatted, etc).
+check_config_values || rc=1
+
+# Print out a soothing message to the user if all the checks passed.
+if [[ "$rc" -eq 0 ]]; then
+  echo "All config checks passed"
+fi
+
+exit $rc
