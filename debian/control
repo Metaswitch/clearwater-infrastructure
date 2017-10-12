@@ -18,7 +18,8 @@ Description: Common infrastructure for all Clearwater servers
 
 Package: clearwater-memcached
 Architecture: all
-Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.5), clearwater-monit
+Depends: clearwater-infrastructure, memcached (= 1.6.00-0clearwater0.6), clearwater-monit
+Recommends: memcached-dbg
 Conflicts: clearwater-infinispan
 Suggests: clearwater-secure-connections
 Description: memcached configured for Clearwater
@@ -90,7 +91,7 @@ Architecture: any
 Section: debug
 Priority: extra
 Depends: vellum (= ${binary:Version})
-Recommends: astaire-dbg, chronos-dbg
+Recommends: astaire-dbg, chronos-dbg, memcached-dbg
 Description: Debugging symbols for vellum, the Clearwater storage node
 
 Package: dime

@@ -1,1 +1,1 @@
-/var/clearwater-diags-monitor/tmp/core.%e.%t
+|/usr/share/clearwater/bin/compress_core_file %e %t

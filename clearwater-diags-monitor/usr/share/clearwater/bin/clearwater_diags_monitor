@@ -722,8 +722,14 @@ do
   do
     core_file=${trigger_files_arr[$jj]}
     jj=$(( $jj + 1 ))
-    gzip $CURRENT_DUMP_DIR/$core_file
+
+    # If the filename doesn't end in ".gz", gzip it
+    if [[ "$core_file" != *.gz ]]; then
+      log "Compressing $core_file"
+      gzip $CURRENT_DUMP_DIR/$core_file
+    fi
   done
+
   #
   # Diags have been collected.  Time to zip up the diags bundle.
   #
@@ -738,10 +744,40 @@ do
   # -z  Zip the archive.
   # -f  Name of the archive.
   (cd $DUMPS_DIR; tar -pcz -f $CURRENT_DUMP_ARCHIVE $CURRENT_DUMP)
-  log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
-  rm -rf "$CURRENT_DUMP_DIR"
 
-  mv $CURRENT_DUMP_ARCHIVE $FINAL_DUMP_ARCHIVE
+  # Check whether the tar command succeeded
+  ret_code=$?
+  if [ $ret_code == 0 ]; then
+    log "Diagnostic archive $CURRENT_DUMP_ARCHIVE created"
+    rm -rf "$CURRENT_DUMP_DIR"
+    mv $CURRENT_DUMP_ARCHIVE $FINAL_DUMP_ARCHIVE
+  else
+    # We failed to create the archive. The most common cause of this is lack of
+    # disk space.
+    # Given that the only files in the diags bundle which don't exist elsewhere
+    # on the system are the core files, delete everything that's not a core file
+    # in the temp directory, then just rename that to the archive name without
+    # compressing it
+    log "Failed to create diagnostic archive"
+
+    # In a subshell:
+    # - "set -e" so we don't delete files if we fail to cd to the dump dir
+    # - cd to the dump directory
+    # - get a list of all files/directories which don't begin with "core"
+    # - delete them
+    (set -e
+     cd $CURRENT_DUMP_DIR
+     non_core_files=$(ls | grep -v "^core*")
+     for f in $non_core_files; do
+       rm -rf $f
+     done)
+
+     # Now just rename the current dump dir to the archive name
+     (cd $DUMPS_DIR; mv $CURRENT_DUMP_DIR $FINAL_DUMP_ARCHIVE)
+
+     # Also delete the CURRENT_DUMP_ARCHIVE if it exists
+     rm -f $CURRENT_DUMP_ARCHIVE
+  fi
 
   # We should have dealt with all the trigger files by now, unless there are
   # more that we can deal with.  Delete any that are left over.
