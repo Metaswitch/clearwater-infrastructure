@@ -12,9 +12,15 @@
 CONFIG_DIR=/etc/clearwater
 
 LOCAL_CONFIG=$CONFIG_DIR/local_config
-SHARED_CONFIG=$CONFIG_DIR/shared_config
 USER_SETTINGS=$CONFIG_DIR/user_settings
 CLEARWATER_CONFIG=$CONFIG_DIR/config
+
+if [ -n "$1" ];
+then
+  SHARED_CONFIG="$1"
+else
+  SHARED_CONFIG=$CONFIG_DIR/shared_config
+fi
 
 # Utility function for writing messages to stderr.
 error()
@@ -117,7 +123,17 @@ check_config_values()
   # exported so are accessible from python.
   (
     set -a
-    source /etc/clearwater/config
+
+    if [ -f $SHARED_CONFIG ]; then
+      . $SHARED_CONFIG
+    fi
+
+    . $LOCAL_CONFIG
+
+    if [ -f $USER_SETTINGS ]; then
+      . $USER_SETTINGS
+    fi
+
     /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.check_config
   )
 }
