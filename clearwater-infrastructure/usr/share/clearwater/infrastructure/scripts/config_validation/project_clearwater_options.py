@@ -71,23 +71,26 @@ def get_options():
 
 def validate_hss_config():
     """
-    Require that exactly one of hss_realm, hss_hostname,
-    and hs_provisioning_hostname is set.
+    Require that the site is either configured with a HSS, or HS Prov.
     """
 
     hss_config = number_present('hss_realm',
-                                'hss_hostname',
-                                'hs_provisioning_hostname')
+                                'hss_hostname')
 
-    if hss_config > 1:
+    hs_prov_config = number_present('hs_provisioning_hostname')
+
+    if hss_config > 0 and hs_prov_config > 0:
         error('HSS',
-              ('Only one of hss_realm, hss_hostname, or '
-               'hs_provisioning_hostname should be set'))
+              ('Both a HSS and Homestead Subscriber Store are configured. '
+               'Either a HSS should be configured (with hss_realm and/or '
+               'hss_hostname), or Homestead Subscriber Store should be '
+               'configured (with hs_provisioning_hostname set).'))
         return ERROR
-    elif hss_config == 0:
+    elif hss_config == 0 and hs_prov_config == 0:
         error('HSS',
-              ('One of hss_realm, hss_hostname or hs_provisioning_hostname'
-               'must be set'))
+              ('Either a HSS must be configured (with hss_realm and/or'
+               '  hss_hostname), or Homestead Subscriber Store must be'
+               ' configured (with hs_provisioning_hostname set).'))
         return ERROR
 
     return OK
