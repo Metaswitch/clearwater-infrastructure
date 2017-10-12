@@ -125,6 +125,22 @@ def resolvable_domain_name_validator(name, value):
         return ERROR
 
 
+def resolveable_ip_or_domain_name_list_validator(name, value):
+    """
+    Check whether a config option is a list of IP addresses, or domain names
+    that resolve with the current DNS setup
+    """
+
+    if not all(utils.is_ip_addr(i) or utils.is_resolvable_domain_name(value) for
+               i in value.split(',')):
+        error(name,
+              "{} is not a comma separated list of resolvable domain names or IP addresses".format(
+                  value))
+        return ERROR
+
+    return OK
+
+
 def sip_uri_validator(name, value):
     """Validate a config option represents a valid SIP URI"""
 

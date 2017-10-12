@@ -55,7 +55,8 @@ def get_options():
         Option('icscf_uri', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
-        Option('enum_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('enum_server', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
         Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_validator),
         Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
         Option('billing_realm', Option.OPTIONAL,
