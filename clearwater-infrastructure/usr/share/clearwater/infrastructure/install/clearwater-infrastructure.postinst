@@ -59,7 +59,7 @@ BASE_DIR=/usr/share/clearwater/infrastructure
 rm -rf $BASE_DIR/env
 
 virtualenv $BASE_DIR/env
-INSTALLER="$BASE_DIR/env/bin/pip install --compil \
+INSTALLER="$BASE_DIR/env/bin/pip install --compile \
    --no-index \
    --upgrade \
    --force-reinstall \
