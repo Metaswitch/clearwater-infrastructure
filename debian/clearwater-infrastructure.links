@@ -4,3 +4,7 @@
 /usr/share/clearwater/bin/sync_alarms.py /usr/bin/cw-sync_alarms
 /usr/share/clearwater/bin/clear_alarms.py /usr/bin/cw-clear_alarms
 /usr/share/clearwater/bin/restart_node_processes /usr/bin/cw-restart_node_processes
+/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/clearwater-check-config
+/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
+/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/cw-check_config
+/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
