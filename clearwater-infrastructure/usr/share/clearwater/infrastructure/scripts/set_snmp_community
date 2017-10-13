@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+#
+
+# This script allows editing of the snmpd configuration file to modify the community and target.
+# It takes two parameters
+COMMUNITY=$1
+TARGET=$2
+
+if [[ $# -ne 2 ]];
+then
+   echo "Error - invalid set of parameters"
+   echo "Usage:"
+   echo "  $0 [community] [target]"
+   echo ""
+   echo "e.g. $(basename $0) clearwater 0.0.0.0/0"
+   echo ""
+   exit 1
+fi
+
+if ! [[ $COMMUNITY =~ ^[0-9A-Za-z_-.]*$ ]];
+then
+  echo Error - invalid characters in community parameter.
+  exit 1
+fi
+
+if ! [[ $TARGET =~ ^[0-9A-Fa-f:./]*$ ]];
+then
+  echo Error - invalid characters in target parameter
+   exit 1
+fi
+
+SNMPD_CONF=/etc/snmp/snmpd.conf
+TMP_FILE=$(mktemp $SNMPD_CONF.XXXXX)
+sed "s#\(rocommunity \).*\( -V clearwater\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
+mv $TMP_FILE $SNMPD_CONF
+
+echo Configuration updated
+service snmpd reload
