@@ -202,7 +202,7 @@ def sip_uri_validator(name, value):
             return ERROR
 
     elif transport:
-        srv = '_sip._{}.{}'.format(params['transport'], host)
+        srv = '_sip._{}.{}'.format(params['transport'].lower(), host)
 
         if utils.is_srv_resolvable(srv):
             return OK
