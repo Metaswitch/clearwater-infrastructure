@@ -82,11 +82,8 @@ def is_domain_name(value):
 
 def is_resolvable_domain_name(value):
     """Return whether the supplied string is a resolvable domain name"""
-    try:
-        socket.gethostbyname(value)
-        return True
-    except socket.gaierror:
-        return False
+    return (is_domain_resolvable(value, 'A') or
+            is_domain_resolvable(value, 'AAAA'))
 
 
 def is_naptr_resolvable(naptr):
