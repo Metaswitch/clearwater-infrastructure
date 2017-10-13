@@ -274,6 +274,21 @@ def ip_or_domain_name_with_port_validator(name, value):
         return OK
 
 
+def run_validator_with_dns(validator, name, value, dns_server):
+    """Run a validator in the signaling namespace"""
+
+    if dns_server:
+        dns.resolver.override_system_resolver()
+        dns.resolver.get_default_resolver().nameservers = dns_server.split(',')
+
+    result = validator(name, value)
+
+    if dns_server:
+        dns.resolver.restore_system_resolver()
+        dns.resolver.reset_default_resolver()
+
+    return result
+
 def run_in_sig_ns(validator):
     """Run a validator in the signaling namespace"""
 
@@ -286,19 +301,10 @@ def run_in_sig_ns(validator):
         # and none DNS Python requests
         sig_dns = os.environ.get('signaling_dns_server')
 
-        if sig_dns:
-            dns.get_default_resolver().nameservers = [sig_dns]
-            dns.override_system_resolver()
-
         if sig_ns:
             with Namespace('/var/run/netns/' + sig_ns, 'net'):
-                return validator(name, value)
-
-        if sig_dns:
-            dns.restore_system_resolver()
-            dns.reset_default_resolver()
-
+                return run_validator_with_dns(validator, name, value, sig_dns)
         else:
-            return validator(name, value)
+            return run_validator_with_dns(validator, name, value, sig_dns)
 
     return sig_ns_validator
