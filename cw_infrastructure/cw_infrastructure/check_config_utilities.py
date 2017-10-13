@@ -107,7 +107,7 @@ def is_domain_resolvable(name, rrtype):
         answers = resolver.query(name, rrtype)
         return len(answers) != 0
 
-    except:
+    except Exception as e:
         return False
 
 
