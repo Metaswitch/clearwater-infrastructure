@@ -102,7 +102,9 @@ def is_domain_resolvable(name, rrtype):
     """Check whether the given domain has any records of the given type"""
 
     try:
-        answers = dns.resolver.query(name, rrtype)
+        resolver = dns.resolver.get_default_resolver()
+        resolver.timeout = 2
+        answers = resolver.query(name, rrtype)
         return len(answers) != 0
 
     except:
