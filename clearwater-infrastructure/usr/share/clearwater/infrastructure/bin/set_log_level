@@ -11,20 +11,31 @@
 # This script sets the log level for the local node.
 . /usr/share/clearwater/infrastructure/install/common
 
-LOG_LEVEL=$1
-if [ "$LOG_LEVEL" == "debug" ]
-then
+# Values taken from craft.sh
+LOG_LEVEL="$1"
+case "$LOG_LEVEL" in
+  error)
+  NEW_ENTRY=log_level=0
+    ;;
+  warning)
+  NEW_ENTRY=log_level=1
+    ;;
+  info)
+  NEW_ENTRY=log_level=2
+    ;;
+  debug)
   NEW_ENTRY=log_level=5
-elif [ "$LOG_LEVEL" == "normal" ]
-then
+    ;;
+  default)
   NEW_ENTRY=
-else
+    ;;
+  *)
   echo Error: invalid parameter or no parameter specified.
   echo ""
   echo Usage:
-  echo "$0 [normal|debug]"
+  echo "$0 [default|debug|info|warning|error]"
   exit 1
-fi
+esac
 
 # Touch the file so that we can guarantee that it's present.
 touch /etc/clearwater/user_settings user_settings
