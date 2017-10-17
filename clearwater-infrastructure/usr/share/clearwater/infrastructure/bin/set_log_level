@@ -35,7 +35,7 @@ case "$LOG_LEVEL" in
   echo Usage:
   echo "$0 [default|debug|info|warning|error]"
   exit 1
-fi
+esac
 
 # Touch the file so that we can guarantee that it's present.
 touch /etc/clearwater/user_settings user_settings
