@@ -8,3 +8,5 @@
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
 /usr/share/clearwater/bin/clearwater-check-config /usr/sbin/cw-check_config
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
+/usr/share/clearwater/infrastructure/set_snmp_community /usr/bin/cw-set_snmp_community
+/usr/share/clearwater/infrastructure/set_log_level /usr/bin/cw-set_log_level
