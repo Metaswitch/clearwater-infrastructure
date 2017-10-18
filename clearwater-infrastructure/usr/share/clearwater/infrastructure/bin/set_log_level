@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# Copyright (C) Metaswitch Networks 2016
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+#
+
+# This script sets the log level for the local node.
+. /usr/share/clearwater/infrastructure/install/common
+
+# Values taken from craft.sh
+LOG_LEVEL="$1"
+case "$LOG_LEVEL" in
+  error)
+  NEW_ENTRY=log_level=0
+    ;;
+  warning)
+  NEW_ENTRY=log_level=1
+    ;;
+  info)
+  NEW_ENTRY=log_level=2
+    ;;
+  debug)
+  NEW_ENTRY=log_level=5
+    ;;
+  default)
+  NEW_ENTRY=
+    ;;
+  *)
+  echo Error: invalid parameter or no parameter specified.
+  echo ""
+  echo Usage:
+  echo "$0 [default|debug|info|warning|error]"
+  exit 1
+esac
+
+# Touch the file so that we can guarantee that it's present.
+touch /etc/clearwater/user_settings user_settings
+add_section_text /etc/clearwater/user_settings user_settings "$NEW_ENTRY"
+
+echo Log level updated
+cw-restart_node_processes
