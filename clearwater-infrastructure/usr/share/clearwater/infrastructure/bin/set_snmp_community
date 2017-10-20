@@ -35,7 +35,7 @@ then
   exit 1
 fi
 
-if ! [[ $TARGET =~ ^[0-9A-Fa-f:./]*$ ]];
+if ! [[ $TARGET =~ ^[0-9A-Za-z./]*$ ]];
 then
   echo Error - invalid characters in target parameter
    exit 1
