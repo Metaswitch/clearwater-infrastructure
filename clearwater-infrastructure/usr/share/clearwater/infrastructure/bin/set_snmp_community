@@ -20,7 +20,7 @@ then
    echo "  cw-set_snmp_community [community] [target]"
    echo ""
    echo " [community] is the SNMP community name"
-   echo " [target] is a hostname, address or subnet (represented "
+   echo " [target] is a hostname, IPv4 address or subnet (represented "
    echo "either as IP/MASK or IP/BITS)."
    echo ""
    echo "e.g. cw-set_snmp_community clearwater 1.2.3.4/255.255.0.0"
