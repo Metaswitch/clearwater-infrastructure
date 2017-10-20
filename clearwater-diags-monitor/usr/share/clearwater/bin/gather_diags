@@ -14,11 +14,22 @@ This script triggers diagnostics collection.
 
 The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
 
+# Check if we want to skip the confirmation step
+# This can be used if calling in from a separate interface
+confirmed=false
+if [ "$1" == "--no-confirmation" ]
+then
+  confirmed=true
+fi
+
 # Pull in verification functions, and run them
 . /usr/share/clearwater/bin/gather_diags_verification
 
 verify_process_running
-confirm_user_action
+if [ $confirmed != true ]
+then
+  confirm_user_action
+fi
 
 
 # Write a file to trigger a diagnostic dump.
