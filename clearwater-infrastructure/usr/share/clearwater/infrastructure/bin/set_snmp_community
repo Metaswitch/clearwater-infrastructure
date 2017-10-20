@@ -47,4 +47,4 @@ sed "s#\(rocommunity \).*\( -V clearwater$\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CO
 mv $TMP_FILE $SNMPD_CONF
 
 echo Configuration updated
-service snmpd reload
+service snmpd restart
