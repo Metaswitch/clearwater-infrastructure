@@ -33,7 +33,7 @@ case "$LOG_LEVEL" in
   echo Error: invalid parameter or no parameter specified.
   echo ""
   echo Usage:
-  echo "$0 [default|debug|info|warning|error]"
+  echo "cw-set_log_level [default|debug|info|warning|error]"
   exit 1
 esac
 

@@ -17,9 +17,14 @@ if [[ $# -ne 2 ]];
 then
    echo "Error - invalid set of parameters"
    echo "Usage:"
-   echo "  $0 [community] [target]"
+   echo "  cw-set_snmp_community [community] [target]"
    echo ""
-   echo "e.g. $(basename $0) clearwater 0.0.0.0/0"
+   echo " [community] is the SNMP community name"
+   echo " [target] is a hostname, IPv4 address or subnet (represented "
+   echo "either as IP/MASK or IP/BITS)."
+   echo ""
+   echo "e.g. cw-set_snmp_community clearwater 1.2.3.4/255.255.0.0"
+   echo " or  cw-set_snmp_community clearwater 1.2.3.4/16"
    echo ""
    exit 1
 fi
@@ -30,7 +35,7 @@ then
   exit 1
 fi
 
-if ! [[ $TARGET =~ ^[0-9A-Fa-f:./]*$ ]];
+if ! [[ $TARGET =~ ^[0-9A-Za-z./\-]*$ ]];
 then
   echo Error - invalid characters in target parameter
    exit 1
@@ -38,7 +43,7 @@ fi
 
 SNMPD_CONF=/etc/snmp/snmpd.conf
 TMP_FILE=$(mktemp $SNMPD_CONF.XXXXX)
-sed "s#\(rocommunity \).*\( -V clearwater\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
+sed "s#\(rocommunity \).*\( -V clearwater$\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
 mv $TMP_FILE $SNMPD_CONF
 
 echo Configuration updated
