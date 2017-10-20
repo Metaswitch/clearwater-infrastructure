@@ -509,21 +509,16 @@ do
     inotifywait -e create -qq .
   fi
 
-  # Now wait for CPU load to be at an acceptable level.  Each time it isn't,
-  # check for new files in the crash directory and clear out the newest ones
-  # until we're not using more than 1GB - we don't want to run out of disk
-  # space.  Pause for 20s before we start, just so that any previous process
-  # has an opportunity to restart first.
+  # Check to make sure we are at an acceptable level of disk usage, making sure
+  # we're not using more than 1GB - we don't want to run out of disk space.
+  # Pause for 20s before we start, just so that any previous process has an
+  # opportunity to restart first.
   sleep 20
-  while [ $(idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER ]
+  while [ $(disk_usage_in_kb .) -gt $ONE_GB_IN_KB ]
   do
-    log "CPU usage too high - not gathering diagnostics yet"
-    while [ $(disk_usage_in_kb .) -gt $ONE_GB_IN_KB ]
-    do
-      trigger_to_delete=$(ls -At | head -n 1)
-      log "Disk usage too high while waiting for CPU to idle - deleting $trigger_to_delete"
-      rm -rf $trigger_to_delete
-    done
+    trigger_to_delete=$(ls -At | head -n 1)
+    log "Disk usage too high while waiting for CPU to idle - deleting $trigger_to_delete"
+    rm -rf $trigger_to_delete
   done
 
   # Now we can start gathering.  First find the trigger files.
