@@ -15,7 +15,7 @@ This script triggers diagnostics collection.
 The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
 
 # Pull in verification functions, and run them
-. /usr/share/clearwater/bin/verify_process
+. /usr/share/clearwater/bin/gather_diags_verification
 
 verify_process_running
 confirm_user_action

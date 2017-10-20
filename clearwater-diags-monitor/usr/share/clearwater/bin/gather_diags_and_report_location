@@ -48,7 +48,7 @@ then
 fi
 
 # Pull in verification functions, and run as necessary
-. /usr/share/clearwater/bin/verify_process
+. /usr/share/clearwater/bin/gather_diags_verification
 
 verify_process_running
 
