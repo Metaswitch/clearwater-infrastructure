@@ -17,9 +17,14 @@ if [[ $# -ne 2 ]];
 then
    echo "Error - invalid set of parameters"
    echo "Usage:"
-   echo "  $0 [community] [target]"
+   echo "  cw-set_snmp_community [community] [target]"
    echo ""
-   echo "e.g. $(basename $0) clearwater 0.0.0.0/0"
+   echo "where:"
+   echo " [community] is the SNMP community name"
+   echo " [target] is a hostname, address or subnet (represented "
+   echo "either as IP/MASK or IP/BITS)."
+   echo "e.g. cw-set_snmp_community clearwater 1.2.3.4/255.255.0.0"
+   echo " or  cw-set_snmp_community clearwater 1.2.3.4/16"
    echo ""
    exit 1
 fi
