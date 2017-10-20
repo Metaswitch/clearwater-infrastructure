@@ -32,11 +32,29 @@ fi
 
 DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
 
-if [ $# -ne 0 ]
+# Check if we want to skip the confirmation step
+# This can be used if calling in from a separate interface
+confirmed=false
+if [ "$1" == "--no-confirmation" ]
+then
+  confirmed=true
+fi
+
+if [[ $# -ne 0 && $confirmed != true ]]
 then
   echo "Usage: gather_diags_and_report_location"
   echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
   exit 1
+fi
+
+# Pull in verification functions, and run as necessary
+. /usr/share/clearwater/bin/verify_process
+
+verify_process_running
+
+if [ $confirmed != true ]
+then
+  confirm_user_action
 fi
 
 # Store the current time
