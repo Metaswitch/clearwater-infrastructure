@@ -43,7 +43,7 @@ fi
 
 SNMPD_CONF=/etc/snmp/snmpd.conf
 TMP_FILE=$(mktemp $SNMPD_CONF.XXXXX)
-sed "s#\(rocommunity \).*\( -V clearwater\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
+sed "s#\(rocommunity \).*\( -V clearwater$\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
 mv $TMP_FILE $SNMPD_CONF
 
 echo Configuration updated
