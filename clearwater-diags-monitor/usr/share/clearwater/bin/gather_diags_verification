@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# @file gather_diags_verification
+#
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+
+# Functions that can be called to verify that:
+# - the diags monitor process is actually running
+# - the user is happy to run a CPU intensive operation
+
+
+# Check for a diags monitor process. Alert, and attempt restart, if none found
+verify_process_running ()
+{
+  process_running=$(pgrep -f "/usr/share/clearwater/bin/clearwater_diags_monitor" > /dev/null ; echo $?)
+  if [ $process_running != 0 ]
+  then
+    echo "Warning: No clearwater-diags-monitor process found running. Attempting restart"
+    service clearwater-diags-monitor start
+    if [ $? != 0 ]
+    then
+      echo "Error: Unable to start clearwater-diags-monitor. Aborting operation"
+      exit 1
+    else
+      # Double check that the process stays up after the restart
+      sleep 5
+      process_running=$(pgrep -f "/usr/share/clearwater/bin/clearwater_diags_monitor" > /dev/null ; echo $?)
+      if [ $process_running != 0 ]
+      then
+        echo "Error: Clearwater-diags-monitor not running after restart. Aborting operation"
+        exit 1
+      fi
+      echo "Successfully started clearwater-diags monitor"
+    fi
+  fi
+}
+
+# Require confirmation from users to ensure that they wish to run this action
+confirm_user_action ()
+{
+  echo "Gathering diagnostics is a CPU intensive operation, and can lead to disruption of service"
+  echo "To confirm, please enter 'drop calls'"
+  read user_input
+  if [ "$user_input" != "drop calls" ]
+  then
+    echo "Aborting command on user input"
+    exit 1
+  else
+    echo "Action confirmed. Gathering diagnostics"
+  fi
+}
