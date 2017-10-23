@@ -30,7 +30,7 @@ then
 fi
 
 # Community strings can be any combination of letters, numbers dashes, underscores or dots.
-if ! [[ $COMMUNITY =~ ^[0-9A-Za-z\\-_.]*$ ]];
+if ! [[ $COMMUNITY =~ ^[0-9A-Za-z_.\\-]*$ ]];
 then
   echo Error - invalid characters in community parameter.
   exit 1
