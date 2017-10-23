@@ -21,21 +21,24 @@ then
    echo ""
    echo " [community] is the SNMP community name"
    echo " [target] is a hostname, IPv4 address or subnet (represented "
-   echo "either as IP/MASK or IP/BITS)."
+   echo "either as IP/MASK or IP/BITS) where IP is the network prefix"
    echo ""
-   echo "e.g. cw-set_snmp_community clearwater 1.2.3.4/255.255.0.0"
-   echo " or  cw-set_snmp_community clearwater 1.2.3.4/16"
+   echo "e.g. cw-set_snmp_community clearwater 1.2.0.0/255.255.0.0"
+   echo " or  cw-set_snmp_community clearwater 1.2.0.0/16"
    echo ""
    exit 1
 fi
 
-if ! [[ $COMMUNITY =~ ^[0-9A-Za-z_-.]*$ ]];
+# Community strings can be any combination of letters, numbers dashes, underscores or dots.
+if ! [[ $COMMUNITY =~ ^[0-9A-Za-z_.\-]*$ ]];
 then
   echo Error - invalid characters in community parameter.
   exit 1
 fi
 
-if ! [[ $TARGET =~ ^[0-9A-Za-z./\-]*$ ]];
+# Check valid IPv4 address/MASK (dots, numbers and forward slash), or hostname
+# (alphanumeric, dots or dashes)
+if ! [[ $TARGET =~ ^[0-9A-Za-z/.\-]*$ ]];
 then
   echo Error - invalid characters in target parameter
    exit 1
@@ -43,8 +46,8 @@ fi
 
 SNMPD_CONF=/etc/snmp/snmpd.conf
 TMP_FILE=$(mktemp $SNMPD_CONF.XXXXX)
-sed "s#\(rocommunity \).*\( -V clearwater$\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >$TMP_FILE
-mv $TMP_FILE $SNMPD_CONF
+sed "s#\(rocommunity \).*\( -V clearwater$\)#\1$COMMUNITY $TARGET\2#g" $SNMPD_CONF >"$TMP_FILE"
+mv "$TMP_FILE" $SNMPD_CONF
 
 echo Configuration updated
-service snmpd reload
+service snmpd restart
