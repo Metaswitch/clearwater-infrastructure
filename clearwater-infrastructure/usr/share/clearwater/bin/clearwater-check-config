@@ -15,6 +15,12 @@ LOCAL_CONFIG=$CONFIG_DIR/local_config
 USER_SETTINGS=$CONFIG_DIR/user_settings
 CLEARWATER_CONFIG=$CONFIG_DIR/config
 
+# Compatibility for when show-config didn't exist
+if [ "$1" --eq "--show" ];
+then
+  exec /usr/share/clearwater/bin/clearwater-show-config "${@:2}"
+fi
+
 if [ -n "$1" ];
 then
   SHARED_CONFIG="$1"
