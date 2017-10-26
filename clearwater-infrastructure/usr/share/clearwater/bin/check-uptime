@@ -11,6 +11,7 @@
 
 # Checks that a process has been running for at least REQUIRED_UPTIME
 # seconds. Returns 0 if it has. Returns a non-zero value if it has not.
+# Clears the process-not-ready alarm if necessary.
 REQUIRED_UPTIME=30
 
 # Bail out and return non-zero if anything goes wrong.
