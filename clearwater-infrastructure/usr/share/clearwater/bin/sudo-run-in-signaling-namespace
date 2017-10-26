@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Runs run-in-signaling-namespace with any given parameters using the craft
+# daemon.
+/usr/share/clearwater/craft/env/bin/run_action RunInSignalingNamespace $@
