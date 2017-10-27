@@ -1,0 +1,4 @@
+#! /bin/bash
+
+# Runs cw-run_in_signaling_namespace with the allowed parameters using the craft daemon.
+/usr/share/clearwater/craft/env/bin/run_action CheckIpNetns $@
