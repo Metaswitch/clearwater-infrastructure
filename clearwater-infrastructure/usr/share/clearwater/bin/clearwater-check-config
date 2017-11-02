@@ -16,7 +16,7 @@ USER_SETTINGS=$CONFIG_DIR/user_settings
 CLEARWATER_CONFIG=$CONFIG_DIR/config
 
 # Compatibility for when show-config didn't exist
-if [ "$1" --eq "--show" ];
+if [ "$1" == "--show" ];
 then
   exec /usr/share/clearwater/bin/clearwater-show-config "${@:2}"
 fi
