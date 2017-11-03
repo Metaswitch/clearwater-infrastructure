@@ -32,25 +32,44 @@ fi
 
 DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
 
-# Check if we want to skip the confirmation step
-# This can be used if calling in from a separate interface
+# Check for the force or force-confirmed options. These are used to run diags
+# gathering even if we have low idle CPU, or to do so and skip any confirmation.
+force=false
 confirmed=false
-if [ "$1" == "--no-confirmation" ]
+if [ "$1" == "--force" ]
 then
+  force=true
+elif [ "$1" == "--force-confirmed" ]
+then
+  force=true
   confirmed=true
 fi
 
-if [[ $# -ne 0 && $confirmed != true ]]
+# If bad arguments passed in, give usage details. We do not detail the --force
+# or --force-confirmed options here. --force is mentioned later, and --force-confirmed
+# is intended solely for use by automated scripts
+if [[ $# -ne 0 && $force != true ]]
 then
   echo "Usage: gather_diags_and_report_location"
   echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
   exit 1
 fi
 
-# Pull in verification functions, and run as necessary
+# Pull in utility functions, and proceed with checks, as necessary
 . /usr/share/clearwater/bin/gather_diags_verification
 
 verify_process_running
+
+# CPU utilisation checks/waits
+if [[ $(get_idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER && $force != true ]]
+then
+  check_and_wait_cpu_idle()
+  confirmed=true
+elif
+then
+  # We have enough idle CPU so proceed without needing further confirmation
+  confirmed=true
+fi
 
 if [ $confirmed != true ]
 then
