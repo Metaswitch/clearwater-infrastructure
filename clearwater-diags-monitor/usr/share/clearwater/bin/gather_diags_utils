@@ -10,9 +10,10 @@
 # Metaswitch Networks in a separate written agreement.
 
 
-# Functions that can be called to verify that:
-# - the diags monitor process is actually running
-# - the user is happy to run a CPU intensive operation
+# Functions that can be called to:
+# - Check the diags monitor process is actually running
+# - Get the current CPU idle percentage (rounded down)
+# - Check the user is happy to run a CPU intensive operation
 
 
 # Check for a diags monitor process. Alert, and attempt restart, if none found
@@ -39,6 +40,21 @@ verify_process_running ()
       echo "Successfully started clearwater-diags monitor"
     fi
   fi
+}
+
+# Required idle CPU for triggering gathering diagnostics
+MIN_IDLE_CPU_FOR_GATHER=40
+
+# Gets the idle CPU averaged over a 10s period.
+get_idle_cpu ()
+{
+  # Use sar to get the CPU usage over 10s, find the summary ("all") line, and
+  # then grab the idle value (last field on the row), removing any fractional
+  # part.
+  sar -P ALL 10 1 |
+  grep "Average:  *all" |
+  sed -e 's/^.* //g' |
+  sed -e 's/\..*//g'
 }
 
 # Require confirmation from users to ensure that they wish to run this action
