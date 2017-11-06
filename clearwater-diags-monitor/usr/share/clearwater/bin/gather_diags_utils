@@ -60,9 +60,9 @@ get_idle_cpu ()
 # Asks a user to either wait for idle CPU, or re-run with --force
 check_and_wait_cpu_idle ()
 {
-  echo "This system is currently running at a higher CPU usage than the configured threshold"
-  echo "The process will wait until we have enough idle CPU, or it can be re-run with the --force flag to skip CPU usage checks"
-  echo "Enter 'y' to continue, and wait for idle CPU, or any other input to exit"
+  echo "This system is currently running at a higher CPU usage than the configured threshold, with less than $MIN_IDLE_CPU_FOR_GATHER % idle CPU"
+  echo "The gather_diags process will wait until we have enough idle CPU, or it can be re-run with the --force flag to skip CPU usage checks"
+  echo "Enter 'y' to continue and wait for idle CPU, or any other input to exit"
   read user_input
   if [ "$user_input" != "y" ]
   then
@@ -83,10 +83,10 @@ check_and_wait_cpu_idle ()
 # Require confirmation from users to ensure that they wish to run this action
 confirm_user_action ()
 {
-  echo "Gathering diagnostics can be a CPU intensive operation, and might lead to disruption of service on a system under heavy load"
-  echo "To confirm, please enter 'drop calls'"
+  echo "Gathering diagnostics can be a CPU intensive operation, but will not cause substantial impact"
+  echo "To confirm, please enter 'continue'"
   read user_input
-  if [ "$user_input" != "drop calls" ]
+  if [ "$user_input" != "continue" ]
   then
     echo "Aborting command on user input"
     exit 1

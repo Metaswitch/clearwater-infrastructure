@@ -55,7 +55,7 @@ fi
 # If bad arguments passed in, give usage details. We do not detail the --force
 # or --force-confirmed options here. --force is mentioned later, and --force-confirmed
 # is intended solely for use by automated scripts
-if [[ $# -ne 0 && $force != true ]]
+if [[ $# -ne 0 && $force != true && $no_report != true ]]
 then
   echo "Usage: gather_diags_and_report_location"
   echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
@@ -63,21 +63,24 @@ then
 fi
 
 # Pull in utility functions, and proceed with checks, as necessary
-. /usr/share/clearwater/bin/gather_diags_verification
+. /usr/share/clearwater/bin/gather_diags_utils
 
 verify_process_running
 
 # CPU utilisation checks/waits
-if [[ $(get_idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER && $force != true ]]
-then
-  check_and_wait_cpu_idle()
-  confirmed=true
-elif
+echo "Checking available CPU..."
+if [ $(get_idle_cpu) -gt $MIN_IDLE_CPU_FOR_GATHER ]
 then
   # We have enough idle CPU so proceed without needing further confirmation
   confirmed=true
+elif [ $force != true ]
+then
+  check_and_wait_cpu_idle
+  confirmed=true
 fi
 
+# If we haven't passed CPU checks, or are not being run with --force-confirmed
+# we want a user to confirm they want to run a CPU heavy operation
 if [ $confirmed != true ]
 then
   confirm_user_action
