@@ -1,7 +1,7 @@
 /usr/share/clearwater/bin/run-in-signaling-namespace /usr/sbin/cw-run_in_signaling_namespace
-/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/clearwater-check-config
+/usr/share/clearwater/bin/run_clearwater-check-config /usr/sbin/clearwater-check-config
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
-/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/cw-check_config
+/usr/share/clearwater/bin/run_clearwater-check-config /usr/sbin/cw-check_config
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
 
 /usr/share/clearwater/bin/gather_diags /usr/bin/cw-gather_diags
@@ -11,8 +11,5 @@
 /usr/share/clearwater/bin/restart_node_processes /usr/bin/cw-restart_node_processes
 
 /usr/share/clearwater/infrastructure/bin/sudo-run-in-signaling-namespace /usr/bin/cw-run-in-signaling-namespace
-
 /usr/share/clearwater/infrastructure/bin/run_set_snmp_community /usr/bin/cw-set_snmp_community
 /usr/share/clearwater/infrastructure/bin/run_set_log_level /usr/bin/cw-set_log_level
-/usr/share/clearwater/bin/run_cw-run_in_signaling_namespace /usr/bin/cw-run_in_signaling_namespace
-
