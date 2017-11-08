@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This file is called run-run-in-signaling-namespace as it follows the
+# convention to add a 'run' in front of the script name used by the other
+# scripts caliing to craft-daemon
+
+# Runs run-in-signaling-namespace with any given parameters using the craft
+# daemon.
+/usr/share/clearwater/craft/env/bin/run_action RunInSignalingNamespace $@
