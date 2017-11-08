@@ -1,4 +1,3 @@
-/usr/share/clearwater/bin/run-in-signaling-namespace /usr/sbin/cw-run_in_signaling_namespace
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
 /usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
 
