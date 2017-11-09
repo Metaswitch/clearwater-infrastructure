@@ -1,16 +1,14 @@
-/usr/share/clearwater/bin/run-in-signaling-namespace /usr/sbin/cw-run_in_signaling_namespace
+/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
+/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
+
 /usr/share/clearwater/bin/gather_diags /usr/bin/cw-gather_diags
 /usr/share/clearwater/bin/gather_diags_and_report_location /usr/bin/cw-gather_diags_and_report_location
 /usr/share/clearwater/bin/sync_alarms.py /usr/bin/cw-sync_alarms
 /usr/share/clearwater/bin/clear_alarms.py /usr/bin/cw-clear_alarms
 /usr/share/clearwater/bin/restart_node_processes /usr/bin/cw-restart_node_processes
-/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/clearwater-check-config
-/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/clearwater-show-config
-/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/cw-check_config
-/usr/share/clearwater/bin/clearwater-show-config /usr/sbin/cw-show_config
+
+/usr/share/clearwater/bin/run-in-signaling-namespace /usr/sbin/cw-run_in_signaling_namespace
 /usr/share/clearwater/infrastructure/bin/set_snmp_community /usr/sbin/cw-set_snmp_community
 /usr/share/clearwater/infrastructure/bin/set_log_level /usr/sbin/cw-set_log_level
-
-/usr/share/clearwater/infrastructure/bin/run_set_snmp_community /usr/bin/cw-set_snmp_community
-/usr/share/clearwater/infrastructure/bin/run_set_log_level /usr/bin/cw-set_log_level
-
+/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/cw-check_config
+/usr/share/clearwater/bin/clearwater-check-config /usr/sbin/clearwater-check-config
