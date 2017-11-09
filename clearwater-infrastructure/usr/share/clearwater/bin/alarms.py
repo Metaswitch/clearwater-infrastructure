@@ -23,7 +23,7 @@ from subprocess import call
 
 def sendrequest(request):
   try:
-    context = zmq.Context.instance()
+    context = zmq.Context()
 
     client = context.socket(zmq.REQ)
     client.connect("ipc:///var/run/clearwater/alarms")
