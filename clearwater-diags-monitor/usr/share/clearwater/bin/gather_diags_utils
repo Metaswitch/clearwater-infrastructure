@@ -75,7 +75,6 @@ check_and_wait_cpu_idle ()
   while [ $(get_idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER ]
   do
     echo -n "."
-    sleep 2
   done
   echo "Wait for idle CPU complete"
 }
@@ -83,7 +82,7 @@ check_and_wait_cpu_idle ()
 # Require confirmation from users to ensure that they wish to run this action
 confirm_user_action ()
 {
-  echo "Gathering diagnostics can be a CPU intensive operation, but will not cause substantial impact"
+  echo "Gathering diagnostics can be a CPU intensive operation, but will not impact a system under normal load"
   echo "To confirm, please enter 'continue'"
   read user_input
   if [ "$user_input" != "continue" ]
@@ -91,6 +90,6 @@ confirm_user_action ()
     echo "Aborting command on user input"
     exit 1
   else
-    echo "Action confirmed. Gathering diagnostics"
+    echo "Action confirmed, proceeding"
   fi
 }
