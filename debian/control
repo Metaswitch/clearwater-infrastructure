@@ -35,7 +35,7 @@ Description: Secure connections between regions for Clearwater
 
 Package: clearwater-snmpd
 Architecture: all
-Depends: snmpd (= 5.7.2~dfsg-clearwater7), libsnmp-base (>= 5.7.2~dfsg-clearwater7), libsnmp30 (>= 5.7.2~dfsg-clearwater7), clearwater-infrastructure, clearwater-monit
+Depends: snmpd (= 5.7.3~dfsg-clearwater1), libsnmp-base (>= 5.7.3~dfsg-clearwater1), libsnmp30 (>= 5.7.3~dfsg-clearwater1), clearwater-infrastructure, clearwater-monit
 Description: SNMP service for Clearwater CPU, RAM and I/O statistics
 
 Package: clearwater-diags-monitor
@@ -83,7 +83,7 @@ Description: Package enabling RADIUS authentication on Clearwater nodes
 
 Package: vellum
 Architecture: any
-Depends: clearwater-memcached, astaire, chronos, homestead-cassandra, homestead-prov-cassandra, homer-cassandra, clearwater-etcd, clearwater-monit
+Depends: clearwater-memcached, astaire, chronos, homestead-cassandra, homestead-prov-cassandra, homer-cassandra, clearwater-etcd, clearwater-monit, rogers
 Description: vellum, the storage node for all Clearwater servers
 
 Package: vellum-dbg
@@ -91,7 +91,7 @@ Architecture: any
 Section: debug
 Priority: extra
 Depends: vellum (= ${binary:Version})
-Recommends: astaire-dbg, chronos-dbg, memcached-dbg
+Recommends: astaire-dbg, chronos-dbg, memcached-dbg, rogers-dbg
 Description: Debugging symbols for vellum, the Clearwater storage node
 
 Package: dime
