@@ -49,7 +49,7 @@ fi
 
 when_nc_started=$(date --utc  --rfc-3339=ns)
 
-nc -v -C -w $(( $wait_time + 1 )) -q $wait_time $local_ip $port <<EOF 2> /tmp/poll-sip.nc.stderr.$$ | tee /tmp/poll-sip.nc.stdout.$$ | head -1 | egrep -q "^SIP/2.0 (200|503)"
+nc -v -C -w $(( $wait_time + 1 )) -q $wait_time $local_ip $port <<EOF 2> /tmp/poll-sip.nc.stderr.$$ | tee /tmp/poll-sip.nc.stdout.$$ | head -1 | egrep -q "^SIP/2.0 200"
 OPTIONS sip:poll-sip@$sip_ip:$port SIP/2.0
 Via: SIP/2.0/TCP $sip_ip;rport;branch=z9hG4bK-$id
 Max-Forwards: 2
