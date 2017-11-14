@@ -9,10 +9,92 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-echo 'gather_diags:
-This script triggers diagnostics collection. 
+############################################################
+# Utility functions that can be called to:
+# - Check the diags monitor process is actually running
+# - Get the current CPU idle percentage (rounded down)
+# - Check the user is happy to run a CPU intensive operation
 
-The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
+# Check for a diags monitor process. Alert, and attempt restart, if none found
+verify_process_running ()
+{
+  process_running=$(pgrep -f "/usr/share/clearwater/bin/clearwater_diags_monitor" > /dev/null ; echo $?)
+  if [ $process_running != 0 ]
+  then
+    echo "Warning: No clearwater-diags-monitor process found running. Attempting restart"
+    service clearwater-diags-monitor start
+    if [ $? != 0 ]
+    then
+      echo "Error: Unable to start clearwater-diags-monitor. Aborting operation"
+      exit 1
+    else
+      # Double check that the process stays up after the restart
+      sleep 5
+      process_running=$(pgrep -f "/usr/share/clearwater/bin/clearwater_diags_monitor" > /dev/null ; echo $?)
+      if [ $process_running != 0 ]
+      then
+        echo "Error: Clearwater-diags-monitor not running after restart. Aborting operation"
+        exit 1
+      fi
+      echo "Successfully started clearwater-diags monitor"
+    fi
+  fi
+}
+
+# Required idle CPU for triggering gathering diagnostics
+MIN_IDLE_CPU_FOR_GATHER=40
+
+# Gets the idle CPU averaged over a 10s period.
+get_idle_cpu ()
+{
+  # Use sar to get the CPU usage over 10s, find the summary ("all") line, and
+  # then grab the idle value (last field on the row), removing any fractional
+  # part.
+  sar -P ALL 10 1 |
+  grep "Average:  *all" |
+  sed -e 's/^.* //g' |
+  sed -e 's/\..*//g'
+}
+
+# Asks a user to either wait for idle CPU, or re-run with --force
+check_and_wait_cpu_idle ()
+{
+  echo "This system is currently running at a higher CPU usage than the configured threshold, with less than $MIN_IDLE_CPU_FOR_GATHER % idle CPU"
+  echo "The gather_diags process will wait until we have enough idle CPU, or it can be re-run with the --force flag to skip CPU usage checks"
+  echo "Enter 'y' to continue and wait for idle CPU, or any other input to exit"
+  read user_input
+  if [ "$user_input" != "y" ]
+  then
+    echo "Aborting command on user input"
+    exit 1
+  else
+    echo "Waiting for enough idle CPU to proceed..."
+  fi
+
+  while [ $(get_idle_cpu) -lt $MIN_IDLE_CPU_FOR_GATHER ]
+  do
+    echo -n "."
+  done
+  echo "CPU is now sufficiently idle to continue"
+}
+
+# Require confirmation from users to ensure that they wish to run this action
+confirm_user_action ()
+{
+  echo "Gathering diagnostics can be a CPU intensive operation, but will not impact a system under normal load"
+  echo "To confirm, please enter 'continue'"
+  read user_input
+  if [ "$user_input" != "continue" ]
+  then
+    echo "Aborting command on user input"
+    exit 1
+  else
+    echo "Action confirmed, proceeding"
+  fi
+}
+
+############################################################
+# Main script
 
 # Check for the force or force-confirmed options. These are used to run diags
 # gathering even if we have low idle CPU, or to do so and skip any confirmation.
@@ -32,13 +114,15 @@ fi
 # is intended solely for use by automated scripts
 if [[ $# -ne 0 && $force != true ]]
 then
+  echo "Usage: gather_diags"
+  echo "Triggers diagnostics collection to run in the background."
+  echo "Diags output to /var/clearwater-diags-monitor/dumps/*.tar.gz"
+  echo ""
   echo "Usage: gather_diags_and_report_location"
-  echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
+  echo "Triggers diagnostics collection, and reports where the diagnostics are collected"
+  echo "Diags are moved to a convenient ftp directory"
   exit 1
 fi
-
-# Pull in utility functions, and proceed with checks, as necessary
-. /usr/share/clearwater/bin/gather_diags_utils
 
 verify_process_running
 
