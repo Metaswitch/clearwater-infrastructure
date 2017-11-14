@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # @file gather_diags
 #
@@ -146,9 +146,6 @@ if [ $confirmed != true ]
 then
   confirm_user_action
 fi
-
-# Store the current time
-current_time=$(date --utc "+%Y%m%d%H%M%S")
 
 # Write a file to trigger a diagnostic dump.
 echo "Collecting diagnostics from the system."
