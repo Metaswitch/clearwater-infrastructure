@@ -9,6 +9,10 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
+
+# Required idle CPU for triggering gathering diagnostics
+MIN_IDLE_CPU_FOR_GATHER=40
+
 ############################################################
 # Utility functions that can be called to:
 # - Check the diags monitor process is actually running
@@ -41,8 +45,6 @@ verify_process_running ()
   fi
 }
 
-# Required idle CPU for triggering gathering diagnostics
-MIN_IDLE_CPU_FOR_GATHER=40
 
 # Gets the idle CPU averaged over a 10s period.
 get_idle_cpu ()
