@@ -14,8 +14,57 @@ This script triggers diagnostics collection.
 
 The packaged diagnostics are created in /var/clearwater-diags-monitor/dumps/*.tar.gz'
 
-# We call through to the gather_diags_and_report_location script, but with a
-# flag that skips the wait for completion and location reporting, making sure
-# to pass through the --force or --force-confirmed flags as the first arguments
+# Check for the force or force-confirmed options. These are used to run diags
+# gathering even if we have low idle CPU, or to do so and skip any confirmation.
+force=false
+confirmed=false
+if [ "$1" == "--force" ]
+then
+  force=true
+elif [ "$1" == "--force-confirmed" ]
+then
+  force=true
+  confirmed=true
+fi
 
-/usr/share/clearwater/bin/gather_diags_and_report_location $@ --no-report
+# If bad arguments passed in, give usage details. We do not detail the --force
+# or --force-confirmed options here. --force is mentioned later, and --force-confirmed
+# is intended solely for use by automated scripts
+if [[ $# -ne 0 && $force != true ]]
+then
+  echo "Usage: gather_diags_and_report_location"
+  echo "This script triggers diagnostics collection, and reports where the diagnostics are collected"
+  exit 1
+fi
+
+# Pull in utility functions, and proceed with checks, as necessary
+. /usr/share/clearwater/bin/gather_diags_utils
+
+verify_process_running
+
+# CPU utilisation checks/waits
+echo "Checking available CPU..."
+if [ $(get_idle_cpu) -gt $MIN_IDLE_CPU_FOR_GATHER ]
+then
+  # We have enough idle CPU so proceed without needing further confirmation
+  confirmed=true
+elif [ $force != true ]
+then
+  check_and_wait_cpu_idle
+  confirmed=true
+fi
+
+# If we haven't passed CPU checks, or are not being run with --force-confirmed
+# we want a user to confirm they want to run a CPU heavy operation
+if [ $confirmed != true ]
+then
+  confirm_user_action
+fi
+
+# Store the current time
+current_time=$(date --utc "+%Y%m%d%H%M%S")
+
+# Write a file to trigger a diagnostic dump.
+echo "Collecting diagnostics from the system."
+echo "This operation can take a few minutes to complete."
+echo "Manually triggered by /usr/share/clearwater/bin/gather_diags" > /var/clearwater-diags-monitor/tmp/core.gather_diags.$(date +%s)
