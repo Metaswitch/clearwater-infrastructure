@@ -116,13 +116,16 @@ fi
 # is intended solely for use by automated scripts
 if [[ $# -ne 0 && $force != true ]]
 then
-  echo "Usage: gather_diags"
-  echo "Triggers diagnostics collection to run in the background."
-  echo "Diags output to /var/clearwater-diags-monitor/dumps/*.tar.gz"
-  echo ""
-  echo "Usage: gather_diags_and_report_location"
-  echo "Triggers diagnostics collection, and reports where the diagnostics are collected"
-  echo "Diags are moved to a convenient ftp directory"
+  if [[ "$0" == *"report_location"* ]]
+  then
+    echo "Usage: gather_diags_and_report_location"
+    echo "Triggers diagnostics collection, and reports where the diagnostics are collected"
+    echo "Diags are moved to a convenient ftp directory"
+  else
+    echo "Usage: gather_diags"
+    echo "Triggers diagnostics collection to run in the background."
+    echo "Diags output to /var/clearwater-diags-monitor/dumps/*.tar.gz"
+  fi
   exit 1
 fi
 

@@ -32,7 +32,7 @@ fi
 
 DIAGS_END_LOCATION=${CLEARWATER_USER_HOME}/ftp/dumps/
 
-/usr/share/clearwater/bin/gather_diags $@
+. /usr/share/clearwater/bin/gather_diags $@
 
 # We need to make sure the gather diags script exited cleanly
 # Other exits indicate raised errors, or aborts on user command
