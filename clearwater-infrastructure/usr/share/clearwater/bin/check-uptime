@@ -2,7 +2,7 @@
 
 # @file check-uptime
 #
-# Copyright (C) Metaswitch Networks 2016
+# Copyright (C) Metaswitch Networks 2017
 # If license terms are provided to you in a COPYING file in the root directory
 # of the source code repository by which you are accessing this code, then
 # the license outlined in that COPYING file applies to your use.
@@ -11,6 +11,7 @@
 
 # Checks that a process has been running for at least REQUIRED_UPTIME
 # seconds. Returns 0 if it has. Returns a non-zero value if it has not.
+# Clears the process-not-ready alarm if necessary.
 REQUIRED_UPTIME=30
 
 # Bail out and return non-zero if anything goes wrong.
@@ -24,11 +25,7 @@ pidfile=$1
 issuer=$2
 alarm=$3
 
-# It's expected that there might not be a pidfile.
-pid=$( cat $pidfile 2>/dev/null)
-
-value=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid" >&2 ; exit 1 ; }
-if [ "$value" -ge "$REQUIRED_UPTIME" ]; then
+if /usr/share/clearwater/bin/is-stable $pidfile $REQUIRED_UPTIME; then
   /usr/share/clearwater/bin/issue-alarm "$issuer" "$alarm"
   exit 0
 else
