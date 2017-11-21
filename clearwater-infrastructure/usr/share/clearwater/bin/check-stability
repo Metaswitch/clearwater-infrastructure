@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# @file check-stability
+#
+# Copyright (C) Metaswitch Networks 2017
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+
+# Checks that a process has been running for at least REQUIRED_UPTIME
+# seconds. Returns 0 if it has. Returns a non-zero value if it has not.
+
+[ $# = 4 ] || { echo "Usage: check-stability <pidfile> <required uptime (s)> <aborting flag name> <aborting flag timeout (s)>" >&2 ; exit 2; }
+pidfile=$1
+required_uptime=$2
+aborting_flag=$3
+aborting_flag_timeout=$4
+
+# It's expected that there might not be a pidfile
+pid=$( cat $pidfile 2>/dev/null)
+
+# Determine the uptime
+uptime=$( ps -p $pid -o etimes= 2>/dev/null) || { echo -n "No process matching value from pidfile: $pid " >&2 ; exit 1 ; }
+
+# Call 'timeout' on the flag - this will clear the flag if it has been set for
+# longer than $aborting_flag_timeout
+/usr/share/clearwater/bin/cw-flag timeout $aborting_flag $aborting_flag_timeout
+
+if /usr/share/clearwater/bin/cw-flag read $aborting_flag\
+   && [ "$uptime" -ge "$required_uptime" ]; then
+  exit 0
+else
+  exit 1
+fi
