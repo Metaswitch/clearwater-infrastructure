@@ -2,7 +2,7 @@
 
 # @file poll-http
 #
-# Copyright (C) Metaswitch Networks 2016
+# Copyright (C) Metaswitch Networks 2017
 # If license terms are provided to you in a COPYING file in the root directory
 # of the source code repository by which you are accessing this code, then
 # the license outlined in that COPYING file applies to your use.
@@ -26,7 +26,9 @@ rc=$?
 # Check the return code and log if appropriate.
 if [ $rc != 0 ] ; then
   echo HTTP failed to $http_url   >&2
+  echo "stderr was:"              >&2
   cat /tmp/poll-http.sh.stderr.$$ >&2
+  echo "stdout was:"              >&2
   cat /tmp/poll-http.sh.stdout.$$ >&2
 fi
 rm -f /tmp/poll-http.sh.stderr.$$ /tmp/poll-http.sh.stdout.$$

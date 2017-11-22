@@ -29,12 +29,11 @@ uptime=$( ps -p $pid -o etimes= 2>/dev/null) || { echo -n "No process matching v
 /usr/share/clearwater/bin/cw-flag timeout $aborting_flag $aborting_flag_timeout
 
 if ! /usr/share/clearwater/bin/cw-flag read $aborting_flag; then
-  echo -n "process is unstable as it is currently aborting" >&2
+  echo "process is unstable as it is currently aborting" >&2
   exit 1
 elif [ "$uptime" -lt "$required_uptime" ]; then
   uptime_no_whitespace=$( echo -e $uptime | tr -d '[:space:]')
-  echo -n "process is unstable as it has not been up for long enough
-  ($uptime_no_whitespace s < $required_uptime s)" >&2
+  echo "process is unstable as it has not been up for long enough ($uptime_no_whitespace s < $required_uptime s)" >&2
   exit 1
 else
   exit 0
