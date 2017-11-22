@@ -31,7 +31,7 @@ check_stability() {
   pid=$( cat $pidfile 2>/dev/null)
 
   # Determine the uptime
-  uptime=$( ps -p $pid -o etimes= 2>/dev/null) || { echo -n "No process matching value from pidfile: $pid " >&2 ; return 1 ; }
+  uptime=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid " >&2 ; return 1 ; }
 
   # Call 'timeout' on the flag - this will clear the flag if it has been set for
   # longer than $aborting_flag_timeout
