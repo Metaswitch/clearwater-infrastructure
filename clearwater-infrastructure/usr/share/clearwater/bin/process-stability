@@ -18,7 +18,7 @@ abort_flag_name="$process_name-aborting-flag"
 
 usage="Usage: check-stability {check|reset|aborted} <process name> <grace period (s)>"
 
-[ $# = 4 ] || { echo $usage >&2 ; exit 2; }
+[ $# = 3 ] || { echo $usage >&2 ; exit 2; }
 
 # Returns 1 if the process has not been running for at least the grace period,
 # or the abort flag is set (and has not timed out). Returns 2 if there is no

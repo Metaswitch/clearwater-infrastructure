@@ -41,7 +41,7 @@ set_flag() {
 
 # Reads the flag, returning 1 if the flag is set and 0 if it is clear.
 read_flag() {
-  timeout_flag() # Timeout the flag if necessary
+  timeout_flag # Timeout the flag if necessary
   if [ -f $flag_file ]; then
     return 1
   else
