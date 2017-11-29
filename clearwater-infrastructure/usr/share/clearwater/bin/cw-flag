@@ -12,28 +12,22 @@
 # Utility script which allows semi-permanent flags to be set and cleared.
 
 FLAG_DIR=/tmp/cw-flags
-USAGE="Usage: flag {clear|set|read} <flag_name>, or flag timeout <flag_name> <timeout (s)>" >&2
-DEFAULT_TIMEOUT=60
+USAGE="Usage: flag {clear|set|read} <flag_name>" >&2
+TIMEOUT_S=60
 
 method=$1
 flag_file=$FLAG_DIR/$2
-
-if [ -z "$3" ]; then
-  timeout=$DEFAULT_TIMEOUT
-else
-  timeout=$3
-fi
 
 # Clears the flag by removing the flag file.
 clear_flag() {
   rm -f $flag_file
 }
 
-# Clears the flag if it has been set for longer than $timeout.
+# Clears the flag if it has been set for longer than $TIMEOUT_S.
 timeout_flag() {
   if [ -f $flag_file ]; then
     flag_time=$( expr `date +%s` - `stat -c %Y $flag_file` )
-    if [ $flag_time -gt $timeout ]; then
+    if [ $flag_time -gt $TIMEOUT_S ]; then
       clear_flag
     fi
   fi
@@ -41,13 +35,13 @@ timeout_flag() {
 
 # Sets the flag by (re)creating the flag file.
 set_flag() {
-  clear_flag  # First clear the flag
   mkdir -p $FLAG_DIR
   touch $flag_file
 }
 
 # Reads the flag, returning 1 if the flag is set and 0 if it is clear.
 read_flag() {
+  timeout_flag() # Timeout the flag if necessary
   if [ -f $flag_file ]; then
     return 1
   else
@@ -59,10 +53,6 @@ case "$method" in
 
   clear)
     clear_flag
-    ;;
-
-  timeout)
-    timeout_flag
     ;;
 
   set)

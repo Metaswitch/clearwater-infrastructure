@@ -14,10 +14,9 @@
 method=$1
 process_name=$2
 grace_period=$3
-abort_timeout=$4
 abort_flag_name="$process_name-aborting-flag"
 
-usage="Usage: check-stability {check|reset|aborted} <process name> <grace period (s)> <abort timeout>"
+usage="Usage: check-stability {check|reset|aborted} <process name> <grace period (s)>"
 
 [ $# = 4 ] || { echo $usage >&2 ; exit 2; }
 
@@ -32,10 +31,6 @@ check_stability() {
 
   # Determine the uptime
   uptime=$( ps -p $pid -o etimes= 2>/dev/null) || { echo "No process matching value from pidfile: $pid " >&2 ; return 1 ; }
-
-  # Call 'timeout' on the flag - this will clear the flag if it has been set for
-  # longer than $aborting_flag_timeout
-  /usr/share/clearwater/bin/cw-flag timeout $abort_flag_name $abort_timeout
 
   if ! /usr/share/clearwater/bin/cw-flag read $abort_flag_name; then
     echo "process is unstable as it is currently aborting" >&2
