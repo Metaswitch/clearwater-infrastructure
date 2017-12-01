@@ -13,7 +13,7 @@ import os
 import functools
 
 import clearwater_options
-from check_config_utilities import OK, WARNING, ERROR, error, warning
+from check_config_utilities import WARNING, ERROR, error, warning
 
 
 def check_config_options(options):
@@ -55,7 +55,6 @@ def get_file_name(path):
 
 
 def check_config():
-    status = OK
 
     # Build up a list of checks to be performed. Each check should take no
     # arguments and return a status code.
@@ -65,9 +64,7 @@ def check_config():
 
     # Determine the resultant status code - since ERROR > WARNING > OK, take
     # the maximum.
-    status = max(check() for check in checks)
-
-    return status
+    return max(check() for check in checks)
 
 
 if __name__ == '__main__':
