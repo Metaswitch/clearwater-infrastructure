@@ -10,11 +10,13 @@
 
 import sys
 import os
-from check_config_utilities import OK, WARNING, ERROR, error, warning
+import functools
+
 import clearwater_options
+from check_config_utilities import OK, WARNING, ERROR, error, warning
 
 
-def check_config(options):
+def check_config_options(options):
     status = 0
 
     # Check that each option is present (if mandatory) and correctly formatted (if
@@ -52,18 +54,21 @@ def get_file_name(path):
     return file_name
 
 
-if __name__ == '__main__':
-
+def check_config():
     status = OK
 
-    # Validate the options in this list
-    code = check_config(clearwater_options.get_options())
-    if code > status:
-        status = code
+    # Build up a list of checks to be performed. Each check should take no
+    # arguments and return a status code.
+    checks = [functools.partial(check_config_options,
+                                clearwater_options.get_options()),
+              clearwater_options.check_advanced_config]
 
-    # Run advanced config checks in each option module
-    code = clearwater_options.check_advanced_config()
-    if code > status:
-        status = code
+    # Determine the resultant status code - since ERROR > WARNING > OK, take
+    # the maximum.
+    status = max(check() for check in checks)
 
-    sys.exit(status)
+    return status
+
+
+if __name__ == '__main__':
+    sys.exit(check_config())
