@@ -8,16 +8,15 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-import imp
 import sys
 import os
-from glob import glob
-from check_config_utilities import OK, WARNING, ERROR, error, warning
+import functools
 
-OPTION_MODULE_PATH = "/usr/share/clearwater/infrastructure/scripts/config_validation"
+import clearwater_options
+from check_config_utilities import WARNING, ERROR, error, warning
 
 
-def check_config(options):
+def check_config_options(options):
     status = 0
 
     # Check that each option is present (if mandatory) and correctly formatted (if
@@ -55,39 +54,18 @@ def get_file_name(path):
     return file_name
 
 
-def import_option_modules():
-    """Retrieve and import option modules from the options/ directory"""
+def check_config():
 
-    # Search the specified directory for python modules and obtain (filename, path)
-    # pairs for each such module.
-    options_path = os.path.join(OPTION_MODULE_PATH, '*.py')
-    option_pairs = [(get_file_name(path), path) for path in glob(options_path)]
+    # Build up a list of checks to be performed. Each check should take no
+    # arguments and return a status code.
+    checks = [functools.partial(check_config_options,
+                                clearwater_options.get_options()),
+              clearwater_options.check_advanced_config]
 
-    # Import the modules, and return a list containing them
-    option_modules = [imp.load_source(name, path) for (name, path) in option_pairs]
-    return option_modules
+    # Determine the resultant status code - since ERROR > WARNING > OK, take
+    # the maximum.
+    return max(check() for check in checks)
 
 
 if __name__ == '__main__':
-    # Retrieve and import option modules
-    option_modules = import_option_modules()
-
-    # Build up the list of options to be validated
-    options = []
-    for module in option_modules:
-        options += module.get_options()
-
-    status = OK
-
-    # Validate the options in this list
-    code = check_config(options)
-    if code > status:
-        status = code
-
-    # Run advanced config checks in each option module
-    for module in option_modules:
-        code = module.check_advanced_config()
-        if code > status:
-            status = code
-
-    sys.exit(status)
+    sys.exit(check_config())
