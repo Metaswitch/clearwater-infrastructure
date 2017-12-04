@@ -18,9 +18,8 @@ fi
 # - show_config.py is a python script that pretty prints the
 #   configuration. This is called by:
 # - clearwater-show-config (this script) which is responsible for running
-#   show-config-inner in a clean environment. This what the `env -i` bit is
-#   for.
-(
+#   it in a clean environment. This what the `env -i` bit is for.
+env -i bash -c "
   # Automatically export all shell variables that get set.
   set -a
 
@@ -30,4 +29,4 @@ fi
   # Call into a python script to display it. Using exec here cuts down on the
   # number of extra environment variables the python process sees.
   exec /usr/share/clearwater/infrastructure/env/bin/python -m cw_infrastructure.show_config
-)
+"
