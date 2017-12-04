@@ -1,4 +1,4 @@
-#!#!/bin/bash
+#!/bin/bash
 
 # @file run-in-signaling-namespace.sh
 
@@ -15,8 +15,10 @@
 if [[ $EUID -ne 0 ]]
 then
   echo "No sudo: run admin command"  # I will remove this later
-  /usr/share/clearwater/bin/run_run-in-signaling-namespace "$@"
+  command="/usr/share/clearwater/bin/run_run-in-signaling-namespace"
 else
   echo "sudo called: run super-admin command"  # I will remove this later
-  /usr/share/clearwater/bin/run-in-signaling-namespace "$@"
+  command="/usr/share/clearwater/bin/run-in-signaling-namespace"
 fi
+
+$command "$@"
