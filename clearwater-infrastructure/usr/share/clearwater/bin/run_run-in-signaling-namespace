@@ -2,17 +2,22 @@
 
 # This file is called run-run-in-signaling-namespace as it follows the
 # convention to add a 'run' in front of the script name used by the other
-# scripts caliing to craft-daemon.
+# scripts calling to craft-daemon.
 
 if [[ $EUID -ne 0 ]]
 then
-  # Runs run-in-signaling-namespace with any given parameters using the craft
-  # daemon. The variables are limited in the RunInSignalingNamespace class.
-  command="/usr/share/clearwater/craft/env/bin/run_action RunInSignalingNamespace"
+  # Normally the user would require root/sudo privileges in order to execute
+  # commands in the signaling namespace. For users that don't have those
+  # privileges but still need to run commands in the signaling namespace, we
+  # send commands to the craft daemon to execute on the user's behalf. The
+  # craft daemon runs as root, but places limits the commands it will accept
+  # (to avoid security holes).
+  /usr/share/clearwater/craft/env/bin/run_action RunInSignalingNamespace "$@"
 else
-  # This has been called with sudo, therefore it does not need to be run
-  # through the craft infrastructure and can be followed by any variables.
-  command="/usr/share/clearwater/bin/run-in-signaling-namespace"
+  # This has been run with root/sudo privileges and so the user is allowed to
+  # execute any commands in the signaling namespace. The user already has root/
+  # sudo permissions so is not limited in action (like above) as they are
+  # trusted already with root/sudo access.
+  /usr/share/clearwater/bin/run-in-signaling-namespace "$@"
 fi
 
-$command "$@"
