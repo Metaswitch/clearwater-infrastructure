@@ -10,7 +10,7 @@ then
   # commands in the signaling namespace. For users that don't have those
   # privileges but still need to run commands in the signaling namespace, we
   # send commands to the craft daemon to execute on the user's behalf. The
-  # craft daemon runs as root, but places limits the commands it will accept
+  # craft daemon runs as root, but places limits on the commands it will accept
   # (to avoid security holes).
   /usr/share/clearwater/craft/env/bin/run_action RunInSignalingNamespace "$@"
 else
