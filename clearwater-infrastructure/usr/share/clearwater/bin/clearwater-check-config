@@ -173,8 +173,8 @@ check_option_locations || rc=1
 # Check that the config is semantically correct (e.g. required options are
 # present, they are correctly formatted, etc).
 check_config_values
-# return of 4 shows a suggested parameter but not a required one, so the
-# validation should still pass but will print a warning to screen.
+# A return value 4 shows a suggested parameter is missing but not a required
+# one, so the validation will still pass but will print the warning to screen.
 [[ $? == 0 || $? == 4 ]] || rc=1
 
 # Print out a soothing message to the user if all the checks passed.
