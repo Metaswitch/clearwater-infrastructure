@@ -74,6 +74,29 @@ copy_to_dump()
   fi
 }
 
+# Copy files and directories to the dump as a tar.gz.
+#
+# For example the directory /var/log/sprout would be copied to
+# <dumpdir>/var/log/sprout.tar.gz
+#
+# Params:
+#   $1 - The objects to copy.
+copy_to_dump_as_tar_gz()
+{
+  src=$(realpath $1)
+  src_dir=$(dirname $src)
+  src_name=$(basename $src)
+
+  if [[ $src && $src_dir && $src_name ]]
+  then
+    dst=$CURRENT_DUMP_DIR/root${src}.tar.gz
+    mkdir -p $(dirname $dst)
+    tar -C $src_dir -zcf $dst $src_name
+  else
+    log "$1 not present in deployment"
+  fi
+}
+
 # Move files and directories to the dump preserving the full path.
 # Use this when the file is very large or is used to trigger a diags
 # collection (so we don't repeatedly trigger on the same file).
@@ -552,7 +575,7 @@ do
   #
 
   # Log files.
-  copy_to_dump '/var/log'
+  copy_to_dump_as_tar_gz '/var/log'
 
   # PID files
   copy_to_dump '/var/run'
