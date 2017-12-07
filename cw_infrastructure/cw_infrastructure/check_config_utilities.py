@@ -34,7 +34,7 @@ def warning(option_name, message):
 
        @param option_name - The name of the option the warning relates to.
        @param message     - A description of the problem"""
-    sys.stderr.write("WARN: {}: {}\n".format(option_name, message))
+    sys.stderr.write("WARNING: {}: {}\n".format(option_name, message))
 
 
 def ip_version(value):
