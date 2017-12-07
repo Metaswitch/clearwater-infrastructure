@@ -29,18 +29,16 @@ def check_config_options(options):
             if option.validator:
                 code = option.validator(option.name, value)
 
-                # The validator is responsible for printing an error message.
-                if code > status:
-                    status = code
-
         else:
             # The option is not present, which is an error if it's mandatory.
             if option.mandatory():
                 error(option.name, 'option is mandatory but not present')
-                status = ERROR
+                code = ERROR
             elif option.suggested():
                 warning(option.name, 'option is not configured')
-                status = WARNING
+                code = WARNING
+        # A higher value indicates a worse error.
+        status = max(status, code)
     return status
 
 
