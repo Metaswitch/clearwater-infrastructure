@@ -347,7 +347,7 @@ get_os_info()
 # Get information about running processes.
 get_process_info()
 {
-  ps -eaf > $CURRENT_DUMP_DIR/ps-eaf.txt
+  ps axo user,pid,pcpu,pmem,vsz,rss,tty,stat,lstart,time,command > $CURRENT_DUMP_DIR/ps_axo.txt
 }
 
 
