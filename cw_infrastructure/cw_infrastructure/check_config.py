@@ -35,7 +35,7 @@ def check_config_options(options):
                 error(option.name, 'option is mandatory but not present')
                 code = ERROR
             elif option.suggested():
-                warning(option.name, 'option is not configured')
+                warning(option.name, 'option is recommended but not configured')
                 code = WARNING
         # A higher value indicates a worse error.
         status = max(status, code)
