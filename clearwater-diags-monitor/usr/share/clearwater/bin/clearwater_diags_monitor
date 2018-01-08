@@ -447,6 +447,7 @@ get_etcd_info()
 {
   clearwater-etcdctl member list > $CURRENT_DUMP_DIR/etcd_member_list.txt
   clearwater-etcdctl cluster-health > $CURRENT_DUMP_DIR/etcd_cluster_health.txt
+  cp /var/log/clearwater-etcd/etcd_cluster_bad_polls.txt $CURRENT_DUMP_DIR
   if [ -f /var/lib/clearwater-etcd/healthy_etcd_members ]
   then
     echo "When the cluster was last healthy, the members were" "$(</var/lib/clearwater-etcd/healthy_etcd_members)" >> $CURRENT_DUMP_DIR/etcd_cluster_health.txt
