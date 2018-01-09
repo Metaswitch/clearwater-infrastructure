@@ -10,9 +10,9 @@
 
 import os
 
-import cw_infrastructure.validators as vlds
-from cw_infrastructure.check_config_utilities import (OK, ERROR, error,
-                                                      number_present, Option)
+import validators as vlds
+from check_config_utilities import (OK, ERROR, error,
+                                    number_present, Option)
 
 
 def get_options():
@@ -65,7 +65,8 @@ def get_options():
         Option('ralf_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
         Option('xdms_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator))
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+        Option('alias_list', Option.DEPRECATED)
     ]
     return options
 
