@@ -11,62 +11,62 @@
 import os
 
 import validators as vlds
-from check_config_utilities import (OK, ERROR, error,
-                                    number_present, Option)
+import check_config_utilities as utils
 
 
 def get_options():
     """Set up the list of options to be validated"""
     options = [
-        Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
-        Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
-        Option('public_hostname', Option.MANDATORY,
+        utils.Option('local_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
+        utils.Option('public_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
+        utils.Option('public_hostname', utils.Option.MANDATORY,
                vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
-        Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
-        Option('sprout_hostname', Option.MANDATORY,
+        utils.Option('home_domain', utils.Option.MANDATORY, vlds.domain_name_validator),
+        utils.Option('sprout_hostname', utils.Option.MANDATORY,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
-        Option('hs_hostname', Option.MANDATORY,
+        utils.Option('hs_hostname', utils.Option.MANDATORY,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
+        utils.Option('homestead_diameter_watchdog_timer', utils.Option.OPTIONAL,
                vlds.create_integer_range_validator(min_value=6)),
-        Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
+        utils.Option('ralf_diameter_watchdog_timer', utils.Option.OPTIONAL,
                vlds.create_integer_range_validator(min_value=6)),
 
         # Mandatory nature of one of these is enforced below
-        Option('etcd_cluster', Option.OPTIONAL, vlds.ip_addr_list_validator),
-        Option('etcd_proxy', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        utils.Option('etcd_cluster', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
+        utils.Option('etcd_proxy', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
 
         # Mandatory nature of one of these is enforced below
-        Option('hss_realm', Option.OPTIONAL,
+        utils.Option('hss_realm', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
-        Option('hss_hostname', Option.OPTIONAL,
+        utils.Option('hss_hostname', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.domain_name_validator)),
-        Option('hs_provisioning_hostname', Option.OPTIONAL,
+        utils.Option('hs_provisioning_hostname', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
-        Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
+        utils.Option('snmp_ip', utils.Option.SUGGESTED, vlds.ip_addr_list_validator),
+        utils.Option('sas_server', utils.Option.SUGGESTED, vlds.ip_or_domain_name_validator),
 
-        Option('scscf_uri', Option.OPTIONAL,
+        utils.Option('scscf_uri', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        Option('bgcf_uri', Option.OPTIONAL,
+        utils.Option('bgcf_uri', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        Option('icscf_uri', Option.OPTIONAL,
+        utils.Option('icscf_uri', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
-        Option('enum_server', Option.OPTIONAL,
+        utils.Option('enum_server', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
-        Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
-        Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
-        Option('billing_realm', Option.OPTIONAL,
+        utils.Option('signaling_dns_server', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
+        utils.Option('remote_cassandra_seeds', utils.Option.OPTIONAL, vlds.ip_addr_validator),
+        utils.Option('billing_realm', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
-        Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
-        Option('ralf_hostname', Option.OPTIONAL,
+        utils.Option('node_idx', utils.Option.OPTIONAL, vlds.integer_validator),
+        utils.Option('ralf_hostname', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
-        Option('xdms_hostname', Option.OPTIONAL,
+        utils.Option('xdms_hostname', utils.Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
-        Option('alias_list', Option.DEPRECATED)
+
+        utils.Option('alias_list', utils.Option.DEPRECATED)
     ]
     return options
 
@@ -76,41 +76,42 @@ def validate_hss_config():
     Require that the site is either configured with a HSS, or HS Prov.
     """
 
-    hss_config = number_present('hss_realm',
-                                'hss_hostname')
+    hss_config = utils.number_present('hss_realm',
+                                      'hss_hostname')
 
-    hs_prov_config = number_present('hs_provisioning_hostname')
+    hs_prov_config = utils.number_present('hs_provisioning_hostname')
 
     if hss_config > 0 and hs_prov_config > 0:
-        error('HSS',
-              ('Both a HSS and Homestead Subscriber Store are configured. '
-               'Either a HSS should be configured (with hss_realm and/or '
-               'hss_hostname), or Homestead Subscriber Store should be '
-               'configured (with hs_provisioning_hostname set).'))
-        return ERROR
+        utils.error('HSS',
+                    ('Both a HSS and Homestead Subscriber Store are configured. '
+                     'Either a HSS should be configured (with hss_realm and/or '
+                     'hss_hostname), or Homestead Subscriber Store should be '
+                     'configured (with hs_provisioning_hostname set).'))
+        return utils.ERROR
     elif hss_config == 0 and hs_prov_config == 0:
-        error('HSS',
-              ('Either a HSS must be configured (with hss_realm and/or'
-               '  hss_hostname), or Homestead Subscriber Store must be'
-               ' configured (with hs_provisioning_hostname set).'))
-        return ERROR
+        utils.error('HSS',
+                    ('Either a HSS must be configured (with hss_realm and/or'
+                     '  hss_hostname), or Homestead Subscriber Store must be'
+                     ' configured (with hs_provisioning_hostname set).'))
+        return utils.ERROR
 
-    return OK
+    return utils.OK
 
 
 def validate_etcd_config():
     """Require that exactly one of etcd_proxy or etcd_cluster is set"""
-    etcd_config = number_present('etcd_proxy', 'etcd_cluster')
+    etcd_config = utils.number_present('etcd_proxy', 'etcd_cluster')
 
     if etcd_config > 1:
-        error('etcd', 'Only one of etcd_proxy and etcd_cluster may be set')
-        return ERROR
+        utils.error('etcd',
+                    'Only one of etcd_proxy and etcd_cluster may be set')
+        return utils.ERROR
 
     elif etcd_config == 0:
-        error('etcd', 'One of etcd_proxy and etcd_cluster must be set')
-        return ERROR
+        utils.error('etcd', 'One of etcd_proxy and etcd_cluster must be set')
+        return utils.ERROR
 
-    return OK
+    return utils.OK
 
 
 def validate_sprout_hostname():
@@ -118,7 +119,7 @@ def validate_sprout_hostname():
 
     sprout_hostname = os.environ.get('sprout_hostname')
 
-    status = OK
+    status = utils.OK
 
     for sproutlet in ('scscf', 'bgcf', 'icscf'):
 
@@ -139,7 +140,7 @@ def check_advanced_config():
     More advanced checks (e.g. checking consistency between multiple options)
     can be performed here.
     """
-    status = OK
+    status = utils.OK
 
     code = validate_hss_config()
 
