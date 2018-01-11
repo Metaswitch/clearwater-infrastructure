@@ -14,4 +14,10 @@ setup(
         "pathlib",
         "dnspython",
     ],
-    packages=['cw_infrastructure'])
+    packages=['cw_infrastructure'],
+    test_suite='cw_infrastructure.test',
+    tests_require=[
+        "mock",
+        "hypothesis"
+    ]
+    )

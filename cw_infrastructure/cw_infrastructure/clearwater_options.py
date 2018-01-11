@@ -20,17 +20,17 @@ def get_options():
         utils.Option('local_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
         utils.Option('public_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
         utils.Option('public_hostname', utils.Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
+                     vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
         utils.Option('home_domain', utils.Option.MANDATORY, vlds.domain_name_validator),
         utils.Option('sprout_hostname', utils.Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
+                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
         utils.Option('hs_hostname', utils.Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         utils.Option('homestead_diameter_watchdog_timer', utils.Option.OPTIONAL,
-               vlds.create_integer_range_validator(min_value=6)),
+                     vlds.create_integer_range_validator(min_value=6)),
         utils.Option('ralf_diameter_watchdog_timer', utils.Option.OPTIONAL,
-               vlds.create_integer_range_validator(min_value=6)),
+                     vlds.create_integer_range_validator(min_value=6)),
 
         # Mandatory nature of one of these is enforced below
         utils.Option('etcd_cluster', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
@@ -38,33 +38,33 @@ def get_options():
 
         # Mandatory nature of one of these is enforced below
         utils.Option('hss_realm', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+                     vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         utils.Option('hss_hostname', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.domain_name_validator)),
+                     vlds.run_in_sig_ns(vlds.domain_name_validator)),
         utils.Option('hs_provisioning_hostname', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         utils.Option('snmp_ip', utils.Option.SUGGESTED, vlds.ip_addr_list_validator),
         utils.Option('sas_server', utils.Option.SUGGESTED, vlds.ip_or_domain_name_validator),
 
         utils.Option('scscf_uri', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
         utils.Option('bgcf_uri', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
         utils.Option('icscf_uri', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
         utils.Option('enum_server', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
+                     vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
         utils.Option('signaling_dns_server', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
         utils.Option('remote_cassandra_seeds', utils.Option.OPTIONAL, vlds.ip_addr_validator),
         utils.Option('billing_realm', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+                     vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         utils.Option('node_idx', utils.Option.OPTIONAL, vlds.integer_validator),
         utils.Option('ralf_hostname', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
         utils.Option('xdms_hostname', utils.Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         utils.Option('alias_list', utils.Option.DEPRECATED)
     ]
