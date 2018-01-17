@@ -19,6 +19,9 @@ CLEARWATER_CONFIG=$CONFIG_DIR/config
 if [ "$1" == "--show" ];
 then
   /usr/share/clearwater/bin/clearwater-show-config "${@:2}"
+  if [ $? -ne 0 ]; then
+    exit $?
+  fi
   echo
   exec /usr/share/clearwater/bin/clearwater-check-config "${@:2}"
 fi
