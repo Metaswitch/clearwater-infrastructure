@@ -49,11 +49,11 @@ def get_options():
         Option('sas_server', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_validator),
 
         Option('scscf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
         Option('bgcf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
         Option('icscf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
 
         Option('enum_server', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_list_validator)),
@@ -129,8 +129,8 @@ def validate_sprout_hostname():
         # based on the Sprout hostname is a valid SIP URI
         if not os.environ.get('{}_uri'.format(sproutlet)):
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
-            code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname',
-                                                              uri)
+            code = vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)('sprout_hostname',
+                                                                          uri)
             if code > status:
                 status = code
 

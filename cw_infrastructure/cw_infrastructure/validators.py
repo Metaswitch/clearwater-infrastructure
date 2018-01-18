@@ -169,8 +169,11 @@ def resolvable_ip_or_domain_name_list_validator(name, value):
     return OK
 
 
-def sip_uri_validator(name, value):
-    """Validate a config option represents a valid SIP URI"""
+def sip_uri_domain_name_validator(name, value):
+    """
+    Validate a config option represents a valid SIP URI where the host part
+    of the URI is a domain name.
+    """
 
     match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$",
                      value)
@@ -215,7 +218,8 @@ def sip_uri_validator(name, value):
             transport = params['transport']
 
     if utils.is_ip_addr(host):
-        return OK
+        error(name, "{} is an IP address, domain name expected".format(host))
+        return ERROR
 
     elif not utils.is_domain_name(host):
         error(name, ("{} is neither an IP address or a valid domain "
