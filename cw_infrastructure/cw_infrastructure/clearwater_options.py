@@ -24,9 +24,9 @@ def get_options():
                vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
         Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
         Option('sprout_hostname', Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('hs_hostname', Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
                vlds.create_integer_range_validator(min_value=6)),
@@ -41,12 +41,12 @@ def get_options():
         Option('hss_realm', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         Option('hss_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.domain_name_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
         Option('hs_provisioning_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
 
         Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
-        Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
+        Option('sas_server', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_validator),
 
         Option('scscf_uri', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
@@ -56,16 +56,20 @@ def get_options():
                vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
         Option('enum_server', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_list_validator)),
         Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
         Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
         Option('billing_realm', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
         Option('ralf_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+        Option('chronos_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
+        Option('cassandra_hostname', Option.OPTIONAL,
+                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('xdms_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator))
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator))
     ]
     return options
 
