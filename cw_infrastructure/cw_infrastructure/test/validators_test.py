@@ -47,10 +47,12 @@ class TestIntegerRangeValidator(unittest.TestCase):
         code = val('val', value)
 
         if value < min_value:
+
             # ERROR should be returned, and the error function called
             self.assertEqual(code, check_config_utilities.ERROR)
             mock_error.assert_called_once_with('val', mock.ANY)
         else:
+
             # OK should be returned, and the error function not called
             self.assertEqual(code, check_config_utilities.OK)
             self.assertFalse(mock_error.called)
@@ -66,10 +68,12 @@ class TestIntegerRangeValidator(unittest.TestCase):
         code = val('val', value)
 
         if value < min_value:
+
             # WARNING should be returned, and the warning function called
             self.assertEqual(code, check_config_utilities.WARNING)
             mock_warning.assert_called_once_with('val', mock.ANY)
         else:
+
             # OK should be returned, and the warning function not called
             self.assertEqual(code, check_config_utilities.OK)
             self.assertFalse(mock_warning.called)
@@ -85,10 +89,12 @@ class TestIntegerRangeValidator(unittest.TestCase):
         code = val('val', value)
 
         if value > max_value:
+
             # ERROR should be returned, and the error function called
             self.assertEqual(code, check_config_utilities.ERROR)
             mock_error.assert_called_once_with('val', mock.ANY)
         else:
+
             # OK should be returned, and the error function not called
             self.assertEqual(code, check_config_utilities.OK)
             self.assertFalse(mock_error.called)
@@ -104,10 +110,12 @@ class TestIntegerRangeValidator(unittest.TestCase):
         code = val('val', value)
 
         if value > max_value:
+
             # WARNING should be returned, and the warning function called
             self.assertEqual(code, check_config_utilities.WARNING)
             mock_warning.assert_called_once_with('val', mock.ANY)
         else:
+
             # OK should be returned, and the warning function not called
             self.assertEqual(code, check_config_utilities.OK)
             self.assertFalse(mock_warning.called)
@@ -124,7 +132,7 @@ class TestIntegerRangeValidator(unittest.TestCase):
         self.assertEqual(code, check_config_utilities.ERROR)
         mock_error.assert_called_once_with('val', mock.ANY)
 
-    # Test that ERRORs take priority over WARNINGs when setting minima
+    # Test that ERRORs take priority over WARNINGs when setting maxima
     @mock.patch('cw_infrastructure.check_config_utilities.error',
                 autospec=True)
     def test_max_error_priority(self, mock_error):

@@ -22,18 +22,26 @@ class EnvironmentVariables():
 
 
 def _check_config_option(option, value):
+
+    code = utils.OK
+
     if value:
         # The option is present.
+
         if option.deprecated():
+
             # If a deprecated option has been set, warn the user
             utils.warning(option.name,
                           'option has been deprecated')
             code = utils.WARNING
-        elif option.validator:
+
+        if option.validator:
+
             # If the option has a a validator, run it now.
-            code = option.validator(option.name, value)
+            code = max(code, option.validator(option.name, value))
 
     else:
+
         # The option is not present, which is an error if it's mandatory.
         if option.mandatory():
             utils.error(option.name, 'option is mandatory but not present')

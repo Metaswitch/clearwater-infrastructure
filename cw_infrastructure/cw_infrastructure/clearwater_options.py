@@ -12,61 +12,62 @@ import os
 
 import validators as vlds
 import check_config_utilities as utils
+from check_config_utilities import Option
 
 
 def get_options():
     """Set up the list of options to be validated"""
     options = [
-        utils.Option('local_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
-        utils.Option('public_ip', utils.Option.MANDATORY, vlds.ip_addr_validator),
-        utils.Option('public_hostname', utils.Option.MANDATORY,
-                     vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
-        utils.Option('home_domain', utils.Option.MANDATORY, vlds.domain_name_validator),
-        utils.Option('sprout_hostname', utils.Option.MANDATORY,
-                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
-        utils.Option('hs_hostname', utils.Option.MANDATORY,
-                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+        Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
+        Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
+        Option('public_hostname', Option.MANDATORY,
+               vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
+        Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
+        Option('sprout_hostname', Option.MANDATORY,
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
+        Option('hs_hostname', Option.MANDATORY,
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        utils.Option('homestead_diameter_watchdog_timer', utils.Option.OPTIONAL,
-                     vlds.create_integer_range_validator(min_value=6)),
-        utils.Option('ralf_diameter_watchdog_timer', utils.Option.OPTIONAL,
-                     vlds.create_integer_range_validator(min_value=6)),
-
-        # Mandatory nature of one of these is enforced below
-        utils.Option('etcd_cluster', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
-        utils.Option('etcd_proxy', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
+               vlds.create_integer_range_validator(min_value=6)),
+        Option('ralf_diameter_watchdog_timer', Option.OPTIONAL,
+               vlds.create_integer_range_validator(min_value=6)),
 
         # Mandatory nature of one of these is enforced below
-        utils.Option('hss_realm', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
-        utils.Option('hss_hostname', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.domain_name_validator)),
-        utils.Option('hs_provisioning_hostname', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+        Option('etcd_cluster', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('etcd_proxy', Option.OPTIONAL, vlds.ip_addr_list_validator),
 
-        utils.Option('snmp_ip', utils.Option.SUGGESTED, vlds.ip_addr_list_validator),
-        utils.Option('sas_server', utils.Option.SUGGESTED, vlds.ip_or_domain_name_validator),
+        # Mandatory nature of one of these is enforced below
+        Option('hss_realm', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+        Option('hss_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.domain_name_validator)),
+        Option('hs_provisioning_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        utils.Option('scscf_uri', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        utils.Option('bgcf_uri', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
-        utils.Option('icscf_uri', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
+        Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
 
-        utils.Option('enum_server', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
-        utils.Option('signaling_dns_server', utils.Option.OPTIONAL, vlds.ip_addr_list_validator),
-        utils.Option('remote_cassandra_seeds', utils.Option.OPTIONAL, vlds.ip_addr_validator),
-        utils.Option('billing_realm', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
-        utils.Option('node_idx', utils.Option.OPTIONAL, vlds.integer_validator),
-        utils.Option('ralf_hostname', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
-        utils.Option('xdms_hostname', utils.Option.OPTIONAL,
-                     vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+        Option('scscf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('bgcf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+        Option('icscf_uri', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
 
-        utils.Option('alias_list', utils.Option.DEPRECATED)
+        Option('enum_server', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
+        Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
+        Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
+        Option('billing_realm', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
+        Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
+        Option('ralf_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+        Option('xdms_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+
+        Option('alias_list', Option.DEPRECATED)
     ]
     return options
 
