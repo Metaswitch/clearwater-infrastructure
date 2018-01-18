@@ -17,6 +17,12 @@ from cw_infrastructure.check_config_utilities import (OK, ERROR, error,
 
 def get_options():
     """Set up the list of options to be validated"""
+
+    # Setup the SAS server validator depending on whether signaling namespace is to be used
+    sas_server_validator = vlds.resolvable_ip_or_domain_name_validator 
+    if (os.environ.get('sas_use_signaling_interface') == 'Y'):
+        sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
+
     options = [
         Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
         Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
@@ -45,8 +51,8 @@ def get_options():
         Option('hs_provisioning_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
 
-        Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
-        Option('sas_server', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_validator),
+        Option('snmp_ip', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_list_validator),
+        Option('sas_server', Option.SUGGESTED, sas_server_validator),
 
         Option('scscf_uri', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
