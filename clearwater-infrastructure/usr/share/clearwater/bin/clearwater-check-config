@@ -15,10 +15,13 @@ LOCAL_CONFIG=$CONFIG_DIR/local_config
 USER_SETTINGS=$CONFIG_DIR/user_settings
 CLEARWATER_CONFIG=$CONFIG_DIR/config
 
-# Compatibility for when show-config didn't exist
+rc_show_config=0
 if [ "$1" == "--show" ];
-then
-  exec /usr/share/clearwater/bin/clearwater-show-config "${@:2}"
+then # Display the config
+  /usr/share/clearwater/bin/clearwater-show-config
+  rc_show_config = $?
+  echo
+  shift
 fi
 
 if [ -n "$1" ];
@@ -180,6 +183,9 @@ check_config_values
 # Print out a soothing message to the user if all the checks passed.
 if [[ "$rc" -eq 0 ]]; then
   echo "All config checks passed"
+  # We output the rc returned by clearwater-show-config if clearwater-check-config
+  # returned no errors
+  exit $rc_show_config 
 fi
 
 exit $rc
