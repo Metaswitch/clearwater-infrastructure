@@ -20,7 +20,8 @@ def get_options():
 
     # Setup the SAS server validator depending on whether signaling namespace is to be used
     sas_server_validator = vlds.resolvable_ip_or_domain_name_validator 
-    if (os.environ.get('sas_use_signaling_interface') == 'Y'):
+
+    if os.environ.get('sas_use_signaling_interface') == 'Y':
         sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
 
     options = [
@@ -33,6 +34,8 @@ def get_options():
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('hs_hostname', Option.MANDATORY,
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+        Option('sprout_hostname_mgmt', Option.OPTIONAL, vlds.resolvable_ip_or_domain_name_with_port_validator),
+        Option('hs_hostname_mgmt', Option.OPTIONAL, vlds.resolvable_ip_or_domain_name_with_port_validator),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
                vlds.create_integer_range_validator(min_value=6)),
@@ -53,6 +56,7 @@ def get_options():
 
         Option('snmp_ip', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_list_validator),
         Option('sas_server', Option.SUGGESTED, sas_server_validator),
+        Option('sas_use_signaling_interface', Option.OPTIONAL, vlds.yes_no_validator),
 
         Option('scscf_uri', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
