@@ -67,7 +67,8 @@ def get_options():
         Option('xdms_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
-        Option('alias_list', Option.DEPRECATED)
+        Option('alias_list', Option.DEPRECATED),
+        Option('always_serve_remote_aliases', Option.OPTIONAL, vlds.flag_validator)
     ]
     return options
 

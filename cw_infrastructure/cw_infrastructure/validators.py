@@ -26,6 +26,15 @@ from nsenter import Namespace
 import check_config_utilities as utils
 
 
+def flag_validator(name, value):
+    """ Validate a config option that should be either 'Y' or 'N' """
+    if value in ['Y', 'N']:
+        return utils.OK
+    else:
+        utils.error(name, "{} is not either 'Y' or 'N'".format(value))
+        return utils.ERROR
+
+
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""
     try:

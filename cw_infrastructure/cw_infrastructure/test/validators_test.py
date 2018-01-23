@@ -17,6 +17,28 @@ from cw_infrastructure import (check_config_utilities,
                                validators)
 
 
+class TestFlagValidator(unittest.TestCase):
+
+    # Test that a 'Y' flag is validated as OK
+    def test_with_y(self):
+        self.assertEqual(validators.flag_validator('val', "Y"),
+                         check_config_utilities.OK)
+    
+    # Test that a value of 'N' is validated as OK
+    def test_with_n(self):
+        self.assertEqual(validators.flag_validator('val', "N"),
+                         check_config_utilities.OK)
+    
+    @hypothesis.given(char=st.characters(blacklist_categories=('Cc', 'Zs', 'Cc'),
+                                         blacklist_characters=['Y', 'N']))
+    @mock.patch('cw_infrastructure.check_config_utilities.error',
+                autospec=True)
+    def test_with_garbage(self, mock_error, char):
+        self.assertEqual(validators.flag_validator('val', char),
+                         check_config_utilities.ERROR)
+        mock_error.assert_called_once_with('val', mock.ANY)
+
+
 class TestIntegerValidator(unittest.TestCase):
 
     # Test that integers are validated as OK
@@ -26,10 +48,11 @@ class TestIntegerValidator(unittest.TestCase):
                          check_config_utilities.OK)
 
     # Test that non-integers give an ERROR
+    @hypothesis.given(char=st.characters(blacklist_categories=('Cc', 'Zs', 'Cc', 'Nd')))
     @mock.patch('cw_infrastructure.check_config_utilities.error',
                 autospec=True)
-    def test_with_non_integer(self, mock_error):
-        code = validators.integer_validator('val', 'one')
+    def test_with_non_integer(self, mock_error, char):
+        code = validators.integer_validator('val', char)
         self.assertEqual(code, check_config_utilities.ERROR)
         mock_error.assert_called_once_with('val', mock.ANY)
 
