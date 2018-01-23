@@ -23,13 +23,16 @@ class TestFlagValidator(unittest.TestCase):
     def test_with_y(self):
         self.assertEqual(validators.flag_validator('val', "Y"),
                          check_config_utilities.OK)
-    
+
     # Test that a value of 'N' is validated as OK
     def test_with_n(self):
         self.assertEqual(validators.flag_validator('val', "N"),
                          check_config_utilities.OK)
-    
-    @hypothesis.given(char=st.characters(blacklist_categories=('Cc', 'Zs', 'Cc'),
+
+    # Test that any other character gives an ERROR. We test ASCII characters
+    # that are not 'Y' or 'N'
+    @hypothesis.given(char=st.characters(min_codepoint=32,
+                                         max_codepoint=126,
                                          blacklist_characters=['Y', 'N']))
     @mock.patch('cw_infrastructure.check_config_utilities.error',
                 autospec=True)
@@ -47,8 +50,11 @@ class TestIntegerValidator(unittest.TestCase):
         self.assertEqual(validators.integer_validator('val', str(x)),
                          check_config_utilities.OK)
 
-    # Test that non-integers give an ERROR
-    @hypothesis.given(char=st.characters(blacklist_categories=('Cc', 'Zs', 'Cc', 'Nd')))
+    # Test that non-integers give an ERROR. We test ASCII characters that are
+    # not digits.
+    @hypothesis.given(char=st.characters(min_codepoint=32,
+                                         max_codepoint=126,
+                                         blacklist_categories=('Nd', 'Cs')))
     @mock.patch('cw_infrastructure.check_config_utilities.error',
                 autospec=True)
     def test_with_non_integer(self, mock_error, char):
