@@ -76,11 +76,20 @@ def get_options():
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
         Option('chronos_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
-        Option('cassandra_hostname', Option.OPTIONAL,
-                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('xdms_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator))
     ]
+
+    if os.environ.get('hs_provisioning_hostname') is not None:
+        # If Homestead Prov is configured, a valid Cassandra hostname must also
+        # be configured
+        options.append(
+            Option(
+                'cassandra_hostname',
+                Option.MANDATORY,
+                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator))
+        )
+
     return options
 
 
