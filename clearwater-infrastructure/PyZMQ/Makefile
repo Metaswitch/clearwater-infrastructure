@@ -7,23 +7,26 @@ X86_64_ONLY=0
 .DEFAULT_GOAL = build
 
 .PHONY: build
-build: bin/buildout buildout.cfg
+
+PIP_VERSION := 9.0.1
+BUILDOUT_VERSION := 2.11.0
+
+MARKER_FILE := ${ENV_DIR}/.pip_${PIP_VERSION}_buildout_${BUILDOUT_VERSION}
+
+build: ${MARKER_FILE} buildout.cfg
 ifeq (${X86_64_ONLY},1)
-	ARCHFLAGS="-arch x86_64" ./bin/buildout -N
+	ARCHFLAGS="-arch x86_64" ${ENV_DIR}/bin/buildout -N
 else
-	ARCHFLAGS="-arch i386 -arch x86_64" ./bin/buildout -N
+	ARCHFLAGS="-arch i386 -arch x86_64" ${ENV_DIR}/bin/buildout -N
 endif
 
-bin/buildout: ${ENV_DIR}/bin/python
+${MARKER_FILE}:
+	rm -rf _env
+	virtualenv --no-site-packages --python=${PYTHON_BIN} ${ENV_DIR}
 	mkdir -p .buildout_downloads/dist
-	${ENV_DIR}/bin/easy_install "setuptools==24"
-	${ENV_DIR}/bin/easy_install distribute
-	${ENV_DIR}/bin/easy_install zc.buildout
-	mkdir -p bin/
-	ln -s ${ENV_DIR}/bin/buildout bin/
-
-${ENV_DIR}/bin/python:
-	virtualenv --no-site-packages --setuptools --python=${PYTHON_BIN} ${ENV_DIR}
+	${ENV_DIR}/bin/pip install --upgrade "pip==${PIP_VERSION}"
+	${ENV_DIR}/bin/pip install "zc.buildout==${BUILDOUT_VERSION}"
+	touch $@
 
 .PHONY: clean
 clean:
