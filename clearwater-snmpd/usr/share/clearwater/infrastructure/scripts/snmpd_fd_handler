@@ -33,9 +33,9 @@ else
   exit 0
 fi
 
-# Now that we know we've got something to return, pull out the file descriptor
-# stats and then work out which particular one to return.
-# The syntax is three lines of return:
+# Now that we know what we're meant to return, pull out the file descriptor
+# stats from file-nr and return the corresponding value.
+# The return syntax is three lines containing:
 #  <oid>
 #  <type>
 #  <value>
