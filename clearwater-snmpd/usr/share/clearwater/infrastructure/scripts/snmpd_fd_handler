@@ -1,0 +1,61 @@
+#!/bin/bash
+# Copyright (C) 2018  Metaswitch Networks Ltd
+# Handles SNMP requests offloaded by snmpd for the file descriptor OIDs
+oid_prefix=.1.2.826.0.1.1578918.17.1
+flag=$1
+oid_req=$2
+
+if [ "$1" = "-n" ]; then
+  # If it's a get next, work out what the next matching OID is.
+  case "$oid_req" in
+    $oid_prefix | $oid_prefix.0 | $oid_prefix.0.* | $oid_prefix.1)
+      oid_req=$oid_prefix.1.0;;
+
+    $oid_prefix.1.* | $oid_prefix.2 | $oid_prefix.2.0)
+      oid_req=$oid_prefix.2.0;;
+
+    $oid_prefix.2.* | $oid_prefix.3 | $oid_prefix.3.0)
+      oid_req=$oid_prefix.3.0;;
+
+    $)
+      # No more entries - just return without text and it will be handled by snmpd.
+      exit 0;;
+  esac
+elif [ "$1" = "-g" ]; then
+  # If it's an exact get, ensure that it matches one of our valid OIDs.
+  case "$oid_req" in
+    $oid_prefix.1.0 | $oid_prefix.2.0 | $oid_prefix.3.0)
+      # No matching entry - just return without text and it will be handled by snmpd.
+    *) exit 0;;
+  esac
+else
+  # It's a set request - just return unwriteable
+  echo not-writable
+  exit 0
+fi
+
+# Now that we know we've got something to return, pull out the file descriptor
+# stats and then work out which particular one to return.
+# The syntax is three lines of return:
+#  <oid>
+#  <type>
+#  <value>
+read fd_cur fd_ignore fd_max < /proc/sys/fs/file-nr >>/tmp/kaf.txt 2>&1
+
+echo $oid_req
+echo integer
+
+case "$oid_req" in
+  $oid_prefix.1.0)
+    echo $fd_cur;;
+  $oid_prefix.2.0)
+    echo $fd_max;;
+  $oid_prefix.3.0)
+    fd_perc=$((($fd_cur*100 + $fd_max/2)/$fd_max));
+    echo $fd_perc;;
+  *)
+    exit 0;;
+esac
+exit 0
+
+
