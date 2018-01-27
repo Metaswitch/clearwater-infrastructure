@@ -599,7 +599,6 @@ do
   get_package_info
 
   # Monit related files.
-  copy_to_dump '/var/lib/monit'
 
   # Networking information.
   #
