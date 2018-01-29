@@ -9,16 +9,10 @@
 # Metaswitch Networks in a separate written agreement.
 
 import sys
-import os
 import functools
+import pkg_resources
 
-import clearwater_options
 import check_config_utilities as utils
-
-
-class EnvironmentVariables():
-    def __getitem__(self, key):
-        return os.environ.get(key)
 
 
 def _check_config_option(option, value):
@@ -55,13 +49,13 @@ def _check_config_option(option, value):
     return code
 
 
-def _check_config_options(options, values):
+def _check_config_options(options, get_value):
     status = 0
 
     # Check that each option is present (if mandatory) and correctly formatted
     # (if it has a particular format we wish to check).
     for option in options:
-        value = values[option.name]
+        value = get_value(option.name)
         code = _check_config_option(option, value)
 
         # A higher value indicates a worse error.
@@ -69,14 +63,17 @@ def _check_config_options(options, values):
     return status
 
 
-def check_config(option_schema, values):
+def check_config(option_schema, get_value):
 
     # Build up a list of checks to be performed. Each check should take no
     # arguments and return a status code.
-    checks = [functools.partial(_check_config_options,
-                                option_schema.get_options(),
-                                values),
-              option_schema.check_advanced_config]
+    checks = []
+    checks += [functools.partial(_check_config_options,
+                                 option_schema.get_options(),
+                                 get_value)]
+    checks += [functools.partial(advanced_check,
+                                 get_value)
+               for advanced_check in option_schema.get_advanced_checks()]
 
     # Determine the resultant status code - since ERROR > WARNING > OK, take
     # the maximum.
@@ -84,4 +81,9 @@ def check_config(option_schema, values):
 
 
 if __name__ == '__main__':
-    sys.exit(check_config(clearwater_options, EnvironmentVariables()))
+    option_schemas = [entry_point.load()
+                      for entry_point
+                      in pkg_resources.iter_entry_points('option_schemas')]
+
+    sys.exit(max(check_config(option_schema, option_schema.get_value)
+             for option_schema in option_schemas))

@@ -25,16 +25,19 @@ class TestCheckConfig(unittest.TestCase):
     class TestOptionSchema():
         def __init__(self):
             self.options = []
-            self.check_advanced_config = (lambda: utils.OK)
+            self.advanced_checks = []
 
         def get_options(self):
             return self.options
+
+        def get_advanced_checks(self):
+            return self.advanced_checks
 
     class TestValues():
         def __init__(self):
             self.values = {}
 
-        def __getitem__(self, key):
+        def get_value(self, key):
             if key in self.values:
                 return self.values[key]
             else:
@@ -48,7 +51,7 @@ class TestCheckConfig(unittest.TestCase):
         self.option_schema.options.append(option)
 
     def set_advanced_check(self, check):
-        self.option_schema.check_advanced_config = check
+        self.option_schema.advanced_checks = [check]
 
     def add_value(self, option_name, value):
         self.values.values[option_name] = value
@@ -69,7 +72,8 @@ class TestCheckConfig(unittest.TestCase):
                           warning_options,
                           mock_warning,
                           mock_error):
-        status = check_config.check_config(self.option_schema, self.values)
+        status = check_config.check_config(self.option_schema,
+                                           self.values.get_value)
         self.assertEqual(expected_result, status)
         mock_error.assert_has_calls([mock.call(x, mock.ANY)
                                      for x in error_options])

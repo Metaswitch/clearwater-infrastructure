@@ -19,5 +19,10 @@ setup(
     tests_require=[
         "mock",
         "hypothesis"
-    ]
-    )
+    ],
+    entry_points={
+        'option_schemas': [
+            'clearwater = cw_infrastructure:clearwater_options'
+        ]
+    }
+)

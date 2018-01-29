@@ -15,6 +15,10 @@ import check_config_utilities as utils
 from check_config_utilities import Option
 
 
+def get_value(option_name):
+    return os.environ.get(option_name)
+
+
 def get_options():
     """Set up the list of options to be validated"""
     options = [
@@ -73,15 +77,26 @@ def get_options():
     return options
 
 
-def validate_hss_config():
+def get_advanced_checks():
+    advanced_checks = [
+      validate_hss_config,
+      validate_etcd_config,
+      validate_sprout_hostname
+    ]
+    return advanced_checks
+
+
+def validate_hss_config(values):
     """
     Require that the site is either configured with a HSS, or HS Prov.
     """
 
-    hss_config = utils.number_present('hss_realm',
+    hss_config = utils.number_present(values,
+                                      'hss_realm',
                                       'hss_hostname')
 
-    hs_prov_config = utils.number_present('hs_provisioning_hostname')
+    hs_prov_config = utils.number_present(values,
+                                          'hs_provisioning_hostname')
 
     if hss_config > 0 and hs_prov_config > 0:
         utils.error('HSS',
@@ -100,9 +115,11 @@ def validate_hss_config():
     return utils.OK
 
 
-def validate_etcd_config():
+def validate_etcd_config(values):
     """Require that exactly one of etcd_proxy or etcd_cluster is set"""
-    etcd_config = utils.number_present('etcd_proxy', 'etcd_cluster')
+    etcd_config = utils.number_present(values,
+                                       'etcd_proxy',
+                                       'etcd_cluster')
 
     if etcd_config > 1:
         utils.error('etcd',
@@ -116,10 +133,10 @@ def validate_etcd_config():
     return utils.OK
 
 
-def validate_sprout_hostname():
+def validate_sprout_hostname(values):
     """Check that the default URIs based on the Sprout hostname are valid"""
 
-    sprout_hostname = os.environ.get('sprout_hostname')
+    sprout_hostname = values['sprout_hostname']
 
     status = utils.OK
 
@@ -127,36 +144,11 @@ def validate_sprout_hostname():
 
         # If the default hasn't been overriden, check that the URI
         # based on the Sprout hostname is a valid SIP URI
-        if not os.environ.get('{}_uri'.format(sproutlet)):
+        if not values['{}_uri'.format(sproutlet)]:
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
             code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname',
                                                               uri)
             if code > status:
                 status = code
-
-    return status
-
-
-def check_advanced_config():
-    """
-    More advanced checks (e.g. checking consistency between multiple options)
-    can be performed here.
-    """
-    status = utils.OK
-
-    code = validate_hss_config()
-
-    if code > status:
-        status = code
-
-    code = validate_etcd_config()
-
-    if code > status:
-        status = code
-
-    code = validate_sprout_hostname()
-
-    if code > status:
-        status = code
 
     return status
