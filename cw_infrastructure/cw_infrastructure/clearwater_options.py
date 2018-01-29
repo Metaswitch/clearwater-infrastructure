@@ -21,6 +21,13 @@ def get_value(option_name):
 
 def get_options():
     """Set up the list of options to be validated"""
+
+    # Setup the SAS server validator depending on whether signaling namespace is to be used
+    sas_server_validator = vlds.resolvable_ip_or_domain_name_validator 
+
+    if os.environ.get('sas_use_signaling_interface') == 'Y':
+        sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
+
     options = [
         Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
         Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
@@ -28,9 +35,11 @@ def get_options():
                vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
         Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
         Option('sprout_hostname', Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('hs_hostname', Option.MANDATORY,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+        Option('sprout_hostname_mgmt', Option.OPTIONAL, vlds.resolvable_ip_or_domain_name_with_port_validator),
+        Option('hs_hostname_mgmt', Option.OPTIONAL, vlds.resolvable_ip_or_domain_name_with_port_validator),
 
         Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
                vlds.create_integer_range_validator(min_value=6)),
@@ -45,34 +54,39 @@ def get_options():
         Option('hss_realm', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         Option('hss_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.domain_name_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
         Option('hs_provisioning_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
 
-        Option('snmp_ip', Option.SUGGESTED, vlds.ip_addr_list_validator),
-        Option('sas_server', Option.SUGGESTED, vlds.ip_or_domain_name_validator),
+        Option('snmp_ip', Option.SUGGESTED, vlds.resolvable_ip_or_domain_name_list_validator),
+        Option('sas_server', Option.SUGGESTED, sas_server_validator),
+        Option('sas_use_signaling_interface', Option.OPTIONAL, vlds.yes_no_validator),
 
         Option('scscf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
         Option('bgcf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
         Option('icscf_uri', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.sip_uri_validator)),
+               vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
 
         Option('enum_server', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.resolveable_ip_or_domain_name_list_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_list_validator)),
         Option('signaling_dns_server', Option.OPTIONAL, vlds.ip_addr_list_validator),
         Option('remote_cassandra_seeds', Option.OPTIONAL, vlds.ip_addr_validator),
         Option('billing_realm', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
         Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
         Option('ralf_hostname', Option.OPTIONAL,
-               vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+        Option('chronos_hostname', Option.OPTIONAL,
+               vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
+        Option('cassandra_hostname', Option.OPTIONAL,
+                vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
         Option('xdms_hostname', Option.OPTIONAL,
                vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
         Option('alias_list', Option.DEPRECATED),
-        Option('always_serve_remote_aliases', Option.OPTIONAL, vlds.flag_validator)
+        Option('always_serve_remote_aliases', Option.OPTIONAL, vlds.yes_no_validator)
     ]
     return options
 
@@ -146,8 +160,8 @@ def validate_sprout_hostname(values):
         # based on the Sprout hostname is a valid SIP URI
         if not values['{}_uri'.format(sproutlet)]:
             uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
-            code = vlds.run_in_sig_ns(vlds.sip_uri_validator)('sprout_hostname',
-                                                              uri)
+            code = vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)('sprout_hostname',
+                                                                          uri)
             if code > status:
                 status = code
 

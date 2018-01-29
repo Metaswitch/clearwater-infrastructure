@@ -17,16 +17,16 @@ from cw_infrastructure import (check_config_utilities,
                                validators)
 
 
-class TestFlagValidator(unittest.TestCase):
+class TestYesNoValidator(unittest.TestCase):
 
-    # Test that a 'Y' flag is validated as OK
+    # Test that a 'Y' value is validated as OK
     def test_with_y(self):
-        self.assertEqual(validators.flag_validator('val', "Y"),
+        self.assertEqual(validators.yes_no_validator('val', "Y"),
                          check_config_utilities.OK)
 
     # Test that a value of 'N' is validated as OK
     def test_with_n(self):
-        self.assertEqual(validators.flag_validator('val', "N"),
+        self.assertEqual(validators.yes_no_validator('val', "N"),
                          check_config_utilities.OK)
 
     # Test that any other character gives an ERROR. We test ASCII characters
@@ -37,7 +37,7 @@ class TestFlagValidator(unittest.TestCase):
     @mock.patch('cw_infrastructure.check_config_utilities.error',
                 autospec=True)
     def test_with_garbage(self, mock_error, char):
-        self.assertEqual(validators.flag_validator('val', char),
+        self.assertEqual(validators.yes_no_validator('val', char),
                          check_config_utilities.ERROR)
         mock_error.assert_called_once_with('val', mock.ANY)
 

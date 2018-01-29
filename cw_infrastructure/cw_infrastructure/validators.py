@@ -26,14 +26,13 @@ from nsenter import Namespace
 import check_config_utilities as utils
 
 
-def flag_validator(name, value):
-    """ Validate a config option that should be either 'Y' or 'N' """
-    if value in ['Y', 'N']:
+def yes_no_validator(name, value):
+    if value == 'Y' or value == 'N':
         return utils.OK
     else:
-        utils.error(name, "{} is not either 'Y' or 'N'".format(value))
+        utils.error(name,
+                    "{} is not a valid value - should either be Y or N".format(value))
         return utils.ERROR
-
 
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""
@@ -123,6 +122,34 @@ def ip_or_domain_name_validator(name, value):
         return utils.OK
 
 
+def resolvable_ip_or_domain_name_validator(name, value):
+    """Validate a config option that should be an IP address or a domain name
+    that resolves with the current DNS setup"""
+
+    if (value[0] == '[') and (value[-1] == ']'):
+        ip = value[1:-1]
+        if utils.ip_version(ip) == 6:
+            return utils.OK
+        else:
+            utils.error(name, "{} is not a valid IPv6 address".format(ip))
+            return utils.ERROR
+
+    elif utils.ip_version(value) == 4:
+        return utils.OK
+
+    elif utils.is_domain_name(value):
+        if utils.is_resolvable_domain_name(value):
+            return utils.OK
+        else:
+            utils.error(name, "Unable to resolve domain name {}".format(value))
+            return utils.ERROR
+
+    else:
+        utils.error(name, ("{} is neither a domain name, "
+                           "IPv4 address, or bracketed IPv6 address").format(value))
+        return utils.OK
+
+
 def resolvable_domain_name_validator(name, value):
     """Validate a config option that should be a resolvable domain name"""
     if not utils.is_domain_name(value):
@@ -136,7 +163,7 @@ def resolvable_domain_name_validator(name, value):
         return utils.ERROR
 
 
-def resolveable_ip_or_domain_name_list_validator(name, value):
+def resolvable_ip_or_domain_name_list_validator(name, value):
     """
     Check whether a config option is a list of IP addresses, or domain names
     that resolve with the current DNS setup
@@ -152,8 +179,11 @@ def resolveable_ip_or_domain_name_list_validator(name, value):
     return utils.OK
 
 
-def sip_uri_validator(name, value):
-    """Validate a config option represents a valid SIP URI"""
+def sip_uri_domain_name_validator(name, value):
+    """
+    Validate a config option represents a valid SIP URI where the host part
+    of the URI is a domain name.
+    """
 
     match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$",
                      value)
@@ -198,7 +228,9 @@ def sip_uri_validator(name, value):
             transport = params['transport']
 
     if utils.is_ip_addr(host):
-        return utils.OK
+        utils.error(name,
+                    "{} is an IP address, domain name expected".format(host))
+        return utils.ERROR
 
     elif not utils.is_domain_name(host):
         utils.error(name, ("{} is neither an IP address or a valid domain "
@@ -246,9 +278,9 @@ def diameter_realm_validator(name, value):
     return utils.OK
 
 
-def ip_or_domain_name_with_port_validator(name, value):
-    """Validate a config option that should be a IP address or domain name,
-    followed by a port"""
+def resolvable_ip_or_domain_name_with_port_validator(name, value):
+    """Validate a config option that should be a IP address or a
+    resolvable domain name, followed by a port"""
     match = re.match(r"^(.*):(\d+)$", value)
     if not match:
         utils.error(name, "{} does not contain a port".format(value))
@@ -261,28 +293,7 @@ def ip_or_domain_name_with_port_validator(name, value):
         utils.error(name, "The port value ({}) is too large".format(port))
         return utils.ERROR
 
-    if (stem[0] == '[') and (stem[-1] == ']'):
-        ip = stem[1:-1]
-        if utils.ip_version(ip) == 6:
-            return utils.OK
-        else:
-            utils.error(name, "{} is not a valid IPv6 address".format(ip))
-            return utils.ERROR
-
-    elif utils.ip_version(stem) == 4:
-        return utils.OK
-
-    elif utils.is_domain_name(stem):
-        if utils.is_resolvable_domain_name(stem):
-            return utils.OK
-        else:
-            utils.error(name, "Unable to resolve domain name {}".format(stem))
-            return utils.ERROR
-
-    else:
-        utils.error(name, ("{} is neither a domain name, "
-                           "IPv4 address, or bracketed IPv6 address").format(stem))
-        return utils.OK
+    return resolvable_ip_or_domain_name_validator(name, stem)
 
 
 def run_validator_with_dns(validator, name, value, dns_server):

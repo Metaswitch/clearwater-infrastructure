@@ -82,7 +82,7 @@ rpm: build rpm-only
 
 .PHONY: cw_infrastructure cw_infrastructure_test cw_infrastructure_verify cw_infrastructure_style cw_infrastructure_clean cwc_management_analysis
 cw_infrastructure:
-		${MAKE} -C cw_infrastructure ${ENV_DIR}/.wheels-installed
+		${MAKE} -C cw_infrastructure wheelhouses
 
 cw_infrastructure_test:
 		${MAKE} -C cw_infrastructure test
