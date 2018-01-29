@@ -22,7 +22,7 @@ setup(
     ],
     entry_points={
         'option_schemas': [
-            'clearwater = cw_infrastructure:clearwater_options'
+            'clearwater = cw_infrastructure.clearwater_options:ClearwaterOptions'
         ]
     }
 )

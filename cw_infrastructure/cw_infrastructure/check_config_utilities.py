@@ -113,12 +113,12 @@ def is_domain_resolvable(name, rrtype):
         return False
 
 
-def number_present(values, *args):
+def number_present(get_value, *args):
     """Determine the number of configuration items given which are present"""
     config = 0
 
     for option in args:
-        if values[option]:
+        if get_value(option):
             config += 1
 
     return config
