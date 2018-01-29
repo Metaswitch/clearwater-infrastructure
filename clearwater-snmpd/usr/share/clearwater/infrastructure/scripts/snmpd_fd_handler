@@ -39,17 +39,19 @@ if [ "$1" = "-n" ]; then
     $oid_prefix.2.* | $oid_prefix.3 | $oid_prefix.3.0)
       oid_req=$oid_prefix.3.0;;
 
+    # No more entries - just return without text and it will be handled by snmpd.
     *)
-      # No more entries - just return without text and it will be handled by snmpd.
       exit 0;;
   esac
 elif [ "$1" = "-g" ]; then
   # It's an exact get so ensure that it matches one of our valid OIDs.
   case "$oid_req" in
     $oid_prefix.1.0 | $oid_prefix.2.0 | $oid_prefix.3.0)
-      # No matching entry - just return without text and it will be handled by snmpd.
       ;;
-    *) exit 0;;
+
+    # No matching entry - just return without text and it will be handled by snmpd.
+    *)
+      exit 0;;
   esac
 else
   # It's a set request - just return unwriteable
