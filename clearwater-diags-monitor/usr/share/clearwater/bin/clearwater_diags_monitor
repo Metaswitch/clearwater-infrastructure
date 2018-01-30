@@ -283,6 +283,7 @@ check_connectivity_to_domain()
 get_network_info()
 {
   copy_to_dump "/etc/hosts"
+  copy_to_dump "/etc/netns"
 
   # For some reason, redirecting ifconfig to file doesn't work on CentOS, so we
   # pipe through tee instead.  We do the same below.
