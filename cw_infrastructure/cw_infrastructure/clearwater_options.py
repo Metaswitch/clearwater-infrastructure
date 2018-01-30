@@ -29,7 +29,7 @@ class ClearwaterOptions:
         # namespace is to be used
         sas_server_validator = vlds.resolvable_ip_or_domain_name_validator
 
-        if os.environ.get('sas_use_signaling_interface') == 'Y':
+        if ClearwaterOptions.get_value('sas_use_signaling_interface') == 'Y':
             sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
 
         options = [
@@ -114,16 +114,16 @@ class ClearwaterOptions:
         return advanced_checks
 
     @staticmethod
-    def validate_hss_config(get_value):
+    def validate_hss_config():
         """
         Require that the site is either configured with a HSS, or HS Prov.
         """
 
-        hss_config = utils.number_present(get_value,
+        hss_config = utils.number_present(ClearwaterOptions.get_value,
                                           'hss_realm',
                                           'hss_hostname')
 
-        hs_prov_config = utils.number_present(get_value,
+        hs_prov_config = utils.number_present(ClearwaterOptions.get_value,
                                               'hs_provisioning_hostname')
 
         if hss_config > 0 and hs_prov_config > 0:
@@ -143,9 +143,9 @@ class ClearwaterOptions:
         return utils.OK
 
     @staticmethod
-    def validate_etcd_config(get_value):
+    def validate_etcd_config():
         """Require that exactly one of etcd_proxy or etcd_cluster is set"""
-        etcd_config = utils.number_present(get_value,
+        etcd_config = utils.number_present(ClearwaterOptions.get_value,
                                            'etcd_proxy',
                                            'etcd_cluster')
 
@@ -162,10 +162,10 @@ class ClearwaterOptions:
         return utils.OK
 
     @staticmethod
-    def validate_sprout_hostname(get_value):
+    def validate_sprout_hostname():
         """Check that the default URIs based on the Sprout hostname are valid"""
 
-        sprout_hostname = get_value('sprout_hostname')
+        sprout_hostname = ClearwaterOptions.get_value('sprout_hostname')
 
         status = utils.OK
 
@@ -173,7 +173,7 @@ class ClearwaterOptions:
 
             # If the default hasn't been overriden, check that the URI
             # based on the Sprout hostname is a valid SIP URI
-            if not get_value('{}_uri'.format(sproutlet)):
+            if not ClearwaterOptions.get_value('{}_uri'.format(sproutlet)):
                 uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
                 code = vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)('sprout_hostname',
                                                                               uri)

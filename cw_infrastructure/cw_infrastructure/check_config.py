@@ -71,8 +71,7 @@ def check_config(option_schema, get_value):
     checks += [functools.partial(_check_config_options,
                                  option_schema.get_options(),
                                  get_value)]
-    checks += [functools.partial(advanced_check,
-                                 get_value)
+    checks += [functools.partial(advanced_check)
                for advanced_check in option_schema.get_advanced_checks()]
 
     # Determine the resultant status code - since ERROR > WARNING > OK, take
