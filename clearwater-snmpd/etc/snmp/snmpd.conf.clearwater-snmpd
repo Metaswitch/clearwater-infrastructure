@@ -99,10 +99,10 @@ proc  sendmail 10 1
 #  Disk Monitoring
 #
 #  Only monitor / and /var/log which are the two disks likely to cause service issues.
-#  We mark the threshold as 10% free here but expect customers to monitor these using
+#  We mark the threshold as 20% free here but expect customers to monitor these using
 #  dskPercent.
-disk       /         10%
-disk       /var/log  10%
+disk       /         20%
+disk       /var/log  20%
 
 #  Walk the UCD-SNMP-MIB::dskTable to see the resulting output
 #  Note that this table will be empty if there are no "disk" entries in the snmpd.conf file
@@ -262,5 +262,5 @@ dlmod chronos_handler /usr/lib/clearwater/chronos_handler.so
 dontLogTCPWrappersConnects 1
 
 # File descriptor MIB handling
-pass .1.2.826.0.1.1578918.17.1 /bin/bash /usr/share/clearwater/infrastructure/scripts/snmpd_fd_handler
+pass .1.2.826.0.1.1578918.17.1 /usr/share/clearwater/infrastructure/scripts/snmpd_fd_handler
 
