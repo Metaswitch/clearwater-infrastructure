@@ -12,7 +12,6 @@ import sys
 import socket
 import re
 import dns.resolver
-import os
 
 # Statuses
 
