@@ -84,5 +84,5 @@ if __name__ == '__main__':
                       for entry_point
                       in pkg_resources.iter_entry_points('option_schemas')]
 
-    sys.exit(max(check_config(option_schema, utils.get_environment_variable)
+    sys.exit(max(check_config(option_schema, utils.get_option_value)
              for option_schema in option_schemas))

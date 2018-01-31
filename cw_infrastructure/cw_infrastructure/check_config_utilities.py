@@ -21,7 +21,7 @@ WARNING = 4
 OK = 0
 
 
-def get_environment_variable(option_name):
+def get_option_value(option_name):
     return os.environ.get(option_name)
 
 
@@ -122,7 +122,7 @@ def number_present(*args):
     config = 0
 
     for option in args:
-        if get_environment_variable(option):
+        if get_option_value(option):
             config += 1
 
     return config

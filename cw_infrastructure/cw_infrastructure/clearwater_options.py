@@ -23,7 +23,7 @@ class ClearwaterOptions:
         # namespace is to be used
         sas_server_validator = vlds.resolvable_ip_or_domain_name_validator
 
-        if utils.get_environment_variable('sas_use_signaling_interface') == 'Y':
+        if utils.get_option_value('sas_use_signaling_interface') == 'Y':
             sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
 
         options = [
@@ -95,7 +95,7 @@ class ClearwaterOptions:
                    vlds.yes_no_validator)
         ]
 
-        if utils.get_environment_variable('hs_provisioning_hostname') is not None:
+        if utils.get_option_value('hs_provisioning_hostname') is not None:
             # If Homestead Prov is configured, a valid Cassandra hostname must
             # also be configured
             options.append(
@@ -164,7 +164,7 @@ class ClearwaterOptions:
     def validate_sprout_hostname():
         """Check that the default URIs based on the Sprout hostname are valid"""
 
-        sprout_hostname = utils.get_environment_variable('sprout_hostname')
+        sprout_hostname = utils.get_option_value('sprout_hostname')
 
         status = utils.OK
 
@@ -172,7 +172,7 @@ class ClearwaterOptions:
 
             # If the default hasn't been overriden, check that the URI
             # based on the Sprout hostname is a valid SIP URI
-            if not utils.get_environment_variable('{}_uri'.format(sproutlet)):
+            if not utils.get_option_value('{}_uri'.format(sproutlet)):
                 uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
                 code = vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)('sprout_hostname',
                                                                               uri)
