@@ -8,18 +8,12 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
-import os
-
 import validators as vlds
 import check_config_utilities as utils
 from check_config_utilities import Option
 
 
 class ClearwaterOptions:
-
-    @staticmethod
-    def get_value(option_name):
-        return os.environ.get(option_name)
 
     @staticmethod
     def get_options():
@@ -29,7 +23,7 @@ class ClearwaterOptions:
         # namespace is to be used
         sas_server_validator = vlds.resolvable_ip_or_domain_name_validator
 
-        if ClearwaterOptions.get_value('sas_use_signaling_interface') == 'Y':
+        if utils.get_environment_variable('sas_use_signaling_interface') == 'Y':
             sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
 
         options = [
@@ -101,7 +95,7 @@ class ClearwaterOptions:
                    vlds.yes_no_validator)
         ]
 
-        if ClearwaterOptions.get_value('hs_provisioning_hostname') is not None:
+        if utils.get_environment_variable('hs_provisioning_hostname') is not None:
             # If Homestead Prov is configured, a valid Cassandra hostname must
             # also be configured
             options.append(
@@ -127,12 +121,10 @@ class ClearwaterOptions:
         Require that the site is either configured with a HSS, or HS Prov.
         """
 
-        hss_config = utils.number_present(ClearwaterOptions.get_value,
-                                          'hss_realm',
+        hss_config = utils.number_present('hss_realm',
                                           'hss_hostname')
 
-        hs_prov_config = utils.number_present(ClearwaterOptions.get_value,
-                                              'hs_provisioning_hostname')
+        hs_prov_config = utils.number_present('hs_provisioning_hostname')
 
         if hss_config > 0 and hs_prov_config > 0:
             utils.error('HSS',
@@ -153,8 +145,7 @@ class ClearwaterOptions:
     @staticmethod
     def validate_etcd_config():
         """Require that exactly one of etcd_proxy or etcd_cluster is set"""
-        etcd_config = utils.number_present(ClearwaterOptions.get_value,
-                                           'etcd_proxy',
+        etcd_config = utils.number_present('etcd_proxy',
                                            'etcd_cluster')
 
         if etcd_config > 1:
@@ -173,7 +164,7 @@ class ClearwaterOptions:
     def validate_sprout_hostname():
         """Check that the default URIs based on the Sprout hostname are valid"""
 
-        sprout_hostname = ClearwaterOptions.get_value('sprout_hostname')
+        sprout_hostname = utils.get_environment_variable('sprout_hostname')
 
         status = utils.OK
 
@@ -181,7 +172,7 @@ class ClearwaterOptions:
 
             # If the default hasn't been overriden, check that the URI
             # based on the Sprout hostname is a valid SIP URI
-            if not ClearwaterOptions.get_value('{}_uri'.format(sproutlet)):
+            if not utils.get_environment_variable('{}_uri'.format(sproutlet)):
                 uri = 'sip:{}.{};transport=TCP'.format(sproutlet, sprout_hostname)
                 code = vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)('sprout_hostname',
                                                                               uri)

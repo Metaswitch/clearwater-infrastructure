@@ -8,6 +8,7 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 
+import os
 import sys
 import socket
 import re
@@ -18,6 +19,10 @@ import dns.resolver
 ERROR = 5
 WARNING = 4
 OK = 0
+
+
+def get_environment_variable(option_name):
+    return os.environ.get(option_name)
 
 
 def error(option_name, message):
@@ -112,12 +117,12 @@ def is_domain_resolvable(name, rrtype):
         return False
 
 
-def number_present(get_value, *args):
+def number_present(*args):
     """Determine the number of configuration items given which are present"""
     config = 0
 
     for option in args:
-        if get_value(option):
+        if get_environment_variable(option):
             config += 1
 
     return config

@@ -1,12 +1,8 @@
 # cw_infrastructure
 
-This package can be used to validate configuration against a defined 'schema'. For the purposes of this package, a schema is a Python class defined as an 'option_schemas' entry point in setup.py that exposes the following three static methods.
+This package can be used to validate configuration in the form of environment variables against a defined 'schema'. For the purposes of this package, a schema is a Python class defined as an 'option_schemas' entry point in setup.py that exposes the following two static methods.
 
 ---
-
-##### get_value(option_name)
-
-This method takes a single string parameter, the name of a configuration option, and returns its value.
 
 ##### get_options()
 
