@@ -33,10 +33,10 @@ if [ "$1" = "-n" ]; then
     $oid_prefix | $oid_prefix.0 | $oid_prefix.0.* | $oid_prefix.1)
       oid_req=$oid_prefix.1.0;;
 
-    $oid_prefix.1.* | $oid_prefix.2 | $oid_prefix.2.0)
+    $oid_prefix.1.* | $oid_prefix.2)
       oid_req=$oid_prefix.2.0;;
 
-    $oid_prefix.2.* | $oid_prefix.3 | $oid_prefix.3.0)
+    $oid_prefix.2.* | $oid_prefix.3)
       oid_req=$oid_prefix.3.0;;
 
     # No more entries - just return without text and it will be handled by snmpd.
