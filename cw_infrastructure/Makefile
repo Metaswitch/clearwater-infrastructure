@@ -12,8 +12,8 @@ all: wheelhouses
 include ../build-infra/python.mk
 
 cw_infrastructure_SETUP = setup.py
+cw_infrastructure_REQUIREMENTS = requirements.txt requirements-test.txt
 cw_infrastructure_TEST_SETUP = setup.py
-cw_infrastructure_REQUIREMENTS = requirements.txt
 cw_infrastructure_SOURCES = $(wildcard cw_infrastructure/*.py)
 cw_infrastructure_WHEELHOUSE = ../.wheelhouse
 cw_infrastructure_BUILD_DIRS=T
