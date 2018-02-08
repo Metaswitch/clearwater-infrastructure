@@ -14,7 +14,6 @@
 #   -n - perform a getnext on the OID
 #   -s - perform a set on the OID (rejected by this script)
 #
-# Handles SNMP requests offloaded by snmpd for the file descriptor OIDs
 # Handles three different types of request - set, gets and get nexts and
 # returns the appropriate stat based on the contents of proc's file-nr.
 #
@@ -39,8 +38,8 @@ if [ "$1" = "-n" ]; then
     $oid_prefix.2.* | $oid_prefix.3)
       oid_req=$oid_prefix.3.0;;
 
-    # No more entries - just return without text and it will be handled by snmpd.
     *)
+      # No more entries - just return without text and it will be handled by snmpd.
       exit 0;;
   esac
 elif [ "$1" = "-g" ]; then
@@ -49,8 +48,8 @@ elif [ "$1" = "-g" ]; then
     $oid_prefix.1.0 | $oid_prefix.2.0 | $oid_prefix.3.0)
       ;;
 
-    # No matching entry - just return without text and it will be handled by snmpd.
     *)
+      # No matching entry - just return without text and it will be handled by snmpd.
       exit 0;;
   esac
 else
