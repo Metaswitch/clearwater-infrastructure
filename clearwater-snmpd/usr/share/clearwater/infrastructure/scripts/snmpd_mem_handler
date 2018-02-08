@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Copyright (C) Metaswitch Networks 2018
+# If license terms are provided to you in a COPYING file in the root directory
+# of the source code repository by which you are accessing this code, then
+# the license outlined in that COPYING file applies to your use.
+# Otherwise no rights are granted except for those provided to you by
+# Metaswitch Networks in a separate written agreement.
+#
+# Called by snmpd to offload requests for the Metaswitch memory OIDs.
+# Syntax:
+# snmp_mem_handler [-n|-g|-s] [oid]
+#   -g - perform a get on the OID
+#   -n - perform a getnext on the OID
+#   -s - perform a set on the OID (rejected by this script)
+#
+# Handles SNMP requests offloaded by snmpd for the Metswitch memory OIDs
+# Handles three different types of request - set, gets and get nexts and
+# returns the appropriate stat based on the contents of /proc/meminfo,
+# making use of the buffers/cache memory as well as the free memory info.
+#
+# The three OIDs this file returns are:
+# oid_prefix.1 = current free (kB)
+# oid_prefix.2 = maximum available memory (kB)
+# oid_prefix.3 = percentage of maximum available memory currently free
+oid_prefix=.1.2.826.0.1.1578918.17.2
+oid_req=$2
+
+# Work out which form of request it is so that we can determine the type of the
+# response (which is handled at the end of the script)
+if [ "$1" = "-n" ]; then
+  # It's a get next so work out what the next matching OID is.
+  case "$oid_req" in
+    $oid_prefix | $oid_prefix.0 | $oid_prefix.0.* | $oid_prefix.1)
+      oid_req=$oid_prefix.1.0;;
+
+    $oid_prefix.1.* | $oid_prefix.2)
+      oid_req=$oid_prefix.2.0;;
+
+    $oid_prefix.2.* | $oid_prefix.3)
+      oid_req=$oid_prefix.3.0;;
+
+    *)
+      # No more entries - just return without text and it will be handled by snmpd.
+      exit 0;;
+  esac
+elif [ "$1" = "-g" ]; then
+  # It's an exact get so ensure that it matches one of our valid OIDs.
+  case "$oid_req" in
+    $oid_prefix.1.0 | $oid_prefix.2.0 | $oid_prefix.3.0)
+      # No matching entry - just return without text and it will be handled by snmpd.
+      ;;
+    *) exit 0;;
+  esac
+else
+  # It's a set request - just return unwriteable
+  echo not-writable
+  exit 0
+fi
+
+# Now that we know what we're meant to return, pull out the memory
+# stats from /proc/meminfo and return the corresponding value.
+mem_free_cur=$(awk '/MemFree:/{print $2}' /proc/meminfo)
+mem_max=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
+buff_cur=$(awk '/^Buffers:/{print $2}' /proc/meminfo)
+cached_cur=$(awk '/^Cached:/{print $2}' /proc/meminfo)
+let real_mem_free_cur=$mem_free_cur+$buff_cur+$cached_cur
+
+# The return syntax for snmpd's call is three lines containing:
+#  <oid>
+#  <type>
+#  <value>
+echo $oid_req
+echo integer
+
+case "$oid_req" in
+  $oid_prefix.1.0)
+    echo $real_mem_free_cur;;
+  $oid_prefix.2.0)
+    echo $mem_max;;
+  $oid_prefix.3.0)
+    # Work out the percentage of available memory currently in use. Bash rounds
+    # down, so add on 0.5% before we start so that the percentage gets rounded
+    # correctly. Bash doesn't do floating point arithmetic so need to multiply
+    # by 100 first then do the divisions.
+    mem_perc=$(((($real_mem_free_cur*100)+$mem_max/2)/$mem_max))
+    echo $mem_perc;;
+esac
+exit 0
+
