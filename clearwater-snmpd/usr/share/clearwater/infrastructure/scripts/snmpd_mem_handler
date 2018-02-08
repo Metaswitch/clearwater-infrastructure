@@ -60,6 +60,9 @@ fi
 
 # Now that we know what we're meant to return, pull out the memory
 # stats from /proc/meminfo and return the corresponding value.
+# The memory free stat gives a misleading picture - buffers and cached memory
+# are only used by Linux because they're not needed elsewhere. We therefore
+# report free memory including those values.
 mem_free_cur=$(awk '/MemFree:/{print $2}' /proc/meminfo)
 mem_max=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
 buff_cur=$(awk '/^Buffers:/{print $2}' /proc/meminfo)
