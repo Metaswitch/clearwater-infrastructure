@@ -7,21 +7,22 @@
 # Otherwise no rights are granted except for those provided to you by
 # Metaswitch Networks in a separate written agreement.
 #
-# Called by snmpd to offload requests for the file descriptor OIDs.
+# Called by snmpd to offload requests for the Metaswitch memory OIDs.
 # Syntax:
-# snmp_fd_handler [-n|-g|-s] [oid]
+# snmp_mem_handler [-n|-g|-s] [oid]
 #   -g - perform a get on the OID
 #   -n - perform a getnext on the OID
 #   -s - perform a set on the OID (rejected by this script)
 #
 # Handles three different types of request - set, gets and get nexts and
-# returns the appropriate stat based on the contents of proc's file-nr.
+# returns the appropriate stat based on the contents of /proc/meminfo,
+# making use of the buffers/cache memory as well as the free memory info.
 #
 # The three OIDs this file returns are:
-# oid_prefix.1 = current allocated file descriptors
-# oid_prefix.2 = maximum number of file descriptors
-# oid_prefix.3 = percentage of max fds currently allocated
-oid_prefix=.1.2.826.0.1.1578918.17.1
+# oid_prefix.1 = current free (kB) [free + cached + buffer]
+# oid_prefix.2 = maximum available memory (kB)
+# oid_prefix.3 = percentage of maximum available memory currently free
+oid_prefix=.1.2.826.0.1.1578918.17.2
 oid_req=$2
 
 # Work out which form of request it is so that we can determine the type of the
@@ -49,7 +50,7 @@ elif [ "$1" = "-g" ]; then
       ;;
 
     *)
-      # No matching entry - just return without text and it will be handled by snmpd.
+    # No matching entry - just return without text and it will be handled by snmpd.
       exit 0;;
   esac
 else
@@ -58,11 +59,16 @@ else
   exit 0
 fi
 
-# Now that we know what we're meant to return, pull out the file descriptor
-# stats from file-nr and return the corresponding value.
-# file-nr consists of three values, the first and last of which are the
-# current and max file descriptors.
-read fd_cur fd_ignore fd_max < /proc/sys/fs/file-nr
+# Now that we know what we're meant to return, pull out the memory
+# stats from /proc/meminfo and return the corresponding value.
+# The memory free stat gives a misleading picture - buffers and cached memory
+# are only used by Linux because they're not needed elsewhere. We therefore
+# report free memory including those values.
+mem_free_cur=$(awk '/MemFree:/{print $2}' /proc/meminfo)
+mem_max=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
+buff_cur=$(awk '/^Buffers:/{print $2}' /proc/meminfo)
+cached_cur=$(awk '/^Cached:/{print $2}' /proc/meminfo)
+let real_mem_free_cur=$mem_free_cur+$buff_cur+$cached_cur
 
 # The return syntax for snmpd's call is three lines containing:
 #  <oid>
@@ -73,15 +79,15 @@ echo integer
 
 case "$oid_req" in
   $oid_prefix.1.0)
-    echo $fd_cur;;
+    echo $real_mem_free_cur;;
   $oid_prefix.2.0)
-    echo $fd_max;;
+    echo $mem_max;;
   $oid_prefix.3.0)
-    # Work out the percentage of file descriptors currently in use. Bash rounds
+    # Work out the percentage of available memory currently in use. Bash rounds
     # down, so add on 0.5% before we start so that the percentage gets rounded
     # correctly. Bash doesn't do floating point arithmetic so need to multiply
     # by 100 first then do the divisions.
-    fd_perc=$((($fd_cur*100 + $fd_max/2)/$fd_max));
-    echo $fd_perc;;
+    mem_perc=$(((($real_mem_free_cur*100)+$mem_max/2)/$mem_max))
+    echo $mem_perc;;
 esac
 exit 0
