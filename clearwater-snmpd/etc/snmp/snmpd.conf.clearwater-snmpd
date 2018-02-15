@@ -262,7 +262,7 @@ dlmod chronos_handler /usr/lib/clearwater/chronos_handler.so
 dontLogTCPWrappersConnects 1
 
 # File descriptor MIB handling
-pass .1.2.826.0.1.1578918.17.1 /usr/share/clearwater/infrastructure/scripts/snmpd_fd_handler
+pass .1.2.826.0.1.1578918.17.1 /usr/share/clearwater/infrastructure/bin/snmpd_fd_handler
 
 # Free Memory MIB handling
-pass .1.2.826.0.1.1578918.17.2 /usr/share/clearwater/infrastructure/scripts/snmpd_mem_handler
+pass .1.2.826.0.1.1578918.17.2 /usr/share/clearwater/infrastructure/bin/snmpd_mem_handler
