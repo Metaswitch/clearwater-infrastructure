@@ -1,0 +1,28 @@
+_cw-run_in_signaling_namespace()
+{
+  local cur prev opts
+  COMPREPLY=()
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  opts="ping tcpdump dig ip netstat"
+  
+  if [ -n "$(which nodetool)" ]; then
+    opts="${opts} nodetool"
+  fi
+
+  if [ -n "$(which cw-do_backup)" ]; then
+    opts="${opts} cw-do_backup"
+  fi
+
+  case "${prev}" in
+    cw-do_backup|nodetool|ping|tcpdump|dig|ip|netstat)
+      _command_offset 1
+      ;;
+    *)
+      cur="${COMP_WORDS[COMP_CWORD]}"
+      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+      ;;
+  esac
+
+  return 0
+} &&
+complete -F _cw-run_in_signaling_namespace cw-run_in_signaling_namespace
