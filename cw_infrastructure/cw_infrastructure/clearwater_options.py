@@ -60,7 +60,7 @@ class ClearwaterOptions:
 
             Option('snmp_ip',
                    Option.SUGGESTED,
-                   vlds.resolvable_ip_or_domain_name_list_validator),
+                   vlds.ip_or_domain_name_opt_port_list_validator),
             Option('sas_server', Option.SUGGESTED, sas_server_validator),
             Option('sas_use_signaling_interface',
                    Option.OPTIONAL,
