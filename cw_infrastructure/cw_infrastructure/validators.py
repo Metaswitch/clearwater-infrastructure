@@ -103,12 +103,14 @@ def ip_addr_list_validator(name, value):
         return utils.OK
 
 
-def ip_addr_and_optional_port_list_validator(name, value):
+def ip_or_domain_name_opt_port_list_validator(name, value):
     """Validate a config option that should be a comma-separated list of IP
-    addresses with optional ports"""
-    if not all(utils.is_ip_addr(addr, optional_port=True) for addr in value.split(',')):
+    addresses or domain name with optional ports"""
+
+    if not all(resolvable_ip_or_domain_name_opt_port_validator(name, addr) == \
+                                        utils.OK for addr in value.split(',')):
         utils.error(name,
-                    "{} is not a comma separated list of IP addresses/ports".format(value))
+                    "{} is not a comma separated list of IP addrs/domains/ports".format(value))
         return utils.ERROR
     else:
         return utils.OK
@@ -158,7 +160,7 @@ def resolvable_ip_or_domain_name_validator(name, value):
     else:
         utils.error(name, ("{} is neither a domain name, "
                            "IPv4 address, or bracketed IPv6 address").format(value))
-        return utils.OK
+        return utils.ERROR
 
 
 def resolvable_domain_name_validator(name, value):
@@ -305,6 +307,18 @@ def resolvable_ip_or_domain_name_with_port_validator(name, value):
         return utils.ERROR
 
     return resolvable_ip_or_domain_name_validator(name, stem)
+
+
+def resolvable_ip_or_domain_name_opt_port_validator(name, value):
+    """Validate a config option that should be an IP address or a
+    resolvable domain name, followed by a port"""
+
+    # If there's a . in the value then it's IPv4/domain so a : preceeds a port
+    # Otherwise it's IPv6, so look for a ]: to determine if there's a port.
+    if ("." in value and ":" in value) or "]:" in value:
+        return resolvable_ip_or_domain_name_with_port_validator(name, value)
+    else:
+        return resolvable_ip_or_domain_name_validator(name, value)
 
 
 def run_validator_with_dns(validator, name, value, dns_server):
