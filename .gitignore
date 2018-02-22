@@ -2,6 +2,7 @@
 /build_setup/
 
 *.swp
+*.pyc
 *~
 
 debian/copyright
