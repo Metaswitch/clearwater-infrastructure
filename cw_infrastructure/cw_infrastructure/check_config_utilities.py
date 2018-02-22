@@ -41,24 +41,67 @@ def warning(option_name, message):
     sys.stderr.write("WARNING: {}: {}\n".format(option_name, message))
 
 
-def ip_version(value):
+def get_ip_and_port(value):
+    """Utility method to get the IP and (optional) port parts from a string.
+    """
+    if not value:
+        raise ValueError("No IP address specified")
+
+    if "." in value:
+        # IPv4 address with optional port.
+        elements = value.split(":")
+    else:
+        # IPv6 address. These are in the format:
+        # <IPv6> or [<IPv6>]:<port>
+        if value[0] == "[":
+            elements = value[1:].split("]:")
+        else:
+            elements = [value]
+
+    if len(elements) > 2:
+        # Too many port separators
+        raise ValueError("{} contained extra port separators".format(value))
+
+    addr = elements[0]
+    if len(elements) == 2:
+        port = int(elements[1])
+        if not 0 < port < (2 ** 16):
+            raise ValueError("{} port value invalid".format(port))
+    else:
+        port = None
+
+    return (addr, port)
+
+
+def ip_version(value, optional_port=False):
     """Return the IP version of the supplied IP address, which is passed as a
     string. If the argument is not an IP address this function returns None,
-    which is more convenient than raising an exception"""
+    which is more convenient than raising an exception. May optionally include 
+    a port if the optional_port parameter is set to True."""
+
+    if optional_port:
+        try:
+            (addr, port) = get_ip_and_port(value)
+        except ValueError:
+            return None
+    else:
+        addr = value
+
     try:
-        socket.inet_pton(socket.AF_INET, value)
+        socket.inet_pton(socket.AF_INET, addr)
         return 4
     except socket.error:
         try:
-            socket.inet_pton(socket.AF_INET6, value)
+            socket.inet_pton(socket.AF_INET6, addr)
             return 6
         except socket.error:
             return None
 
 
-def is_ip_addr(value):
-    """Return whether the supplied string is a valid IP address"""
-    return (ip_version(value) is not None)
+def is_ip_addr(value, optional_port=False):
+    """Return whether the supplied string is a valid IP address. Optionally 
+    permits a port."""
+    return (ip_version(value, optional_port) is not None)
 
 
 def is_domain_name(value):

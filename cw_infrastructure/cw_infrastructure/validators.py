@@ -103,6 +103,17 @@ def ip_addr_list_validator(name, value):
         return utils.OK
 
 
+def ip_addr_and_optional_port_list_validator(name, value):
+    """Validate a config option that should be a comma-separated list of IP
+    addresses with optional ports"""
+    if not all(utils.is_ip_addr(addr, optional_port=True) for addr in value.split(',')):
+        utils.error(name,
+                    "{} is not a comma separated list of IP addresses/ports".format(value))
+        return utils.ERROR
+    else:
+        return utils.OK
+
+
 def domain_name_validator(name, value):
     """Validate a config option that should be a domain name"""
     if not utils.is_domain_name(value):
