@@ -231,17 +231,36 @@ class TestIpAddrListValidator(unittest.TestCase):
                                          any_order=True)
         mock_error.assert_called_once_with('val', mock.ANY)
 
+
 class TestIpAddrDomainOptionalPortsListValidator(unittest.TestCase):
 
     # Test that the IP address list validator handles some standard cases
     def test_ok(self):
-        ok_lists = ["1.2.3.4", "1.2.3.4:22,2.3.4.5:33", "1.2.3.4,2.3.4.5:22"]
+        ok_lists = ["1.2.3.4", 
+                    "1.2.3.4:22,2.3.4.5:33", 
+                    "metaswitch.com",
+                    "metaswitch.com:33",
+                    "metaswitch.com:33,datcon.co.uk",
+                    "metaswitch.com:33,datcon.co.uk:25",
+                    "2002:AAAA:bb::101",
+                    "[2002:AAAA:bb::101]:1234",
+                    "[2002:AAAA:bb::101]:1234,2002:AAAA:bb::102",
+                    "1.2.3.4,2.3.4.5:22"]
         for addr_list in ok_lists:
             code = validators.ip_or_domain_name_opt_port_list_validator('val', addr_list)
             self.assertEqual(code, check_config_utilities.OK, "Got {} for {}".format(code, addr_list))
 
     def test_error(self):
-        bad_lists = ["1.2.3.4:66666", "1.2.3.4:22-2.3.4.5:33", "1.2.3,2.3.4.5:22"]
+        bad_lists = ["1.2.3.4:66666", 
+                     "1.2.3.4:22-2.3.4.5:33", 
+                     "metaswitchco/m",
+                     "metaswitch.c/om:33",
+                     "metaswitch.com:33,da/tcon.co.uk",
+                     "metaswitch.co%m:33,dat/con.co.uk:25",
+                     "2002:AAAA:Xbb::101",
+                     "[2002:AAAA:bb::101]:999999",
+                     "[2002:AAAA:bb::101]:1234,2002:AAAAA:bb::102",
+                     "1.2.3,2.3.4.5:22"]
         for addr_list in bad_lists:
             code = validators.ip_or_domain_name_opt_port_list_validator('val', addr_list)
             self.assertEqual(code, check_config_utilities.ERROR, "Got {} for {}".format(code, addr_list))

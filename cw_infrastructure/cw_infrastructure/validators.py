@@ -107,7 +107,7 @@ def ip_or_domain_name_opt_port_list_validator(name, value):
     """Validate a config option that should be a comma-separated list of IP
     addresses or domain name with optional ports"""
 
-    if not all(resolvable_ip_or_domain_name_opt_port_validator(name, addr) == \
+    if not all(ip_or_domain_name_opt_port_validator(name, addr) == \
                                         utils.OK for addr in value.split(',')):
         utils.error(name,
                     "{} is not a comma separated list of IP addrs/domains/ports".format(value))
@@ -135,7 +135,7 @@ def ip_or_domain_name_validator(name, value):
         return utils.OK
 
 
-def resolvable_ip_or_domain_name_validator(name, value):
+def ip_or_domain_name_validator(name, value):
     """Validate a config option that should be an IP address or a domain name
     that resolves with the current DNS setup"""
 
@@ -147,7 +147,7 @@ def resolvable_ip_or_domain_name_validator(name, value):
             utils.error(name, "{} is not a valid IPv6 address".format(ip))
             return utils.ERROR
 
-    elif utils.ip_version(value) == 4:
+    elif utils.ip_version(value):
         return utils.OK
 
     elif utils.is_domain_name(value):
@@ -176,7 +176,7 @@ def resolvable_domain_name_validator(name, value):
         return utils.ERROR
 
 
-def resolvable_ip_or_domain_name_list_validator(name, value):
+def ip_or_domain_name_list_validator(name, value):
     """
     Check whether a config option is a list of IP addresses, or domain names
     that resolve with the current DNS setup
@@ -291,7 +291,7 @@ def diameter_realm_validator(name, value):
     return utils.OK
 
 
-def resolvable_ip_or_domain_name_with_port_validator(name, value):
+def ip_or_domain_name_with_port_validator(name, value):
     """Validate a config option that should be a IP address or a
     resolvable domain name, followed by a port"""
     match = re.match(r"^(.*):(\d+)$", value)
@@ -306,19 +306,19 @@ def resolvable_ip_or_domain_name_with_port_validator(name, value):
         utils.error(name, "The port value ({}) is too large".format(port))
         return utils.ERROR
 
-    return resolvable_ip_or_domain_name_validator(name, stem)
+    return ip_or_domain_name_validator(name, stem)
 
 
-def resolvable_ip_or_domain_name_opt_port_validator(name, value):
+def ip_or_domain_name_opt_port_validator(name, value):
     """Validate a config option that should be an IP address or a
     resolvable domain name, followed by a port"""
 
     # If there's a . in the value then it's IPv4/domain so a : preceeds a port
     # Otherwise it's IPv6, so look for a ]: to determine if there's a port.
     if ("." in value and ":" in value) or "]:" in value:
-        return resolvable_ip_or_domain_name_with_port_validator(name, value)
+        return ip_or_domain_name_with_port_validator(name, value)
     else:
-        return resolvable_ip_or_domain_name_validator(name, value)
+        return ip_or_domain_name_validator(name, value)
 
 
 def run_validator_with_dns(validator, name, value, dns_server):
