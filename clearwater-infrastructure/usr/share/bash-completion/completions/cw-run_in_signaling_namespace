@@ -1,17 +1,17 @@
 _cw-run_in_signaling_namespace()
 {
-  local cur prev opts
+  local cur prev opts potenialopts
   COMPREPLY=()
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="ping tcpdump dig ip netstat"
-  
-  if [ -n "$(which nodetool)" ]; then
-    opts="${opts} nodetool"
-  fi
+  potentialopts="cw-do_backup ping tcpdump dig ip netstat"
+  opts=""
 
-  if [ -n "$(which cw-do_backup)" ]; then
-    opts="${opts} cw-do_backup"
-  fi
+  # Check which commands exist on this box
+  for opt in $potentialopts; do
+    if [ -n "$(which ${opt})" ]; then
+      opts="${opts} ${opt}"
+    fi
+  done
 
   case "${prev}" in
     cw-do_backup|nodetool|ping|tcpdump|dig|ip|netstat)
