@@ -21,19 +21,19 @@ class ClearwaterOptions:
 
         # Setup the SAS server validator depending on whether signaling
         # namespace is to be used
-        sas_server_validator = vlds.resolvable_ip_or_domain_name_validator
+        sas_server_validator = vlds.ip_or_domain_name_validator
 
         if utils.get_option_value('sas_use_signaling_interface') == 'Y':
-            sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
+            sas_server_validator = vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)
 
         options = [
             Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
             Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
             Option('public_hostname', Option.MANDATORY,
-                   vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
+                   vlds.run_in_sig_ns(vlds.domain_name_validator)),
             Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
             Option('sprout_hostname', Option.MANDATORY,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
             Option('hs_hostname', Option.MANDATORY,
                    vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
             Option('sprout_hostname_mgmt', Option.OPTIONAL,
