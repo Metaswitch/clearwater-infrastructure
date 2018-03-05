@@ -21,25 +21,25 @@ class ClearwaterOptions:
 
         # Setup the SAS server validator depending on whether signaling
         # namespace is to be used
-        sas_server_validator = vlds.resolvable_ip_or_domain_name_validator
+        sas_server_validator = vlds.ip_or_domain_name_validator
 
         if utils.get_option_value('sas_use_signaling_interface') == 'Y':
-            sas_server_validator = vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)
+            sas_server_validator = vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)
 
         options = [
             Option('local_ip', Option.MANDATORY, vlds.ip_addr_validator),
             Option('public_ip', Option.MANDATORY, vlds.ip_addr_validator),
             Option('public_hostname', Option.MANDATORY,
-                   vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
+                   vlds.run_in_sig_ns(vlds.domain_name_validator)),
             Option('home_domain', Option.MANDATORY, vlds.domain_name_validator),
             Option('sprout_hostname', Option.MANDATORY,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
             Option('hs_hostname', Option.MANDATORY,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
             Option('sprout_hostname_mgmt', Option.OPTIONAL,
-                   vlds.resolvable_ip_or_domain_name_with_port_validator),
+                   vlds.ip_or_domain_name_with_port_validator),
             Option('hs_hostname_mgmt', Option.OPTIONAL,
-                   vlds.resolvable_ip_or_domain_name_with_port_validator),
+                   vlds.ip_or_domain_name_with_port_validator),
 
             Option('homestead_diameter_watchdog_timer', Option.OPTIONAL,
                    vlds.create_integer_range_validator(min_value=6)),
@@ -56,11 +56,11 @@ class ClearwaterOptions:
             Option('hss_hostname', Option.OPTIONAL,
                    vlds.run_in_sig_ns(vlds.resolvable_domain_name_validator)),
             Option('hs_provisioning_hostname', Option.OPTIONAL,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
             Option('snmp_ip',
                    Option.SUGGESTED,
-                   vlds.resolvable_ip_or_domain_name_list_validator),
+                   vlds.ip_or_domain_name_opt_port_list_validator),
             Option('sas_server', Option.SUGGESTED, sas_server_validator),
             Option('sas_use_signaling_interface',
                    Option.OPTIONAL,
@@ -74,7 +74,7 @@ class ClearwaterOptions:
                    vlds.run_in_sig_ns(vlds.sip_uri_domain_name_validator)),
 
             Option('enum_server', Option.OPTIONAL,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_list_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_list_validator)),
             Option('signaling_dns_server',
                    Option.OPTIONAL,
                    vlds.ip_addr_list_validator),
@@ -83,11 +83,11 @@ class ClearwaterOptions:
                    vlds.run_in_sig_ns(vlds.diameter_realm_validator)),
             Option('node_idx', Option.OPTIONAL, vlds.integer_validator),
             Option('ralf_hostname', Option.OPTIONAL,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
             Option('chronos_hostname', Option.OPTIONAL,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator)),
             Option('xdms_hostname', Option.OPTIONAL,
-                   vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_with_port_validator)),
+                   vlds.run_in_sig_ns(vlds.ip_or_domain_name_with_port_validator)),
 
             Option('alias_list', Option.DEPRECATED),
             Option('always_serve_remote_aliases',
@@ -102,7 +102,7 @@ class ClearwaterOptions:
                 Option(
                     'cassandra_hostname',
                     Option.MANDATORY,
-                    vlds.run_in_sig_ns(vlds.resolvable_ip_or_domain_name_validator))
+                    vlds.run_in_sig_ns(vlds.ip_or_domain_name_validator))
             )
         return options
 

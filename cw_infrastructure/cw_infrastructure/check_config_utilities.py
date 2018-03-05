@@ -44,7 +44,8 @@ def warning(option_name, message):
 def ip_version(value):
     """Return the IP version of the supplied IP address, which is passed as a
     string. If the argument is not an IP address this function returns None,
-    which is more convenient than raising an exception"""
+    which is more convenient than raising an exception."""
+
     try:
         socket.inet_pton(socket.AF_INET, value)
         return 4
@@ -57,7 +58,7 @@ def ip_version(value):
 
 
 def is_ip_addr(value):
-    """Return whether the supplied string is a valid IP address"""
+    """Return whether the supplied string is a valid IP address."""
     return (ip_version(value) is not None)
 
 
