@@ -59,4 +59,3 @@ def main(sas_use_signaling_namespace):
 
 if __name__ == "__main__":  # pragma: no cover
     main(sys.argv[1])
-
