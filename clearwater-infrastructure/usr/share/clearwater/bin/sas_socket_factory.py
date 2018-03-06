@@ -20,16 +20,20 @@ SAS_CONFIG_FILE = "/etc/clearwater/sas.json"
 SIGNALING_CFG_DIR = "/etc/clearwater-socket-factory/signaling.d"
 MANAGEMENT_CFG_DIR = "/etc/clearwater-socket-factory/management.d"
 
-os.makedirs(SIGNALING_CFG_DIR)
-os.makedirs(MANAGEMENT_CFG_DIR)
+if not os.path.exists(SIGNALING_CFG_DIR):
+    os.makedirs(SIGNALING_CFG_DIR)
+if not os.path.exists(MANAGEMENT_CFG_DIR):
+    os.makedirs(MANAGEMENT_CFG_DIR)
 
 sas_use_signaling_namespace = sys.argv[1]
 if sas_use_signaling_namespace is "Y":
     file_to_write = SIGNALING_CFG_DIR + "/clearwater-infrastructure"
-    os.remove(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure")
+    if os.path.exists(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure"):
+        os.remove(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure")
 else:
     file_to_write = MANAGEMENT_CFG_DIR + "/clearwater-infrastructure"
-    os.remove(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
+    if os.path.exists(SIGNALING_CFG_DIR + "/clearwater-infrastructure"):
+        os.remove(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
 
 if os.path.isfile(SAS_CONFIG_FILE):
     with open(SAS_CONFIG_FILE, 'r') as config_file:
@@ -40,7 +44,9 @@ if os.path.isfile(SAS_CONFIG_FILE):
             for sas_server_dict in sas_servers_list:
                 whitelist_file.write(sas_server_dict['ip'] + '\n')
     else:
-        os.remove(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
-        os.remove(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure")
+        if os.path.exists(SIGNALING_CFG_DIR + "/clearwater-infrastructure"):
+            os.remove(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
+        if os.path.exists(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure"):
+            os.remove(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure")
 else:
     raise IOError("File is missing or inaccessible: %s", SAS_CONFIG_FILE)
