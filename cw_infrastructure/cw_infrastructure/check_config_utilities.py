@@ -110,7 +110,13 @@ def is_domain_resolvable(name, rrtype):
 
     try:
         resolver = dns.resolver.get_default_resolver()
+
+        # timeout is the time spent waiting for each DNS server.
+        # lifetime is the time spent waiting for a response overall.
+        # By setting timeout to 2 and lifetime to 4, we allow time for us to
+        # check at least 2 of our DNS servers before we give up.
         resolver.timeout = 2
+        resolver.lifetime = 4
         answers = resolver.query(name, rrtype)
         return len(answers) != 0
 
