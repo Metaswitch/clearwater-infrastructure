@@ -115,8 +115,8 @@ def is_domain_resolvable(name, rrtype):
         # lifetime is the time spent waiting for a response overall.
         # By setting timeout to 2 and lifetime to 4, we allow time for us to
         # check at least 2 of our DNS servers before we give up.
-        resolver.timeout = 2
-        resolver.lifetime = 4
+        resolver.timeout = 2.0
+        resolver.lifetime = 4.0
         answers = resolver.query(name, rrtype)
         return len(answers) != 0
 
