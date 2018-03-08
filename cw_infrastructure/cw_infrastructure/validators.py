@@ -126,16 +126,6 @@ def domain_name_validator(name, value):
 
 
 def ip_or_domain_name_validator(name, value):
-    """Validate a config option that should be a domain name or IP address"""
-    if not utils.is_ip_addr(value) and not utils.is_domain_name(value):
-        utils.error(name,
-                    "{} is neither a valid IP address or domain name".format(value))
-        return utils.ERROR
-    else:
-        return utils.OK
-
-
-def ip_or_domain_name_validator(name, value):
     """Validate a config option that should be an IP address or a domain name
     that resolves with the current DNS setup"""
 
