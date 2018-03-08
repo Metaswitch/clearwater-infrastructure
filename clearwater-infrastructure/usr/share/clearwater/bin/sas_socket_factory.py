@@ -41,7 +41,8 @@ def main(sas_use_signaling_namespace):
         file_to_write = MANAGEMENT_CFG_DIR + "/clearwater-infrastructure"
         delete_file(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
 
-    # Print the list of SAS IPs in sas.json, each on a new line.
+    # Print the list of SAS IPs in sas.json, each on a new line. If no file is present,
+    # do no work.
     if os.path.isfile(SAS_CONFIG_FILE):
         with open(SAS_CONFIG_FILE, 'r') as config_file:
             sas_json = json.load(config_file)
@@ -54,8 +55,6 @@ def main(sas_use_signaling_namespace):
         else:
             delete_file(SIGNALING_CFG_DIR + "/clearwater-infrastructure")
             delete_file(MANAGEMENT_CFG_DIR + "/clearwater-infrastructure")
-    else:
-        raise IOError("File is missing or inaccessible: %s", SAS_CONFIG_FILE)
 
 if __name__ == "__main__":  # pragma: no cover
     main(sys.argv[1])
