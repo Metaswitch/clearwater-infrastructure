@@ -10,8 +10,9 @@ X86_64_ONLY=0
 
 PIP_VERSION := 9.0.1
 BUILDOUT_VERSION := 2.11.0
+SETUPTOOLS_VERSION := 38
 
-MARKER_FILE := ${ENV_DIR}/.pip_${PIP_VERSION}_buildout_${BUILDOUT_VERSION}
+MARKER_FILE := ${ENV_DIR}/.pip_${PIP_VERSION}_buildout_${BUILDOUT_VERSION}_setuptools_${SETUPTOOLS_VERSION}
 
 build: ${MARKER_FILE} buildout.cfg
 ifeq (${X86_64_ONLY},1)
@@ -24,7 +25,7 @@ ${MARKER_FILE}:
 	rm -rf _env
 	virtualenv --no-site-packages --python=${PYTHON_BIN} ${ENV_DIR}
 	mkdir -p .buildout_downloads/dist
-	${ENV_DIR}/bin/pip install --upgrade "pip==${PIP_VERSION}"
+	${ENV_DIR}/bin/pip install --upgrade "pip==${PIP_VERSION}" "setuptools==${SETUPTOOLS_VERSION}"
 	${ENV_DIR}/bin/pip install "zc.buildout==${BUILDOUT_VERSION}"
 	touch $@
 
