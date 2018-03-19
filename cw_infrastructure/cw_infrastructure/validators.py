@@ -9,11 +9,12 @@
 # Metaswitch Networks in a separate written agreement.
 
 # Validator definitions. Each of these functions takes two parameters: the
-# parameter name and its value (both as strings). They should behave as follows:
+# parameter name and its value (both as strings). They should behave as
+# follows:
 #
-# - If the value is acceptable, produce no output and return OK.
+# - If the value is acceptable, produce no output and return utils.OK.
 # - If the value is unacceptable, produce an error log describing the problem
-#   and return ERROR.
+#   and return utils.ERROR.
 # - If the value is acceptable but not recommended, produce a warning log
 #   describing the problem and return WARNING.
 
@@ -23,17 +24,24 @@ import os
 from nsenter import Namespace
 
 import check_config_utilities as utils
-from check_config_utilities import OK, WARNING, ERROR, warning, error
 
+
+def yes_no_validator(name, value):
+    if value == 'Y' or value == 'N':
+        return utils.OK
+    else:
+        utils.error(name,
+                    "{} is not a valid value - should either be Y or N".format(value))
+        return utils.ERROR
 
 def integer_validator(name, value):
     """Validate a config option that should be an integer"""
     try:
         int(value)
-        return OK
+        return utils.OK
     except ValueError:
-        error(name, "{} is not an integer".format(value))
-        return ERROR
+        utils.error(name, "{} is not an integer".format(value))
+        return utils.ERROR
 
 
 def create_integer_range_validator(min_value=None, max_value=None,
@@ -43,113 +51,149 @@ def create_integer_range_validator(min_value=None, max_value=None,
     def integer_range_validator(name, value):
         """Validate a config option that should be an integer lying in a given
         range"""
-        if integer_validator(name, value) == ERROR:
-            return ERROR
+        if integer_validator(name, value) == utils.ERROR:
+            return utils.ERROR
         value_int = int(value)
 
         # Check if the value lies in the allowed range
         if min_value is not None and value_int < min_value:
-            error(name,
-                  "{} is below the allowed minimum {}".format(value, min_value))
-            return ERROR
+            utils.error(name,
+                        "{} is below the allowed minimum {}".format(value,
+                                                                    min_value))
+            return utils.ERROR
         if max_value is not None and value_int > max_value:
-            error(name,
-                  "{} is above the allowed maximum {}".format(value, max_value))
-            return ERROR
+            utils.error(name,
+                        "{} is above the allowed maximum {}".format(value,
+                                                                    max_value))
+            return utils.ERROR
 
         # Check if the value lies in the recommended range
         if warn_min_value is not None and value_int < warn_min_value:
-            warning(name,
-                    "{} is below the recommended minimum {}".format(value,
-                                                                    warn_min_value))
-            return WARNING
+            utils.warning(name,
+                          "{} is below the recommended minimum {}".format(value,
+                                                                          warn_min_value))
+            return utils.WARNING
         if warn_max_value is not None and value_int > warn_max_value:
-            warning(name,
-                    "{} is above the recommended maximum {}".format(value,
-                                                                    warn_max_value))
-            return WARNING
+            utils.warning(name,
+                          "{} is above the recommended maximum {}".format(value,
+                                                                          warn_max_value))
+            return utils.WARNING
 
-        return OK
+        return utils.OK
     return integer_range_validator
 
 
 def ip_addr_validator(name, value):
     """Validate a config option that should be an IP address"""
     if not utils.is_ip_addr(value):
-        error(name, "{} is not an IP address".format(value))
-        return ERROR
+        utils.error(name, "{} is not an IP address".format(value))
+        return utils.ERROR
     else:
-        return OK
+        return utils.OK
 
 
 def ip_addr_list_validator(name, value):
     """Validate a config option that should be a comma-separated list of IP
     addresses"""
     if not all(utils.is_ip_addr(i) for i in value.split(',')):
-        error(name,
-              "{} is not a comma separated list of IP addresses".format(value))
-        return ERROR
+        utils.error(name,
+                    "{} is not a comma separated list of IP addresses".format(value))
+        return utils.ERROR
     else:
-        return OK
+        return utils.OK
+
+
+def ip_or_domain_name_opt_port_list_validator(name, value):
+    """Validate a config option that should be a comma-separated list of IP
+    addresses or domain name with optional ports"""
+
+    if not all(ip_or_domain_name_opt_port_validator(name, addr) == \
+                                        utils.OK for addr in value.split(',')):
+        utils.error(name,
+                    "{} is not a comma separated list of IP addrs/domains/ports".format(value))
+        return utils.ERROR
+    else:
+        return utils.OK
 
 
 def domain_name_validator(name, value):
     """Validate a config option that should be a domain name"""
     if not utils.is_domain_name(value):
-        error(name, "{} is not a valid domain name".format(value))
-        return ERROR
+        utils.error(name, "{} is not a valid domain name".format(value))
+        return utils.ERROR
     else:
-        return OK
+        return utils.OK
 
 
 def ip_or_domain_name_validator(name, value):
-    """Validate a config option that should be a domain name or IP address"""
-    if not utils.is_ip_addr(value) and not utils.is_domain_name(value):
-        error(name,
-              "{} is neither a valid IP address or domain name".format(value))
-        return ERROR
+    """Validate a config option that should be an IP address or a domain name
+    that resolves with the current DNS setup"""
+
+    if (value[0] == '[') and (value[-1] == ']'):
+        ip = value[1:-1]
+        if utils.ip_version(ip) == 6:
+            return utils.OK
+        else:
+            utils.error(name, "{} is not a valid IPv6 address".format(ip))
+            return utils.ERROR
+
+    elif utils.ip_version(value):
+        return utils.OK
+
+    elif utils.is_domain_name(value):
+        if utils.is_resolvable_domain_name(value):
+            return utils.OK
+        else:
+            utils.error(name, "Unable to resolve domain name {}".format(value))
+            return utils.ERROR
+
     else:
-        return OK
+        utils.error(name, ("{} is neither a domain name, "
+                           "IPv4 address, or bracketed IPv6 address").format(value))
+        return utils.ERROR
 
 
 def resolvable_domain_name_validator(name, value):
     """Validate a config option that should be a resolvable domain name"""
     if not utils.is_domain_name(value):
-        error(name, "{} is not a valid domain name".format(value))
-        return ERROR
+        utils.error(name, "{} is not a valid domain name".format(value))
+        return utils.ERROR
 
     if utils.is_resolvable_domain_name(value):
-        return OK
+        return utils.OK
     else:
-        error(name, "{} is not resolvable".format(value))
-        return ERROR
+        utils.error(name, "{} is not resolvable".format(value))
+        return utils.ERROR
 
 
-def resolveable_ip_or_domain_name_list_validator(name, value):
+def ip_or_domain_name_list_validator(name, value):
     """
     Check whether a config option is a list of IP addresses, or domain names
     that resolve with the current DNS setup
     """
 
-    if not all(utils.is_ip_addr(i) or utils.is_resolvable_domain_name(value) for
-               i in value.split(',')):
-        error(name,
-              "{} is not a comma separated list of resolvable domain names or IP addresses".format(
-                  value))
-        return ERROR
+    if not all(utils.is_ip_addr(i) or utils.is_resolvable_domain_name(value)
+               for i in value.split(',')):
+        utils.error(name,
+                    ("{} is not a comma separated list of resolvable domain "
+                     "names or IP addresses".format(value)))
+        return utils.ERROR
 
-    return OK
+    return utils.OK
 
 
-def sip_uri_validator(name, value):
-    """Validate a config option represents a valid SIP URI"""
+def sip_uri_domain_name_validator(name, value):
+    """
+    Validate a config option represents a valid SIP URI where the host part
+    of the URI is a domain name.
+    """
 
     match = re.match(r"^([a-z]+):(?:([^@])+@)?([^:;]*)(?::(\d+))?(?:;(.*))?$",
                      value)
 
     if not match:
-        error(name, "{} is not a valid SIP URI".format(value))
-        return ERROR
+        utils.error(name, "{} is not a valid SIP URI".format(value))
+        return utils.ERROR
 
     scheme = match.group(1)
     host = match.group(3)
@@ -157,8 +201,8 @@ def sip_uri_validator(name, value):
     params = match.group(5)
 
     if scheme != "sip":
-        error(name, "{} is not a SIP URI".format(value))
-        return ERROR
+        utils.error(name, "{} is not a SIP URI".format(value))
+        return utils.ERROR
 
     if params:
         pdict = {}
@@ -179,43 +223,45 @@ def sip_uri_validator(name, value):
 
     if 'transport' in params:
         if params['transport'].lower() not in ('udp', 'tcp'):
-            error(name, ("{} is not a valid SIP "
-                         "transport").format(params['transport']))
-            return ERROR
+            utils.error(name, ("{} is not a valid SIP "
+                               "transport").format(params['transport']))
+            return utils.ERROR
 
         else:
             transport = params['transport']
 
     if utils.is_ip_addr(host):
-        return OK
+        utils.error(name,
+                    "{} is an IP address, domain name expected".format(host))
+        return utils.ERROR
 
     elif not utils.is_domain_name(host):
-        error(name, ("{} is neither an IP address or a valid domain "
-                     "name".format(host)))
-        return ERROR
+        utils.error(name, ("{} is neither an IP address or a valid domain "
+                           "name".format(host)))
+        return utils.ERROR
 
     elif port:
         if utils.is_resolvable_domain_name(host):
-            return OK
+            return utils.OK
         else:
-            error(name, "{} is not resolvable".format(host))
-            return ERROR
+            utils.error(name, "{} is not resolvable".format(host))
+            return utils.ERROR
 
     elif transport:
         srv = '_sip._{}.{}'.format(params['transport'].lower(), host)
 
         if utils.is_srv_resolvable(srv):
-            return OK
+            return utils.OK
         else:
-            error(name, "{} is not a valid SRV record".format(srv))
-            return ERROR
+            utils.error(name, "{} is not a valid SRV record".format(srv))
+            return utils.ERROR
     else:
 
         if utils.is_naptr_resolvable(host):
-            return OK
+            return utils.OK
         else:
-            error(name, "{} is not a valid NAPTR record".format(host))
-            return ERROR
+            utils.error(name, "{} is not a valid NAPTR record".format(host))
+            return utils.ERROR
 
 
 def diameter_realm_validator(name, value):
@@ -223,55 +269,46 @@ def diameter_realm_validator(name, value):
 
     # Realms should be valid domain names
     if not utils.is_domain_name(value):
-        error(name, "{} is not a valid realm".format(value))
-        return ERROR
+        utils.error(name, "{} is not a valid realm".format(value))
+        return utils.ERROR
 
     if not utils.is_srv_resolvable('_diameter._tcp.' + value):
-        error(name, (
+        utils.error(name, (
             '_diameter._tcp.{} does not resolve to any SRV '
             'records'.format(value)))
-        return ERROR
+        return utils.ERROR
 
-    return OK
+    return utils.OK
 
 
 def ip_or_domain_name_with_port_validator(name, value):
-    """Validate a config option that should be a IP address or domain name,
-    followed by a port"""
+    """Validate a config option that should be a IP address or a
+    resolvable domain name, followed by a port"""
     match = re.match(r"^(.*):(\d+)$", value)
     if not match:
-        error(name, "{} does not contain a port".format(value))
-        return ERROR
+        utils.error(name, "{} does not contain a port".format(value))
+        return utils.ERROR
 
     stem = match.group(1)
     port = match.group(2)
 
     if int(port) >= 2**16:
-        error(name, "The port value ({}) is too large".format(port))
-        return ERROR
+        utils.error(name, "The port value ({}) is too large".format(port))
+        return utils.ERROR
 
-    if (stem[0] == '[') and (stem[-1] == ']'):
-        ip = stem[1:-1]
-        if utils.ip_version(ip) == 6:
-            return OK
-        else:
-            error(name, "{} is not a valid IPv6 address".format(ip))
-            return ERROR
+    return ip_or_domain_name_validator(name, stem)
 
-    elif utils.ip_version(stem) == 4:
-        return OK
 
-    elif utils.is_domain_name(stem):
-        if utils.is_resolvable_domain_name(stem):
-            return OK
-        else:
-            error(name, "Unable to resolve domain name {}".format(stem))
-            return ERROR
+def ip_or_domain_name_opt_port_validator(name, value):
+    """Validate a config option that should be an IP address or a
+    resolvable domain name, followed by a port"""
 
+    # If there's a . in the value then it's IPv4/domain so a : preceeds a port
+    # Otherwise it's IPv6, so look for a ]: to determine if there's a port.
+    if ("." in value and ":" in value) or "]:" in value:
+        return ip_or_domain_name_with_port_validator(name, value)
     else:
-        error(name, ("{} is neither a domain name, "
-                     "IPv4 address, or bracketed IPv6 address").format(stem))
-        return OK
+        return ip_or_domain_name_validator(name, value)
 
 
 def run_validator_with_dns(validator, name, value, dns_server):
@@ -288,6 +325,7 @@ def run_validator_with_dns(validator, name, value, dns_server):
         dns.resolver.reset_default_resolver()
 
     return result
+
 
 def run_in_sig_ns(validator):
     """Run a validator in the signaling namespace"""
