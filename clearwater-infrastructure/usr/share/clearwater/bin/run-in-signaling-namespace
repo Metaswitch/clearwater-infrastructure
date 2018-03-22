@@ -11,6 +11,8 @@
 
 . /usr/share/clearwater/utils/check-root-permissions 1
 
+trap '' SIGABRT
+
 # Returns the namespace_prefix (only set if the signaling_namespace is in use).
 . /etc/clearwater/config
 [ -z "$signaling_namespace" ] || namespace_prefix="ip netns exec $signaling_namespace"
