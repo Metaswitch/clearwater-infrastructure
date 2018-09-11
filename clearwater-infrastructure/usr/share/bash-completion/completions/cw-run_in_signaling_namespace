@@ -13,15 +13,34 @@ _cw-run_in_signaling_namespace()
     fi
   done
 
-  case "${prev}" in
-    cw-do_backup|nodetool|ping|tcpdump|dig|ip|netstat)
-      _command_offset 1
-      ;;
-    *)
-      cur="${COMP_WORDS[COMP_CWORD]}"
-      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-      ;;
-  esac
+  # If sbin is in the path, allow any command, as we are being
+  # completed under sudo
+  if [[ $PATH = *":/sbin:"* ]]; then
+    _command_offset 1
+  else
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    case "${prev}" in
+      cw-do_backup|nodetool|ping|tcpdump|dig|netstat)
+        _command_offset 1
+        ;;
+      ip)
+        COMPREPLY=($(compgen -W "route addr -6 --help" -- ${cur}))
+        ;;
+      -6)
+        COMPREPLY=($(compgen -W "route" -- ${cur}))
+        ;;
+      route)
+        COMPREPLY=($(compgen -W "show" -- ${cur}))
+        ;;
+      addr)
+        COMPREPLY=($(compgen -W "list" -- ${cur}))
+        ;;
+      *)
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        ;;
+    esac
+  fi
 
   return 0
 } &&
