@@ -1,3 +1,5 @@
+Project Clearwater is backed by Metaswitch Networks.  We have discontinued active support for this project as of 1st December 2019.  The mailing list archive is available in GitHub.  All of the documentation and source code remains available for the community in GitHub.  Metaswitch’s Clearwater Core product, built on Project Clearwater, remains an active and successful commercial offering.  Please contact clearwater@metaswitch.com for more information.
+
 Clearwater Infrastructure
 =========================
 
@@ -7,8 +9,6 @@ Overview
 Clearwater Infrastructure is the infrastructure package for
 Clearwater. It manages automatic configuration and upgrade, and
 installs a number of dependencies.
-
-Project Clearwater is an open-source IMS core, developed by [Metaswitch Networks](http://www.metaswitch.com) and released under the [GNU GPLv3](http://www.projectclearwater.org/download/license/). You can find more information about it on [our website](http://www.projectclearwater.org/) or [our wiki](http://clearwater.readthedocs.org/en/latest/).
 
 Packages
 --------
